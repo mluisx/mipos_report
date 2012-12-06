@@ -1,0 +1,112 @@
+\chapter{El \ac{OS} Android}
+
+Primeramente, para poder llegar al desarrollo propuesto en este \ac{TFE}, se realizar\'a un breve descripci\'on del sistema operativo para dispositivos m\'oviles que es parte fundamental para la implementaci\'on de las distintas aplicaciones desarrolladas.
+
+\section{Inicios y evoluci\'on}
+\label{sec:android.history.1}
+
+Android es un sistema operativo m\'ovil basado en Linux, que junto con aplicaciones middleware est\'a enfocado para ser utilizado en dispositivos m\'oviles como tel\'efonos inteligentes, tabletas, Google TV y otros dispositivos. Es desarrollado por la Open Handset Alliance, la cual es liderada por Google\Si{\texttrademark}. Este sistema por lo general maneja aplicaciones como Google Play.
+
+Fue desarrollado inicialmente por Android Inc., una firma comprada por la compa\~nia Google\Si{\texttrademark} en 2005. Es el principal producto de la Open Handset Alliance, un conglomerado de fabricantes y desarrolladores de hardware, software y operadores de servicio. Las unidades vendidas de tel\'efonos inteligentes con Android se ubican en el primer puesto en los Estados Unidos, en el segundo y tercer trimestres de 2010, con una cuota de mercado de 43,6\% en el tercer trimestre. A nivel mundial alcanz\'o una cuota de mercado del 50,9\% durante el cuarto trimestre de 2011, m\'as del doble que el segundo sistema operativo (iOS de Apple, Inc.) con m\'as cuota.
+
+Tiene una gran comunidad de desarrolladores escribiendo aplicaciones para extender la funcionalidad de los dispositivos. A la fecha, se han sobrepasado las 700.000 aplicaciones (de las cuales, dos tercios son gratuitas) disponibles para la tienda de aplicaciones oficial de Android: Google Play, sin tener en cuenta aplicaciones de otras tiendas no oficiales para Android, como pueden ser la App Store de Amazon o la tienda de aplicaciones Samsung Apps de Samsung. Google Play es la tienda de aplicaciones en l\'inea administrada por Google, aunque existe la posibilidad de obtener software externamente. Los programas est\'an escritos en el lenguaje de programaci\'on Java. No obstante, no es un sistema operativo libre de malware, aunque la mayor\'ia de ello es descargado de sitios de terceros.
+
+El anuncio del sistema Android se realiz\'o el 5 de noviembre de 2007 junto con la creaci\'on de la Open Handset Alliance, un consorcio de 78 compañ\'ias de hardware, software y telecomunicaciones dedicadas al desarrollo de est\'andares abiertos para dispositivos m\'oviles. Google liber\'p la mayor\'ia del c\'odigo de Android\Si{\texttrademark} bajo la licencia Apache, una licencia libre y de c\'odigo abierto.
+
+La estructura del sistema operativo Android\Si{\texttrademark} se compone de aplicaciones que se ejecutan en un framework Java de aplicaciones orientadas a objetos sobre el núcleo de las bibliotecas de Java en una m\'aquina virtual Dalvik con compilaci\'on en tiempo de ejecuci\'on. Las bibliotecas escritas en lenguaje C incluyen un administrador de interfaz gr\'afica (surface manager), un framework OpenCore, una base de datos relacional SQLite, una Interfaz de programaci\'on de \ac{API} gr\'afica OpenGL ES 2.0 3D, un motor de renderizado WebKit, un motor gr\'afico SGL, SSL y una biblioteca est\'andar de C Bionic. El sistema operativo est\'a compuesto por 12 millones de l\'ineas de c\'odigo, incluyendo 3 millones de l\'ineas de XML, 2,8 millones de l\'ineas de lenguaje C, 2,1 millones de l\'ineas de Java y 1,75 millones de l\'ineas de C++~\cite{wiki.android}.
+
+\figuraot{Pantalla inicial de Android 4.1 (Jelly Bean) ejecut\'andose en un Galaxy Nexus}{fig:android.jb}{}{250px-Android_41_on_the_Galaxy_Nexus}{!h}
+
+Android se encuentra instalado en cientos de millones de dispositivos m\'oviles en mas de 190 pa\'ises alrededor del mundo. Cada d\'ia, m\'as de 1 mill\'on de dispositivos con Android son activados mundialmente.
+
+\section{Versiones}
+\label{sec:android.versions.1}
+
+Las versiones de Android reciben el nombre de postres en ingl\'es. En cada versión el postre elegido empieza por una letra distinta siguiendo un orden alfab\'etico~\cite{and.dev.versions}.:
+
+\begin{enumerate}
+\item A: Apple Pie (v1.0), Tarta de manzana
+\item B: Banana Bread (v1.1), Pan de pl\'atano
+\item C: Cupcake (v1.5), Magdalena glaseada.
+\item D: Donut (v1.6), Rosquilla.
+\item E: Eclair (v2.0/v2.1), pastel franc\'es conocido en Espa\~na como pepito, petis\'u, suso o canuto.
+\item F: Froyo (v2.2), (Abreviatura de «Frozen Yogurt») Yogur Helado.
+\item G: Gingerbread (v2.3), Pan de jengibre.
+\item H: Honeycomb (v3.0/v3.1/v3.2), Panal de miel.
+\item I: Ice Cream Sandwich (v4.0), S\'andwich de helado.
+\item J: Jelly Bean (v4.1/v4.1.2/v4.2), Jud\'ia de gelatina.
+\item K: Key Lime Pie (v4.2), Proximamente.
+\end{enumerate}
+
+\figuraot{Distribuci\'on de las distintas versiones de Android de acuerdo a un an\'alisis de datos recolectados en un per\'iodo de 14 d\'ias finalizando el 1 de Noviembre de 2012}{fig:android.versions.fig}{width=\textwidth}{android_versions_chart}{!h}
+
+Cada versi\'on de Android tiene un n\'umero de \ac{API} relacionado. Para el caso del \ac{DPT} utilizado para el \ac{TPV}, el dispositivo contiene la versi\'on 4.2 \ac{JB} de Android que funciona con desarrollos realizados con la \ac{API} 17 y el \ac{DTC} contiene la versi\'on 4.0.4 \ac{ICS} cuya \ac{API} es la n\'umero 15.
+
+\section{?`Qu\'e se necesita tener en cuenta para poder comenzar a crear una aplicaci\'on en Android?}
+\label{sec:android.whatYouNeed.1}
+
+La informaci\'on que un desarrollador necesita para poder construir una aplicaci\'on en Android se encuentra organizada en tres secciones que representan el orden general para el desarrollo de las aplicaciones:
+
+\begin{itemize}
+\item \textbf{\textit{Dise\~no:}} Antes de comenzar a escribir una l\'inea de c\'odigo, se necesita dise\~nar la \ac{UI} y hacer que esta encaje en la experiencia del usuario Android. Aunque uno sepa que es lo que el usuario pueda llegar a hacer con la aplicaci\'on, uno debe enfocarse en como el usuario debe interactuar con la misma. El dise\~no debe ser simple, llamativo, y debe utilizar los lineamientos que el mundo Android brinda. Este es el primer paso.
+
+\item \textbf{\textit{Desarrollo:}} Una vez que el dise\~no finaliza, todo lo que se necesita son las herramientas para hacer realidad las ideas de la aplicaci\'on. El framework de Android provee las \ac{API}s para construir aplicaciones que puedan utilizar todo el potencial del hardware del dispositivo, accesorios conectados al mismo, la internet, y dem\'as. 
+
+\item \textbf{\textit{Distribuci\'on:}} Una vez que la aplicaci\'on se encuentra terminada y que se prob\'o para distintos tama\~nos de pantallas y densidades, y cuyas pruebas fueron realizadas a trav\'es de un emulador Android y en dispositivos reales, es el momento indicado para comenzar a publicar la aplicaci\'on. Existen varios factores que hacen depender la estrategia de venta de una aplicaci\'on, como por ejemplo, los dispositivos que soporta, la moneda de cobro, etcetera.
+\end{itemize}~\cite{and.dev.sdk}
+
+\section{Las herramientas para trabajar con la plataforma}
+\label{sec:android.tools.1}
+
+El \ac{SDK} de Android incluye una variedad de herramientas que ayudan a crear aplicaciones m\'oviles para la plataforma Android. Las herramientas se encuentran clasificadas en dos grupos: \ac{SDKT} y \ac{PT}. Las \ac{SDKT}s  son independientes de la plataforma y son requeridas sin tener relaci\'on alguna con la plataforma de Android con la que se est\'a desarrollando. Las \ac{PT}s son customizadas para soportar las caracter\'isticas de la m\'as reciente plataforma de Android.
+
+Las \ac{SDKT}s son instaladas con el \ac{SDKSP} y son peri\'odicamente actualizadas. Estas actualizaciones se encuentran disponibles cada vez que se desea instalar una nueva \ac{SDK} y están coordinadas con el desarrollo general de Android. Las m\'as importantes \ac{SDKT}s incluyen el \ac{ASM}, el \ac{AVDM}, el emulador y el \ac{DDMS}.
+
+El \ac{SDK} soporta tambi\'en versiones antiguas de Android, por si los programadores necesitan instalar aplicaciones en dispositivos ya obsoletos o m\'as antiguos. Las herramientas de desarrollo son componentes descargables, de modo que una vez instalada la \'ultima versi\'on, pueden instalarse versiones anteriores y hacer pruebas de compatibilidad.
+
+El \ac{SDK} de Android, incluye un conjunto de herramientas para el desarrollo. Comprende un depurador de c\'odigo, biblioteca, un simulador de tel\'efono basado en QEMU, documentaci\'on, ejemplos de c\'odigo y tutoriales. Las plataformas de desarrollo soportadas incluyen Linux (cualquier distribuci\'on moderna), Mac OS X\Si{\texttrademark} 10.4.9 o posterior, y Windows XP\Si{\texttrademark} o posterior. La \ac{IDE} soportada oficialmente es Eclipse\Si{\texttrademark} junto con el complemento \ac{ADT} que se encuentra como un plugin al entorno Eclipse\Si{\texttrademark}, aunque tambi\'en puede utilizarse un editor de texto para escribir ficheros Java y Xml y utilizar comandos en un terminal (se necesitan los paquetes JDK, Java Development Kit y Apache Ant) para crear y depurar aplicaciones. Adem\'as, pueden controlarse dispositivos Android que est\'en conectados (por ejemplo, reiniciarlos, instalar aplicaciones en remoto, etcetera).~\cite{wiki.sdk}
+
+Una aplicación Android est\'a compuesta por un conjunto de ficheros empaquetados en formato .apk y guardada en el directorio /data/app del sistema operativo Android (este directorio necesita permisos de superusuario , root, por razones de seguridad). Un paquete APK incluye ficheros .dex (ejecutables Dalvik, un c\'odigo intermedio compilado), recursos, etc.
+
+\subsection{Ejemplos de algunas herramientas para el desarrollo de aplicaciones}
+\label{subsec:android.tools.examples.1}
+
+\begin{itemize}
+\item \acf{ASM}: Permite manejar \ac{AVD}s, proyectos, y los componentes instalados del \ac{SDK}.
+\item \acf{DDMS}: Permite realizar debug a las aplicaciones Android.
+\item Android Emulator: Un QEMU\footnote{QEMU es un emulador de procesadores basado en la traducci\'on din\'amica de binarios (conversi\'on del c\'odigo binario de la arquitectura fuente en c\'odigo entendible por la arquitectura hu\'esped).}-based device-emulation tool que permite ser utilizado para dise\~nar, debugear, y testear las aplicaciones en un ambiente de runtime Android real.
+\item mksdcard: Ayuda a la creaci\'on de una imagen de disco que puede ser utilizado con el emulador, para simular la presencia de una tarjeta externa de almacenamiento, como una tarjeta de memoria \ac{SD}, por ejemplo.
+\item sqlite3: Permite acceder a los archivos SQLite creados y utilizados por las aplicaciones Android.
+\item \ac{ADB}: Herramienta vers\'atil que permite manejar el estado de una instancia de un emulador o un dispositivo Android. Uno puede tambi\'en utilizarlo para instalar un archivo que represente una aplicaci\'on Android (.apk) en un dispositivo.
+\end{itemize}
+
+\subsubsection{El \acf{ADT} de Eclipse}
+\label{subsubsec:android.tools.adt.1}
+
+Para ayudar a desarrollar eficientemente, el \ac{ADT} ofrece un \ac{IDE} Java con opciones avanzadas para desarrollar, debugear y empaquetar aplicaciones Android. Usando la \ac{IDE}, uno puede desarrollar para cualquier dispositivo Android o puede crear dispositivos virtuales para emular distintas configuraciones de hardware.
+
+El \ac{ADT} consiste en un plugin para la plataforma Eclipse\Si{\texttrademark} que est\'a dise\~nado para brindar un entorno integrado en el cual se puedan crear aplicaciones para Android.
+
+\ac{ADT} extiende las capacidades de Eclipse\Si{\texttrademark} para poder rapidamente setear un proyecto nuevo de Android, crear la \ac{UI} de la misma, agregar paquetes basados en la \ac{API} del framework Android, debugear las aplicaciones y poder exportar los archivos .apk para la distribuci\'on en el Google Market\Si{\texttrademark}.~\cite{and.dev.adt}
+
+\subsubsection{El Android Emulator}
+\label{subsubsec:android.tools.emulator.1}
+
+El \ac{SDK} de Android incluye un emulador de dispositivo m\'ovil que funciona en una computadora convencional. Esto permite agregar la posibilidad de probar el desarrollo de una aplicaci\'on sin la necesidad de hacerlo a trav\'es de un dispositivo f\'isico.~\cite{and.dev.emulator}
+
+\subsubsection{\acf{AVD}}
+\label{subsubsec:android.tools.avd.1}
+
+Un \ac{AVD} consiste en:
+
+\begin{itemize}
+\item Un perf\'il de hardware: Se define las caracter\'isticas del dispositivo virtual. Por ejemplo, uno puede definir si el dispositivo contiene una c\'amara, si utiliza un teclado f\'isico QWERTY o no, cuanta memoria tiene, etcetera.
+
+\item Un mapeo a una imagen del sistema: Uno puede definir que versi\'on de la plataforma Android el dispositivo utilice. 
+
+\item Otras opciones: Uno puede especificar el skin que se desea utilizar con el \ac{AVD}, lo que permite a uno controlar las dimensiones de la pantalla, la apariencia, y dem\'as. Uno tambi\'en puede especificar el tipo de tarjeta \ac{SD} a utilizar con el \ac{AVD}.
+
+\item Un espacio de almacenamiento dedicado en el propio equipo de desarrollo: Toda la informaci\'on relacionada al usuario del dispositivo (aplicaciones instaladas, configuraciones, etcetera) y la informaci\'on de la tarjeta \ac{SD} emulada se encuentra almacenada en esta area.
+\end{itemize}
+
+Uno puede crear los \ac{AVD}s que uno necesite, basado en los tipos de dispositivos que uno quiera que la aplicaci\'on pueda soportar. Al realizar las pruebas, es necesario hacerlas en cada uno de los \ac{AVD}s para verificar su correcto funcionamiento y visualizaci\'on.~\cite{and.dev.avd}

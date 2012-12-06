@@ -1,0 +1,164 @@
+\documentclass{ubpthesisb}
+
+%\usepackage{ucs}
+%\usepackage[utf8x]{inputenc}
+%\usepackage[latin1]{inputenc}
+%\usepackage[utf]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[T1]{fontenc}
+%\usepackage[printonlyused,footnote]{acronym}
+\usepackage[printonlyused]{acronym}
+\usepackage{times}
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{amsmath}
+\usepackage{ifpdf}
+\usepackage{color}
+%\usepackage{sfmath}
+\usepackage{verbatim}
+%\usepackage{ifsym}
+%\usepackage{array}
+%\usepackage{tabularx}
+\usepackage{setspace}
+%\usepackage{url}
+
+\definecolor{azuloscuro}{rgb}{0,0,0.4}
+
+\ifpdf
+%\usepackage[bookmarks,colorlinks,linkcolor=azuloscuro]{hyperref}
+\usepackage[bookmarks,colorlinks,linkcolor=black]{hyperref}
+\fi
+
+\author{Mauricio Calgaro}
+\title{
+	\textsc{\textbf{
+		Punto de Venta M\'ovil\\
+		\LARGE{Desarrollo de software en dispositivo m\'ovil sobre sistema operativo Android}
+	}}
+}
+\date{2012}
+%\date{\hyperref[ref:actualizacion]{2007}}
+\director{Emilio Gutter}
+%\asesor{}
+
+%\include{includes/config}
+\include{includes/hyphenation}
+\include{includes/newcommand}
+
+
+\begin{document}
+
+\bibliographystyle{apalike}
+
+\renewcommand{\tablename}{Tabla}
+\renewcommand{\listtablename}{\'Indice de tablas}
+
+\maketitle
+
+\frontmatter
+
+%\addcontentsline{toc}{part}{Agradecimientos}
+\begin{acknowledgements}
+	\input{parts/Agradecimientos}
+\end{acknowledgements}
+
+\begin{dedicate}
+	\input{parts/Dedicatoria}
+\end{dedicate}
+
+\begin{resumen}
+%	\begin{quotation}
+%	\begin{tabular}{p{120mm}}
+		\input{parts/Resumen}
+%	\end{tabular}
+%	\end{quotation}
+\end{resumen}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+
+%\addtocontentsline{toc}{chapter}{Introducci\'on}
+\mainmatter
+
+\acresetall
+\part{Introducci\'on}
+\input{parts/Introduccion}
+
+\acresetall
+\part{Metodolog\'ia}
+\input{parts/Metodologia}
+
+
+%\setcounter{chapter}{0}
+
+%\begin{preface}
+%\part{Objetivos Generales y Espec\'ificos}
+%\input{parts/Objetivos}
+%\end{preface}
+
+
+%\part{Resultados y Discusi\'on}
+%\acresetall
+%\input{parts/desc_hard}
+%\acresetall
+%\input{parts/bootloader}
+%\acresetall
+%\input{parts/desa_hard_soft_prototipo(Modif)}
+%\acresetall
+%\input{parts/dis_protocolo}
+%\acresetall
+%\input{parts/desa_completo_soft}
+%\acresetall
+%\input{parts/dis_pcb}
+
+\part{Resultados y Discusi\'on}
+\acresetall
+\input{parts/AndroidOS}
+\acresetall
+\input{parts/AndroidDev}
+\acresetall
+\input{parts/TPV}
+\acresetall
+\input{parts/TID}
+\acresetall
+\input{parts/SMD}
+\acresetall
+\input{parts/Demos}
+%\acresetall
+%\input{parts/Implementacion}
+
+\part{Conclusi\'on}
+\acresetall
+\input{parts/conclusion}
+
+\appendix
+\part{Ap\'endice}
+\begin{appendix}
+	\input{parts/Acronimos}
+%	\input{parts/codtexto}
+\end{appendix}
+
+
+
+\bibliographystyle{apalike}
+
+\input{apalike}
+\def\biblabelprint#1{\noindent}%
+\def\biblabelcontents#1{}%
+\def\bblhook{\biblabelextraspace = 2em }%
+\def\printcitestart{[}%         left paren
+\def\printcitefinish{]}%        right parent
+\def\printbetweencitations{; }% semicolon, space
+\def\printcitenote#1{, #1}%     comma, space, note (if it exists)
+
+%\part{Bibliograf\'ia}
+\bibliography{Maurix}
+%\addcontentsline{toc}{part}{\Large{Bibliograf\'ia}}
+
+\backmatter
+
+
+
+\end{document}

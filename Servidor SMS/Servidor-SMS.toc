@@ -1,0 +1,61 @@
+\select@language {spanish}
+\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Introducci\'on}{1}{part.1}
+\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Metodolog\'ia}{4}{part.2}
+\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Resultados y Discusi\'on}{6}{part.3}
+\contentsline {chapter}{\numberline {1}El \ac {OS} Android}{7}{chapter.1}
+\contentsline {section}{\numberline {1.1}Inicios y evoluci\'on}{7}{section.1.1}
+\contentsline {section}{\numberline {1.2}Versiones}{8}{section.1.2}
+\contentsline {section}{\numberline {1.3}?`Qu\'e se necesita tener en cuenta para poder comenzar a crear una aplicaci\'on en Android?}{10}{section.1.3}
+\contentsline {section}{\numberline {1.4}Las herramientas para trabajar con la plataforma}{11}{section.1.4}
+\contentsline {subsection}{\numberline {1.4.1}Ejemplos de algunas herramientas para el desarrollo de aplicaciones}{12}{subsection.1.4.1}
+\contentsline {subsubsection}{El \acf {ADT} de Eclipse}{12}{section*.63}
+\contentsline {subsubsection}{El Android Emulator}{13}{section*.64}
+\contentsline {subsubsection}{\acf {AVD}}{13}{section*.65}
+\contentsline {chapter}{\numberline {2}El desarrollo en Android}{14}{chapter.2}
+\contentsline {section}{\numberline {2.1}La \ac {DVM}}{14}{section.2.1}
+\contentsline {section}{\numberline {2.2}La arquitectura Android}{14}{section.2.2}
+\contentsline {section}{\numberline {2.3}Partes que componen un proyecto de desarrollo Android}{15}{section.2.3}
+\contentsline {subsection}{\numberline {2.3.1}Las Activities}{15}{subsection.2.3.1}
+\contentsline {subsection}{\numberline {2.3.2}El Manifest}{15}{subsection.2.3.2}
+\contentsline {subsection}{\numberline {2.3.3}El ciclo de vida de una Activitiy}{15}{subsection.2.3.3}
+\contentsline {subsection}{\numberline {2.3.4}El Stack de Activities}{16}{subsection.2.3.4}
+\contentsline {subsection}{\numberline {2.3.5}Los Intents}{16}{subsection.2.3.5}
+\contentsline {subsection}{\numberline {2.3.6}Los Layouts}{16}{subsection.2.3.6}
+\contentsline {subsection}{\numberline {2.3.7}Los eventos de \ac {UI}}{16}{subsection.2.3.7}
+\contentsline {subsection}{\numberline {2.3.8}El Style}{16}{subsection.2.3.8}
+\contentsline {subsection}{\numberline {2.3.9}El Theme}{16}{subsection.2.3.9}
+\contentsline {subsection}{\numberline {2.3.10}El AdapterView}{16}{subsection.2.3.10}
+\contentsline {subsection}{\numberline {2.3.11}Los men\'ues}{17}{subsection.2.3.11}
+\contentsline {subsection}{\numberline {2.3.12}Los Dialogs}{17}{subsection.2.3.12}
+\contentsline {subsection}{\numberline {2.3.13}Los Resources}{17}{subsection.2.3.13}
+\contentsline {subsection}{\numberline {2.3.14}El ASyncTask}{17}{subsection.2.3.14}
+\contentsline {subsection}{\numberline {2.3.15}El Content Provider}{17}{subsection.2.3.15}
+\contentsline {section}{\numberline {2.4}Los Servicios}{18}{section.2.4}
+\contentsline {section}{\numberline {2.5}Los secretos de performance}{18}{section.2.5}
+\contentsline {subsection}{\numberline {2.5.1}Mitos de performance}{19}{subsection.2.5.1}
+\contentsline {subsection}{\numberline {2.5.2}Siempre medir}{20}{subsection.2.5.2}
+\contentsline {section}{\numberline {2.6}La interacciÃ³n con servicios remotos}{20}{section.2.6}
+\contentsline {section}{\numberline {2.7}El \ac {DDMS}}{20}{section.2.7}
+\contentsline {section}{\numberline {2.8}El LogCat}{20}{section.2.8}
+\contentsline {chapter}{\numberline {3}El \acf {TPV}}{21}{chapter.3}
+\contentsline {section}{\numberline {3.1}Los paquetes que contienen la aplicaci\'on:}{21}{section.3.1}
+\contentsline {section}{\numberline {3.2}La \acf {UI}}{21}{section.3.2}
+\contentsline {section}{\numberline {3.3}Las librer\'ias utilizadas}{21}{section.3.3}
+\contentsline {section}{\numberline {3.4}El \ac {QR}}{21}{section.3.4}
+\contentsline {section}{\numberline {3.5}El uso de la c\'amara \'optica}{22}{section.3.5}
+\contentsline {section}{\numberline {3.6}La \ac {BD} SQLite}{22}{section.3.6}
+\contentsline {section}{\numberline {3.7}El \ac {LTM}}{23}{section.3.7}
+\contentsline {section}{\numberline {3.8}Los gr\'aficos estad\'isticos}{23}{section.3.8}
+\contentsline {chapter}{\numberline {4}La \acf {TID}}{24}{chapter.4}
+\contentsline {section}{\numberline {4.1}Lectura de un codigo unidimensional utilizando el foco automatico de la camara}{24}{section.4.1}
+\contentsline {section}{\numberline {4.2}Firma Digital}{24}{section.4.2}
+\contentsline {section}{\numberline {4.3}Comunicacion Bluetooth}{24}{section.4.3}
+\contentsline {chapter}{\numberline {5}Diseï¿½o del un \textsl {bootloader} para la \acs {IH}}{25}{chapter.5}
+\contentsline {section}{\numberline {5.1}El formato HEX de Intel}{25}{section.5.1}
+\contentsline {chapter}{\numberline {6}Diseï¿½o del un \textsl {bootloader} para la \acs {IH}}{26}{chapter.6}
+\contentsline {section}{\numberline {6.1}El formato HEX de Intel}{26}{section.6.1}
+\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Conclusi\'on}{27}{part.4}
+\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Ap\'endice}{28}{part.5}
+\contentsline {chapter}{\numberline {A}Siglas y acr\'onimos}{29}{appendix.Alph1}
+\contentsline {chapter}{\numberline {B}Glosario}{31}{appendix.Alph2}
+\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Bibliografía}{33}{part.6}

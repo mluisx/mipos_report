@@ -1,0 +1,28 @@
+% Interlineado simple
+% En tiempo presente
+
+% Objetivo General
+% Del an�lisis de los resultados surge que ...
+% Conclusiones (250 palabras, 1 sola p�gina)
+
+
+{%\setstretch{0.95}
+\slshape
+
+La elaboraci\'on de este \ac{TFE} consiste en el desarrollo de un sistema integral de \ac{TPV}.
+
+Este sistema tiene como objectivo manejar las transacciones de ventas diarias de un local comercial, almacenando datos sobre los productos vendidos, clientes, formas de pagos, stock, etc\'etera.
+
+La elaboraci\'on de este \ac{TFE} est\'a compuesto por el desarrollo de tres aplicaciones. La primer aplicaci\'on consiste en el \ac{TPV} implementado en un \acf{DPT} de 7 pulgadas cuyo sistema operativo es Android\Si{\texttrademark}. La segunda aplicaci\'on funciona bajo un \ac{DTC} tambi\'en funcionando con el sistema Android\Si{\texttrademark} y cuya finalidad es la de poder brindar a los clientes un dispositivo donde pueda funcionar como una \ac{TID} al sistema. La \'ultima de las aplicaciones elaboradas consiste en un \ac{SMD} que se encuentra ubicado en un servidor \textbf{\textit{Tomcat}} conectado a una base de datos \textbf{\textit{MySQL}} y cuya funci\'on es la de recibir, procesar y enviar informaci\'on desde y hacia el \ac{TPV}. 
+
+La conexi\'on entre el \ac{TPV} y el servidor se realiza mediante \ac{WS} y la transferencia de los datos a trav\'es de objetos \textbf{\textit{JSON}}, en tanto la comunicaci\'on entre el \ac{TPV} y la \ac{TID} se realiza mediante la tecnolog\'ia Bluetooth\Si{\texttrademark}.
+
+El \ac{TPV} contiene una base de datos local del tipo \textbf{\textit{SQLite}} para poder continuar funcionando en el caso de una falla en la comunicaci\'on con el \ac{SMD}. Al momento de reconectarse se activa un proceso de sincronizaci\'on que transfiere todos los datos almacenados en forma local en el \ac{TPV} al \ac{SMD}.
+
+Este sistema permite utilizar un dispositivo de lectura de tarjetas con bandas magn\'eticas denominado \ac{LTM} que consiste en un dispositivo que se conecta a la entrada de sonido de 3.5 mil\'imetros de la \ac{TID} y actua como un sensor de sonido que permite decodificar las muestras le\'idas y genera los bits necesarios para representar los datos de una tarjeta y poder utilizarlos en el \ac{TPV} y poder procesarlos. 
+
+La tecnolog\'ia \ac{NFC} se encuentra presente en este \ac{TFE} permitiendo su uso a trav\'es del \ac{TPV} para poder realizar una transacci\'on de compra segura. Se elaboraron distintas pruebas con distintas etiquetas \ac{NFC} simulando transacciones de compras y cuyos resultados fueron expuestos en este \ac{TFE}.
+
+Algunas \ac{APIs} como las de Foursquare\Si{\texttrademark}, Facebook\Si{\texttrademark} y Twitter\Si{\texttrademark} se encuentran implementadas para poder utilizarlas como herramientas de marketing para el local comercial que quiera implementar este sistema desarrollado, y como complemento, el \ac{TPV} brinda al usuario un m\'odulo de gr\'aficos estad\'isticos para que sean de utilidad en el caso de hacer un estudio del mercado y la progresi\'on en las actividades desarrolladas en el comercio en cuesti\'on.
+
+}

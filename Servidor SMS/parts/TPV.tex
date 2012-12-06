@@ -1,0 +1,100 @@
+\chapter{El \acf{TPV}}
+\label{cpt:tpv}
+
+Introduccion.
+
+\section{Los paquetes que contienen la aplicaci\'on:}
+\label{sec:tpv.packages}
+
+Los paquetes creados.
+
+\section{La \acf{UI}}
+\label{sec:tpv.ui}
+
+Esquema de los layouts que conforman la UI y las interacciones entre cada uno de ellos.
+
+Gráfico.
+
+Explicación de cada una de las pantallas:
+
+Capturas de cada Layout, su prop\'osito y funcionamiento.
+
+\section{Las librer\'ias utilizadas}
+\label{sec:tpv.libraries}
+
+Las librer\'ias utilizadas:
+
+\section{El \ac{QR}}
+\label{sec:tpv.qr}
+
+1) Se pueden leer utilizando el ZXING como activity y listo.
+2) Para generar baje tres librerias, qrgen, zxing-j2se-1.7 y zxing-core-1.7
+
+El \ac{QR} o código de respuesta rápida es un módulo para almacenar información en una matriz de puntos o un código de barras bidimensional creado por la compañía japonesa Denso Wave, subsidiaria de Toyota, en 1994. Se caracteriza por los tres cuadrados que se encuentran en las esquinas y que permiten detectar la posición del código al lector. La sigla «QR» se deriva de la frase inglesa Quick Response (Respuesta Rápida en español), pues los creadores (Joaco Retes y Euge Damm1) aspiran a que el código permita que su contenido se lea a alta velocidad.
+
+%http://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Codigo\_QR.svg/250px-Codigo\_QR.svg.png
+
+Aunque inicialmente se usó para registrar repuestos en el área de la fabricación de vehículos, hoy los códigos QR se usan paraadministración de inventarios en una gran variedad de industrias. La inclusión de software que lee códigos QR en teléfonos móviles, ha permitido nuevos usos orientados al consumidor, que se manifiestan en comodidades como el dejar de tener que introducir datos de forma manual en los teléfonos. Las direcciones y los URLs se están volviendo cada vez más comunes en revistas y anuncios . El agregado de códigos QR en tarjetas de presentación también se está haciendo común, simplificando en gran medida la tarea de introducir detalles individuales de un nuevo cliente en la agenda de un teléfono móvil.
+
+http://www.qrcode.com/en/
+
+Los códigos QR contienen información tanto en su posición horizontal como vertical, adoptando así el termino de bidimensional. Al manejar información en ambas direcciones, un código QR puede representar hasta varios cientos de códigos de barras tradicionales.
+
+Los códigos XQR...
+
+\section{El uso de la c\'amara \'optica}
+\label{sec:tpv.camera}
+
+Using the camera on the Android device can be done via integration of the existing Camera application. In this case you would start the existing Camera application via an Intent and to get the data after the user returns to our application.
+You can also directly integrate the camera into your application via the Camera API.
+
+\section{La \ac{BD} SQLite}
+\label{sec:tpv.bd}
+
+http://www.vogella.com/articles/AndroidSQLite/article.html\#todo\_database
+
+%https://play.google.com/store/apps/details?id=dk.andsen.asqlitemanager\&feature=search\_result\#?t=W251bGwsMSwxLDEsImRrLmFuZHNlbi5hc3FsaXRlbWFuYWdlciJd
+
+SQLite is an Open Source Database which is embedded into Android. SQLite supports standardrelational database features like SQL syntax, transactions and prepared statements. In addition it requires only little memory at runtime (approx. 250 KByte).
+
+SQLite supports the data types TEXT (similar to String in Java), INTEGER (similar to long in Java) andREAL (similar to double in Java). All other types must be converted into one of these fields before saving them in the database. SQLite itself does not validate if the types written to the columns are actually of the defined type, e.g. you can write an integer into a string column and vice versa.
+
+SQLite is available on every Android device. Using an SQLite database in Android does not require any database setup or administration.
+
+If your application creates a database, this database is by default saved in the directory DATA/data/APP\_NAME/databases/FILENAME.
+
+Access to an SQLite database involves accessing the filesystem. This can be slow. Therefore it is recommended to perform database operations asynchronously, for example inside the AsyncTaskclass.
+
+\section{El \ac{LTM}}
+\label{sec:tpv.ltm}
+
+The magnetic stripe consists of 3 physically separated "tracks". Track 1 is closest to the bottom of the card, and track 3 is the highest. Square's reader is positioned to read track 2. Track 2 is the most commonly used track, but most credit cards also use track 1. Track 2 includes card numbers and expiration dates. Track 1 includes that plus names. There may be other data too, depending on the particular card. These tracks are specced to be .11 inches wide, so to read track 1 with Square's reader, we just need to reposition the stripe so that track 1 is lined up with the read head. To do that, we just need to raise it by .11 inches. And we can do that by cutting a .11 (or in my case 1/8) inch slice from a card we do not care about, and putting that at the bottom of the reader. This is called a "shim"
+
+http://cosmodro.me/blog/2011/mar/25/rhombus-square-iskewedi/
+
+\section{Los gr\'aficos estad\'isticos}
+\label{sec:tpv.graphs}
+
+AChartEngine is a charting library for Android applications. It currently supports the following chart types:
+   * line chart
+   * area chart
+   * scatter chart
+   * time chart
+   * bar chart
+   * pie chart
+   * bubble chart
+   * doughnut chart
+   * range (high-low) bar chart
+   * dial chart / gauge
+   * combined (any combination of line, cubic line, scatter, bar, range bar, bubble) chart
+   * cubic line chart
+All the above supported chart types can contain multiple series, can be displayed with the X axis horizontally (default) or vertically and support many other custom features. The charts can be built as a view that can be added to a view group or as an intent, such as it can be used to start an activity.
+The model and the graphing code is well optimized such as it can handle and display huge number of values.
+AChartEngine is currently at the 1.0.0 release. New chart types will be added in the following releases. Please keep sending your feedback such as we can continually improve this library.
+
+La idea en este proyecto es incluir las siguientes estadísticas:
+
+1) Comparación de dos años de ventas mes x mes.
+2) Las ventas los ultimos 6 meses como fue en el tiempo.
+3) los rubros más vendidos en los ulitmos 6 meses.
+4) la venta con valor más bajo y más alto mes x mes (temperature range).

@@ -1,0 +1,367 @@
+\chapter{Estudio descriptivo sobre el \ac{SMS}}
+%\sffamily
+
+\section{El \acl{SMS}}
+\label{sec:def.sms}
+
+Existen muchísimas razones en las que necesitamos comunicarnos con una persona de manera rápida y precisa. No es necesario hacer un despliegue de tecnología, no se trata de aplicaciones multimedia, ni de mensajes de voz, solo necesitamos enviar una nota, un aviso, un mensaje corto\footnote{Se lo llama mensaje corto debido a su tamaño que se encuentra limitado entre 100 y 250 caracteres. El límite para \ac{GSM} es de 160 (ver sección \ref{sec:codif.sms})}. Para satisfacer esta necesidad se ha desarrollado el \ac{SMS} que nos brinda la posibilidad de comunicarnos rápidamente, a través de un \ac{TC}, con cualquier otra persona que se encuentre conectada en ese momento a la red, o tan pronto se conecte~\cite{moya02}.
+
+El servicio hace uso del \ac{SMSC} que actúa como un sistema de almacenamiento y envío de mensajes. La red proporciona el transporte de mensajes entre el \ac{SMSC} y el terminal móvil. Una característica para destacar de este servicio es que un dispositivo móvil activo es hábil para recibir o generar un mensaje corto en cualquier momento, independientemente de si en ese momento se realiza una llamada de voz o datos. Se garantiza la entrega del mensaje corto desde la red al terminal móvil, y los fallos temporales que puedan ocurrir se identifican y el mensaje se almacena en la red hasta que el destino esté disponible para aceptarlo~\cite{moya02}.
+
+\section{Porqué usar el \ac{SMS}}
+\label{sec:porque.sms}
+
+\ac{SMS} es un método de comunicación muy barato. 160 caracteres ocupan tanto espacio para el prestador del servicio como un segundo de comunicación de voz, debido a que se utilizan los canales de señalización y control, en lugar de los de voz~\cite{tisal03}.
+
+Además, cuando la comunicación directa con voz no es posible o no la deseamos, la alternativa mejor y más parecida es el mensaje indirecto, normalmente escrito. En el mundo moderno, los mensajes electrónicos se están convirtiendo en una opción de comunicación primaria y la mensajería electrónica, impulsada por la adopción generalizada del correo electrónico, el correo de voz y los servicios de mensajes cortos en las empresas y el hogar, está creciendo a un ritmo sin precedentes, dada su facilidad de uso y los beneficios que ofrece al usuario~\cite{tisal03}.
+
+\section{Características del \ac{SMS}}
+\label{sec:carac.sms}
+
+El servicio \ac{SMS} permite transferir un mensaje de texto entre una \ac{MS} y otra \ac{SME} a través de un \ac{SC}\footnote{Acrónimo utilizado como una forma abreviada de representar a el \acf{SMSC}} (ver figura \ref{fig:envio.sms})~\cite{serviciosms}.
+
+El servicio final ofrecido es una comunicación de extremo a extremo entre la \ac{MS} y la \ac{SME}. Esta entidad puede ser otra \ac{MS} o puede estar situado en una red fija. Cuando se envía un mensaje para solicitar algún tipo de servicio\footnote{Como por ejemplo, la búsqueda de vuelos disponibles para una determinada fecha hacia un destino deseado, en una compañía aérea que posea un servidor de \ac{SMS} capaz de procesar estos pedidos}, un extremo es una \ac{MS} y el otro extremo es un servidor que procesa las peticiones~\cite{serviciosms}.
+
+\figuraot{Envío de un \ac{SMS} entre una \ac{MS} y otra entidad móvil o fija}{fig:envio.sms}{}{EnvioSMS}{!t}
+
+En la norma \ac{GSM} sólo se especifica la parte de las comunicaciones entre las \ac{MS}s y el \ac{SC}. La comunicación entre el \ac{SC} y las entidades fijas, queda fuera del ámbito de esta norma~\cite{serviciosms}.
+
+El servicio \ac{SMS} se divide en dos servicios básicos (ver figura \ref{fig:servicio.basico} de la página \pageref{fig:servicio.basico})~\cite{serviciosms}:
+
+\figuraot{Servicios básicos \acs{SM-MT} y \acs{SM-MO}}{fig:servicio.basico}{}{EnvioSMS1}{!t}
+
+\begin{enumerate}
+	\item \ac{SM-MO}: Servicio de envío de un mensaje desde una \ac{MS} hasta un \ac{SC}, obteniéndose un informe sobre lo ocurrido;
+	\item \ac{SM-MT}: Servicio de entrega de un mensaje desde el \ac{SC} hasta una \ac{MS}, obteniéndose un informe sobre lo ocurrido.
+\end{enumerate}
+
+\section{Arquitectura de la red}
+\label{sec:arquit.red.sms}
+
+La estructura básica de la red que brinda el servicio \ac{SMS} se puede observar en la figura \ref{fig:estructura.sms} de la página \pageref{fig:estructura.sms}. Las entidades involucradas son las siguientes~\cite{serviciosms}:
+
+\begin{itemize}
+	\item \acf{MS};
+	\item \acf{MSC};
+	\item \acf{SMS-GMSC}: Proveedor del servicio \ac{SM-MT};
+	\item \acf{SMS-IWMSC}: Proveedor del servicio \ac{SM-MO};
+	\item \acf{SC};
+	\item \acf{HLR};
+	\item \acf{VLR}.
+\end{itemize}
+
+\figuraot{Estructura básica de la red para la transferencia de mensajes \ac{SMS}}{fig:estructura.sms}{width=\textwidth}{EnvioSMS2}{!t}
+
+Para la descripción detallada de la arquitectura se utiliza un modelo de capas, en el que cada capa o nivel proporciona un servicio a la capa superior, y este servicio se implementa mediante el protocolo correspondiente. La arquitectura se divide en 4 capas (ver figura \ref{fig:niveles.sms})~\cite{serviciosms}:
+
+\figuraob{Niveles y servicios para el envío de mensajes \ac{SMS}}{fig:niveles.sms}{width=\textwidth}{EnvioSMS4}{!b}
+
+\begin{itemize}
+	\item \ac{SM-AL}: Nivel de aplicación;
+	\item \ac{SM-TL}: Nivel de transferencia. Servicio de transferencia de un mensaje corto entre una \ac{MS} y un \ac{SC} (en ambos sentidos) y obtención de los correspondientes informes sobre el resultado de la transmisión. Este servicio hace abstracción de los detalles internos de la red, permitiendo que el nivel de aplicación pueda intercambiar mensajes;
+	\item \ac{SM-RL}: Nivel de repetición. Proporciona un servicio al nivel de transferencia que le permite enviar \ac{TPDU} a su entidad gemela;
+	\item \ac{SM-LL}: Niveles inferiores.
+\end{itemize}
+
+\section{Nivel \ac{SM-TL} y protocolo \acs{SM-TP}}
+\label{sec:protocolo.smtp}
+
+Cada capa proporciona los servicios a la capa superior utilizando un protocolo. Se definen el \ac{SM-TP} y el \ac{SM-RP} que se corresponden con las capas \ac{SM-TL} y \ac{SM-RL} respectivamente~\cite{serviciosms}.
+
+El nivel de interés de este \ac{TFC} es la capa \ac{SM-TL} y su correspondiente protocolo \ac{SM-TP}.
+
+El servicio proporcionado por la capa \ac{SM-TL} permite al nivel de aplicación enviar mensajes a su entidad gemela, recibir mensajes de ella así como también obtener informes sobre el estado de transmisiones anteriores~\cite{serviciosms}.
+
+\section{La \acl{PDU}}
+\label{sec:pdu.sms}
+
+La estructura estándar dentro de la cual viaja un \ac{SMS} se la denomina \acf{PDU}, la cual además de llevar la información propia del mensaje de texto, lleva otra serie de caracteres con los que se pueden hacer funciones de control en la presentación del mensaje~\cite{sms.ppt}.
+
+Una de las principales ventajas que la \ac{PDU} presenta es que el mensaje, antes de ser enviado a la red, debe pasar por un algoritmo el cual hace una codificación a nivel de bits con lo que, si el mensaje se intenta leer, no podrá ser interpretado a primera vista (ver sección \ref{sec:codif.sms})~\cite{sms.ppt}.
+
+Existen distintos tipos de \ac{PDU}s, cada una con una estructura diferente, diseñadas para poder enviar un cierto grupo de datos desde una entidad a otra, permitiendo así generar un protocolo como el \ac{SM-TP} para utilizarlo entre entidades correspondientes al servicio \ac{SMS}.
+
+\subsection{Tipos de \ac{PDU}s}
+\label{sec:tipos.pdu}
+
+Se utilizan las siguientes 6 \ac{PDU}s para la transferencia de mensajes \ac{SMS} entre dos entidades (ver figura \ref{fig:pdus.sms} de la página \pageref{fig:pdus.sms})~\cite{serviciosms}:
+
+\begin{itemize}
+	\item SMS-DELIVER: Estructura utilizada para transmitir datos correspondientes a un mensaje \ac{SMS} desde el \ac{SC} a una \ac{MS};
+	\item SMS-DELIVER-REPORT: Estructura que contiene datos de una entrega errónea de un mensaje \ac{SMS} a una \ac{MS} (si ha ocurrido);
+	\item SMS-SUBMIT: Estructura de un mensaje \ac{SMS} que se envía desde una \ac{MS} al \ac{SC} para luego ser enviado a otra \ac{SME};
+	\item SMS-SUBMIT-REPORT: \ac{PDU} diseñada para contener datos de un reporte sobre un envío erróneo de un \ac{SMS} al \ac{SC} (si ha ocurrido);
+	\item SMS-COMMAND: Utilizada para transmitir un comando desde una \ac{MS} al \ac{SC};
+	\item SMS-STATUS-REPORT: Transmite un informe de estado desde el \ac{SC} a una \ac{MS}.
+\end{itemize}
+
+\figuraot{Las 6 \acs{PDU}s del \ac{SM-TP}}{fig:pdus.sms}{}{EnvioSMS3}{!t}
+
+\subsection{Estructura de la \ac{PDU} SMS-SUBMIT}
+\label{sec:estructura.sms}
+
+Al enviar un mensaje \ac{SMS}, la \ac{MS} genera una \ac{PDU} del tipo SMS-SUBMIT dirigido al \ac{SC} para que este luego la almacene y la envíe a otra \ac{SME} a través del procedimiento denominado ``Store \& Forward''\footnote{Técnica utilizada en telecomunicaciones en la cual la información se envía a una estación intermedia donde queda almacenada temporalmente para luego enviarla al destino final}. La estructura de esta \ac{PDU} se muestra en la figura \ref{fig:campo.pdu.envio} de la página \pageref{fig:campo.pdu.envio}. Los campos que la componen son los siguientes~\cite{serviciosms}:
+
+\figuraot{Campos de la \ac{PDU} SMS-SUBMIT}{fig:campo.pdu.envio}{width=\textwidth}{CamposPDUEnvio}{!t}
+
+\begin{itemize}
+	\item \ac{SCA}: Número de teléfono del \ac{SC}. Consta de los siguientes campos (ver figura \ref{fig:campos.nro.tel}):
+	\begin{itemize}
+		\item Longitud: Número de dígitos del teléfono del \ac{SC};
+		\item Tipo de número: Indica si se trata de un número telefónico de formato nacional o internacional;
+			\begin{itemize}
+				\item 81: Nacional;
+        \item 91: Internacional;
+			\end{itemize}
+		\item Dígitos en el formato \ac{BCD}: Número de teléfono del \ac{SC}, en dígitos \ac{BCD} (ver sección \ref{sec:formato.bcd});
+	\end{itemize}
+
+\figuraob{Detalle del campo \ac{SCA}}{fig:campos.nro.tel}{width=\textwidth}{CamposNroTelV2}{!b}	
+
+	\item Tipo de \ac{PDU}: Contiene información sobre el tipo de \ac{PDU}:
+	\begin{itemize}
+		\item \ac{RP}: Parámetro indicador de la existencia de un camino de respuesta. En \ac{PDU}s del tipo SMS-SUBMIT, el bit del campo \ac{RP} contiene el valor cero (RP=0);
+		\item \ac{UDHI}: Indica si el campo denominado \ac{UD} contiene sólo el mensaje corto (UDHI=0) o si existe una cabecera antes del mensaje corto (UDHI=1);
+		\item \ac{SRR}: Indica un pedido de reporte requerido por la \ac{MS} que envió un \ac{SMS} al \ac{SC} de la red celular que posteriormente enviará el mensaje corto al destino final. Cuando el informe es solicitado, SRR=1. Cuando no es solicitado, SRR=0;
+		\item \ac{VPF}: Indica si el campo denominado \ac{VP} está o no presente y cual es su formato;
+		\item \ac{RD}: Parámetro que indica si el \ac{SC} debe aceptar un SMS-SUBMIT de un \ac{SMS} que tiene el mismo contenido y el mismo número de destino de otro \ac{SMS} previamente enviado por la misma \ac{MS} de origen y que todavía se encuentra almacenado en el \ac{SC};
+		\item \ac{MTI}: El bit 1 y 0 son seteados\footnote{Palabra del inglés ``set'' utilizada en el lenguaje informático para indicar el valor que se almacena en una unidad de datos} en 0 y 1 respectivamente para indicar que la \ac{PDU} es del tipo SMS-SUBMIT (ver tabla \ref{tab:detalle.mti});
+
+\begin{tablaot}{Bits del campo \ac{MTI}}{tab:detalle.mti}{!t}
+	\begin{tabular}{|c|c|l|}
+	  \hline
+	  \bp{Bit 1}& \bp{Bit 0}& \bp{Descripción} \\ \hline
+ 	  \bp{0}& \bp{0}& \bp{SMS-DELIVER} \\ \hline
+ 	  \bp{0}& \bp{0}& \bp{SMS-DELIVER-REPORT} \\ \hline	  
+	  \bp{0}& \bp{1}& \bp{SMS-SUBMIT} \\ \hline
+	  \bp{0}& \bp{1}& \bp{SMS-SUBMIT-REPORT} \\ \hline
+	  \bp{1}& \bp{0}& \bp{SMS-COMMAND} \\ \hline 
+	  \bp{1}& \bp{0}& \bp{SMS-STATUS-REPORT} \\ \hline 
+	  \bp{1}& \bp{1}& \bp{Reservado} \\ 
+	  \hline
+	\end{tabular}\\[5mm]
+\end{tablaot}
+		
+	\end{itemize}
+	\item \ac{MR}: Parámetro para identificar el mensaje;
+	\item \ac{DA}: Dirección de la \ac{SME} de destino (número de teléfono);
+	\item \ac{PID}: Identificación del protocolo de la capa superior. Con este identificador, la capa de transporte se comunica con las capas más altas que son utilizadas, o también lo utiliza para identificar el tipo de dispositivo telemático. El campo \ac{PID} indica entonces al \ac{SC} el tipo de servicio del que proviene el \ac{SMS}. Cuando se envía información desde una terminal convencional como lo es un \ac{TC}, este octeto toma el valor ``00'';
+	\item \ac{DCS}: Identificación del tipo de codificación utilizado en el campo \ac{UD}. Indica el esquema de codificación de los datos del usuario y la clase de mensaje;
+	\item \acf{VP}: Informa a la red el período de validez que tiene el \ac{SMS} o por cuanto
+tiempo puede el \ac{SC} almacenar el \ac{SMS} si este aun no se ha entregado al destino. El bit 3 y 4 del campo ``Tipo de \ac{PDU}'' especifican el formato de este campo (ver sección \ref{sec:envio.sms.pdu});
+	\item \ac{UDL}: Contiene un valor entero que representa el número de caracteres que conforman el texto que contiene el \ac{SMS}. Es importante tener en cuenta que no se hace referencia a los caracteres codificados que contiene el campo \ac{UD}, sino a la cantidad de caracteres que se digitan en el \ac{TC};
+	\item \acf{UD}: Puede estar conformado por 0 y hasta 140 octetos y en él es donde se encuentra el mensaje de texto como tal, pero no en texto plano, es decir, utilizando los caracteres del \ac{ASCII}, sino que a partir de una tabla de caracteres y mediante un algoritmo de cifrado, se hace una conversión de bits del texto plano y el resultado que este entrega son los octetos (con valores hexadecimales) que se alojan en el campo \ac{UD} (ver sección \ref{sec:codif.sms}).
+\end{itemize}
+
+\subsection{Estructura de la \ac{PDU} SMS-DELIVER}
+\label{sec:recepcion.sms}
+
+Para la recepción de un mensaje \ac{SMS}, el \ac{SC} genera un mensaje de acuerdo a la estructura de la \ac{PDU} del tipo SMS-DELIVER. Esta \ac{PDU} posee una estructura similar a la correspondiente al SMS-SUBMIT y se muestra en la figura \ref{fig:campo.pdu.entrega}.
+
+Los nuevos campos que aparecen son los siguientes:
+% Corregido hasta acá (MODIF)
+\figuraob{Campos de la \ac{PDU} SMS-DELIVER}{fig:campo.pdu.entrega}{width=\textwidth}{CamposPDUEntrega}{!b}
+
+\begin{itemize}
+	\item \ac{OA}: Dirección (número de teléfono) de la \ac{SME} que envía el mensaje;
+	\item \ac{SCTS}: Marca de tiempo de cuando el centro de servicio recibió el mensaje;
+	\item \ac{SRI}: Este campo contiene el bit en 1 si un reporte de estado se enviará a la \ac{SME};
+	\item \ac{MMS}: El valor del bit se encuentra en 0 cuando hay más mensajes para enviar.
+\end{itemize}
+
+Cada octeto de una \ac{PDU} contiene 2 valores hexadecimales (8 bits), a excepción de los campos \ac{SCA}, \ac{OA} y \ac{SCTS}; estos están compuestos por valores decimales. 
+
+\section{Tipos de codificaciones de los caracteres que contiene un mensaje \ac{SMS}}
+\label{sec:codif.sms}
+
+El mensaje \ac{SMS}, como se encuentra especificado por el \ac{ETSI} (documentos \acs{GSM} 03.40 y \ac{GSM} 03.38), puede tener un largo máximo de 160 caracteres donde cada carácter tiene un tamaño de 7 bits de acuerdo al alfabeto de 7 bits especificado por el documento \ac{GSM} 03.38. Mensajes de 8 bits de tamaño (máximo 140 caractéres) no son normalmente utilizados como mensajes de texto por los \ac{TC}s, pero si son utilizados para datos en los denominados ``mensajes inteligentes'' (imágenes y tonos de música) y para las provisiones OTA de configuraciones WAP. Mensajes de 16 bits por carácter (máximo 70 caractéres) son utilizados para mensajes Unicode (UCS2), visualizados por la mayoria de los \ac{TC}s del mercado. Un mensaje de texto de 16 bits de clase 0 figurará en algunos teléfonos como mensajes \ac{SMS} Flash (\ac{SMS}s de alertas)~\cite{sms.pdu}.
+
+En este \ac{TFC} se utilizará para el envío de mensajes \ac{SMS} la codificación de 7 bits, permitiendo así un largo máximo de 160 caracteres. La  conversión de un caracter \ac{ASCII}, que se encuentra en el campo \ac{UD}, en sus correspondientes 7 bits, puede apreciarse en la figura \ref{fig:tablacaracteres} de la página \pageref{fig:tablacaracteres}. 
+
+\figuraos{Tabla de codificación de los caracteres \ac{ASCII} al alfabeto de 7 bits}{fig:tablacaracteres}{width=\textwidth}{tabladecaracteresV2}{!t}
+
+\figuraot{Conversión de caracteres \ac{ASCII} a valores hexadecimales mediante el alfabeto de 7 bits}{fig:conversionhexa}{width=\textwidth}{conversionahexa}{!t}
+
+Como ejemplo, si introducimos el carácter ``\$'' en el campo \ac{UD} donde se encuentra el texto que contiene el mensaje \ac{SMS} a enviar, este carácter se convierte en una secuencia de bits que lo representa. Esta secuencia se define como un septeto en el alfabeto de 7 bits y equilave a la secuencia 0000010. Este valor, en código hexadecimal, queda representado por la secuencia 0x03 y en numeración décimal por el número 3. Luego de realizar esta conversión se procede a la conversión de los septetos, correspondientes a cada carácter del campo \ac{UD}, en octetos para después quedar representado por dos valores hexadecimales y así poder almacenarlos en la respectiva \ac{PDU}. Al recibir el mensaje se realiza el proceso inverso de conversión, pasando los octetos en septetos, y luego convirtiendolos en caracteres del código \ac{ASCII}.
+
+En la figura \ref{fig:conversionhexa} se detallan los pasos para realizar la conversión del texto ``HolaMundo'' en los valores hexadecimales que contiene el campo \ac{UD} de la \ac{PDU} SMS-SUBMIT. El primer septeto (la letra ``H'' mayúscula) pasa a ser un octeto agregando el bit menos significativo del segundo septeto. Este bit se inserta a la izquierda del septeto formando el valor 11001000 (C8 en hexadecimal). El bit menos significativo del segundo carácter queda consumido, por lo tanto, el segundo carácter necesita 2 bits del tercer carácter para formar un octeto. Este proceso se repite aumentando el número de bits a consumir, generando así 8 octetos que representan la palabra ``HolaMundo'' en valores hexadecimales.
+
+\section{El formato BCD}
+\label{sec:formato.bcd}
+
+Este formato es utilizado para almacenar en la \ac{PDU} SMS-SUBMIT el número del \ac{TC} de destino, el cual recibirá el mensaje \ac{SMS}. Para la \ac{PDU} SMS-DELIVER, el número corresponde al \ac{TC} del cual se originó el mensaje \ac{SMS}.
+
+En el caso de un número con una cantidad de dígitos impar, previo a la conversión al formato BCD, se agrega el valor hexadecimal ``F'' al final de los dígitos decimales que corresponden al número telefónico. Luego, la posterior conversión BCD consiste en tomar pares de números para intercambiar sus posiciones, pasando el de la izquierda a la derecha y el de la derecha a la izquierda (ver figura \ref{fig:conversionBCDcp}). Si se trata de un número con cantidad de dígitos par, se realiza la misma conversión BCD sin agregar previamente el valor ``F'' al final (ver figura \ref{fig:conversionBCDsp}).
+
+\figuraob{Conversión BCD de un número telefónico con compensación de paridad}{fig:conversionBCDcp}{width=\textwidth}{conversionBCDcpV2}{!b}
+
+\figuraos{Conversión BCD de un número telefónico sin compensación de paridad}{fig:conversionBCDsp}{width=\textwidth}{conversionBCDspV2}{!b}
+
+\section{Ejemplo de una \ac{PDU} del tipo SMS-SUBMIT}
+\label{sec:envio.sms.pdu}
+
+El siguiente ejemplo muestra la estructura de un mensaje \ac{SMS} a enviar con el texto ``HolaMundo''. La \ac{PDU} correspondiente es del tipo SMS-SUBMIT y consiste en los siguientes valores:
+
+\begin{center}
+\colorbox [rgb]{1,0.90,0.85}{\small \texttt{\textbf{\textcolor {cyan}{07}\textcolor {blue}{91}\textcolor {cyan}{451115470005}\textcolor {blue}{11}\textcolor {cyan}{97}\textcolor {blue}{0A}\textcolor {cyan}{912883031213}\textcolor {blue}{00}\textcolor {cyan}{00}\textcolor {blue}{FF}\textcolor {cyan}{09}\textcolor {blue}{C8373BDCACBBC96F}}}} 
+\end{center}
+
+Esta \ac{PDU} contiene 29 octetos en total. Cada uno de ellos representa un byte de datos y cada campo de la \ac{PDU} se encuentra representado por uno o varios de estos octetos que, en su totalidad, representan al mensaje \ac{SMS} que se enviará a destino. Los textos de colores se utilizaron para poder distinguir cada campo de la \ac{PDU} que forman los octetos.
+
+El primer octeto que contiene el valor decimal \texttt{\textbf{\textcolor {cyan}{07}}} corresponde a la longitud del número de teléfono del \ac{SC}. El valor \texttt{\textbf{\textcolor {cyan}{07}}} indica que el número tiene un largo de 7 octetos o bytes.
+
+El siguiente valor, \texttt{\textbf{\textcolor {blue}{91}}}, representa el tipo de numeración telefónica del \ac{SC}. En este caso, \texttt{\textbf{\textcolor {blue}{91}}} indica que la numeración telefónica corresponde al formato internacional.
+
+Los siguientes 7 octetos \texttt{\textbf{\textcolor {cyan}{451115470005}}} representan el número del \ac{SC} en formato BCD. Como el largo del número es par, no necesita agregar el valor hexadecimal ``F'' al final. El número correspondiente al \ac{SC} es +541151740050.
+
+El siguiente octeto con el valor \texttt{\textbf{\textcolor {blue}{11}}} representa al campo ``Tipo de \ac{PDU}'' de la SMS-SUBMIT. Cada bit de este octeto representa uno de los subcampos que componen al campo ``Tipo de \ac{PDU}''. En la tabla \ref{tab:octeto.envio.sms} se puede apreciar que número de bit corresponde a cada subcampo y en la tabla \ref{tab:detalle.vp} se encuentra detallado los distintos valores que pueden adoptar los bits 3 y 4 que especifican al campo \ac{VP}.
+
+\begin{tablaob}{Octeto ``SMS-SUBMIT''}{tab:octeto.envio.sms}{!b}
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+	  \hline 	
+	  \mrx{Bit Número}& \mrx{7}& \mrx{6}& \mrx{5}& \mrx{4}& \mrx{3}& \mrx{2}& \mrx{1}& \mrx{0} \\
+	  \hline 	
+	  \mrx{Nombre}& \mrx{RP}& \mrx{UDHI}& \mrx{SRR}& \mrx{VPF}& \mrx{VPF}& \mrx{RD}& \mrx{MTI}& \mrx{MTI} \\
+	  \hline 
+	\end{tabular}\\[5mm]
+\end{tablaob}
+
+\begin{tablaol}{Bits del campo \ac{VP}}{tab:detalle.vp}{!b}
+	\begin{tabular}{|c|c|l|}
+	  \hline
+	  \bp{Bit4}& \bp{Bit3}& \bp{Significado} \\ \hline
+ 	  \bp{0}& \bp{0}& \bp{Campo VP no presente} \\ \hline
+	  \bp{1}& \bp{0}& \bp{Campo VP presente. Formato relativo (1 octeto)} \\ \hline 	  
+	  \bp{0}& \bp{1}& \bp{Campo VP presente. Formato mejorado (7 octetos)} \\ \hline
+	  \bp{1}& \bp{1}& \bp{Campo VP presente. Formato absoluto (7 octetos)} \\ 
+	  \hline
+	\end{tabular}\\[5mm]
+\end{tablaol}
+
+%El bit 3 y 4 especifican el campo \ac{VP} de acuerdo a los valores que figuran en la tabla \ref{tab:detalle.tpvp}.
+%Los campos de la tabla \ref{tab:octeto.envio.sms} tienen en detalle sus significados en la tabla \ref{tab:detalle.envio.sms}.
+
+Por lo tanto, el valor \texttt{\textbf{\textcolor {blue}{11}}} en hexadecimal significa que el campo \ac{VPF} toma los valores ``10'' indicando que el campo \ac{VP} esta presente y que obtiene un formato relativo de 1 octeto. Además, el campo \ac{MTI} se coloca en 1 para indicar que la \ac{PDU} es del tipo SMS-SUBMIT.
+
+%	  \bp{TP-RD}& \bp{Devuelve duplicados. Parámetro indicador de si el \ac{SC} debe aceptar un ``ENVIO-SMS'' para un \ac{SMS} que todavía se encuentre en el \ac{SC} que tiene el mismo TP-DA como el \ac{SMS} previamente enviado de la misma \ac{OA}} \\ \hline
+
+El valor \texttt{\textbf{\textcolor {cyan}{97}}} indica el mensaje de referencia.
+
+El octeto \texttt{\textbf{\textcolor {blue}{0A}}} contiene la longitud del número celular del destino en valor hexadecimal. En este caso significa que tiene 10 dígitos, sin incluir el símbolo ``+'' y el indicador de numeración internacional ``91''. Además, esta longitud tiene en cuenta el valor ``F'' que se puede agregar al final cuando este es convertido al formato BCD.
+
+Los siguientes octetos \texttt{\textbf{\textcolor {cyan}{912883031213}}} consisten en el número celular de destino al que se desea enviar el mensaje \ac{SMS}. El número convertido del formato BCD al formato de numeración internacional es +8238302131.
+
+El siguiente octeto \texttt{\textbf{\textcolor {blue}{00}}} consiste en el identificador de protocolo TP-PID. En este caso, el valor \texttt{\textbf{\textcolor {blue}{00}}} indica que hubo una simple transferencia de un mensaje \ac{SMS} desde una \ac{MS} hacia un \ac{SC}. Otros valores indican distintos protocolos utilizados para la transferencia del \ac{SMS} o también pueden indicar características del equipo transmisor del \ac{SMS}\footnote{Para poder comprender con más detalle la utilización del \acf{PID}, recomiendo la página web ``www.dreamfabric.com/sms/pid.html'' donde se encuentra detallado en profundidad este identificador}.
+
+El siguiente octeto \texttt{\textbf{\textcolor {cyan}{00}}} corresponde al esquema de codificación. En este caso se refiere a una codificación de 7 bits. Si hubiese sido el caso de una codificación de 8 bits este byte debería haber tenido el valor ``04''. Si el valor era de ``08'' indicaría que se trata de una codificación del tipo UCS2 de 16 bits.
+
+El siguiente byte \texttt{\textbf{\textcolor {blue}{FF}}} corresponde al período de validez. En este caso significa que no se estable período de validez para este mensaje \ac{SMS}. Por ejemplo, si el valor es ``AA'' esto indica que tiene un período de 4 días de validez.
+
+A continuación, el byte \texttt{\textbf{\textcolor {cyan}{09}}} contiene la longitud (cantidad de caracteres) del texto plano que se encuentra convertido en valores hexadecimales.
+
+Los valores \texttt{\textbf{\textcolor {blue}{C8373BDCACBBC96F}}} corresponden al texto ``HolaMundo'' que fue convertido del alfabeto de 7 bits a octetos mediante el proceso explicado en la sección \ref{sec:codif.sms} y que por último, estos valores fueron convertidos a hexadecimal para poder almacenarlos en la \ac{PDU} del tipo SMS-SUBMIT.
+
+%\begin{tablao}{Envío en modo \ac{PDU}}{tab:envio.sms.pdu}{!h}
+%	\begin{tabular}{|c|p{8,55cm}|}
+%	  \hline
+%	  \bp{Octeto}& \bp{Descripción} \\ \hline
+%		\bp{00}& \bp {Largo del número del \ac{SC}. Aqui el largo es 0, lo que significa que el número del \ac{SC} almacenado en el \ac{TC} debe ser utilizado. Este octeto es opcional. En algunos teléfonos este octeto debe ser omitido.} \\ \hline
+%    \bp{11}& \bp{Primer octeto del ``ENVIO-SMS''} \\ \hline
+%    \bp{00}& \bp{Referencia TP del mensaje \ac{SMS}. El valor ``00'' permite al teléfono setear el número de referencia del mensaje por si mismo} \\ \hline
+%    \bp{0B}& \bp{Largo del número de \ac{TC} del originador del mensaje \ac{SMS}} \\ \hline
+%    \bp{91}& \bp{Tipo de número. 91 aquí indica que el número pertenece al formato internacional de numeración telefonica} \\ \hline
+%    \bp{6407281553F8}& \bp{El número del \ac{TC} en semi-octetos. El largo del número es impar (11), por lo tanto se colocó la letra ``F'' al final como agregado, como si el número fuera ``46708251358F''. Usando el formato desconocido de numeración (por ejemplo, tipo de número 81 en ves de 91) dejaría la secuencia del octeto del número de teléfono 7080523185 (0708251358). Aquí este número tiene un largo de 10 (A), el cual es par. } \\ \hline
+%    \bp{00}& \bp{Protocolo identificador TP-PID} \\ \hline
+%    \bp{00}& \bp{Esquema de codificación de datos TP-DCS. Este mensaje está codificado de acuerdo al alfabeto por defecto de 7 bits. Teniendo ``04'' en vez de ``00'' indicaría que el campo Dato-Usuario-TP del mensaje debería ser interpretado como uno de 8 bits en vez de 7 bits (esta codificación utilizada en mensajes ``inteligentes'', etc.)} \\ \hline
+%    \bp{AA}& \bp{Período de validez TP. ``AA'' significa 4 días. Este octeto puede ser opcional, para eso ver bits 4 y 3 del primer octeto} \\ \hline
+%		\bp{0A}& \bp{Largo de los Datos del usuario TP. Largo del texto que se envía a destino. El campo TP-DCS indica datos de 7 bits, por lo tanto, el largo aquí es el número de septets (10). Si el campo TP-DCS fuese de 8 bits o del tipo Unicode, el largo debería ser el número de octetos} \\ \hline
+%		\bp{E8329BFD4697D9EC37}& \bp{Datos del Usuario TP. Estos octetos representan el mensaje ``HolaHola''. Para ver como se realiza la transformación desde los septetos en octetos ver la sección \ref{}} \\
+%	  \hline
+%	\end{tabular}\\[5mm]
+%\end{tablao}
+
+
+\section{Ejemplo de una \ac{PDU} del tipo SMS-DELIVER}
+\label{sec:ejemplo.pdu.entrega}
+
+El siguiente grupo de octetos consiste en la estructura de un mensaje \ac{SMS} con el texto ``HolaMundo'' recibido en una \ac{MS}. La \ac{PDU} completa puede verse a continuación:
+\begin{center}
+\colorbox [rgb]{1,0.90,0.85}{\small \texttt{\textbf{\textcolor {cyan}{06}\textcolor {blue}{91}\textcolor {cyan}{4543990084}\textcolor {blue}{04}\textcolor {cyan}{0A}\textcolor {blue}{91}\textcolor {cyan}{2883031213}\textcolor {blue}{00}\textcolor {cyan}{00-}}}}  
+\colorbox [rgb]{1,0.90,0.85}{\small \texttt{\textbf{\textcolor {blue}{-80308200354100}\textcolor {cyan}{09}\textcolor {blue}{C8373BDCACBBC96F}}}} 
+%\small \texttt{06914543990084040A91288303121300008030820035410009C8373BDC-} \\
+%\small \texttt{ACBBC9EF}
+\end{center}
+
+\begin{itemize}
+	\item El primer octeto \texttt{\textbf{\textcolor {cyan}{06}}} hace referencia al largo del \ac{SC} (6 octetos).
+	\item El segundo octeto, \texttt{\textbf{\textcolor {blue}{91}}}, indica el formato internacional del número.
+	\item Los siguientes grupos de bytes \texttt{\textbf{\textcolor {cyan}{4543990084}}} se refieren al número del \ac{SC}. Como el número tiene una cantidad de dígitos par no se agrega el hexadecimal ``F'' y por lo tanto el número sin la conversión BCD es: +5434990048.
+	\item El siguiente byte \texttt{\textbf{\textcolor {blue}{04}}} es el primer octeto de la \ac{PDU} SMS-DELIVER. Este octeto tiene el formato presentado en la tabla \ref{tab:octeto.entrega.sms}.
+
+\begin{tablaob}{Octeto SMS-DELIVER}{tab:octeto.entrega.sms}{!b}
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+	  \hline 	
+	  \mrx{Bit Número}& \mrx{7}& \mrx{6}& \mrx{5}& \mrx{4}& \mrx{3}& \mrx{2}& \mrx{1}& \mrx{0} \\
+	  \hline 	
+	  \mrx{Nombre}& \mrx{TP-RP}& \mrx{TP-UDHI}& \mrx{TP-SRI}& \mrx{Sin Uso}& \mrx{Sin Uso}& \mrx{TP-MMS}& \mrx{TP-MTI}& \mrx{TP-MTI} \\
+	  \hline 
+	\end{tabular}\\[5mm]
+\end{tablaob}
+
+El valor \texttt{\textbf{\textcolor {blue}{04}}} en hexadecimal significa que todos los bits están en 0 a excepción del bit correspondiente al \ac{MMS}, indicando que no hay más mensajes para enviar desde el \ac{SC} al destino. Además, los bits del campo \ac{MTI} (bit 1 y 0) se encuentran ambos en 0 para indicar que la \ac{PDU} es del tipo SMS-DELIVER.
+
+	\item A continuación, el largo del número celular de la persona que envió el \ac{SMS} está representando en el octeto \texttt{\textbf{\textcolor {cyan}{0A}}}.
+	\item El siguiente octeto representa el formato de numeración del número del \ac{TC} origen. En este caso es \texttt{\textbf{\textcolor {blue}{91}}} (formato internacional).
+	\item El grupo de octetos \texttt{\textbf{\textcolor {cyan}{2883031213}}} contienen el número de origen en formato BCD. El número sin la conversión es: +8238302131.
+	\item El valor \texttt{\textbf{\textcolor {blue}{00}}} corresponde al \ac{PID} (contiene el mismo valor que en la \ac{PDU} SMS-SUBMIT utilizada como ejemplo).
+	\item El siguiente octeto \texttt{\textbf{\textcolor {cyan}{00}}} indica el esquema de codificación de datos (codificación de 7 bits).
+	\item El grupo de bytes \texttt{\textbf{\textcolor {blue}{80308200354100}}} hace referencia al \ac{SCTS}. Cada octeto representa dos dígitos decimales y representan el tiempo local como figura en la tabla \ref{tab:timestamp} de la página \pageref{tab:timestamp}.
+
+\begin{tablaot}{Valores del campo Time Stamp}{tab:timestamp}{!t}
+	\begin{tabular}{|l|l|l|}
+	  \hline
+	  \bp{Campo}& \bp{Largo}& \bp{Detalles} \\ \hline
+ 	  \bp{Año}& \bp{1 Octeto}& \bp{Valor en formato BCD} \\ \hline
+	  \bp{Mes}& \bp{1 Octeto}& \bp{Valor en formato BCD} \\ \hline 	  
+	  \bp{Día}& \bp{1 Octeto}& \bp{Valor en formato BCD} \\ \hline
+	  \bp{Hora}& \bp{1 Octeto}& \bp{Valor en formato BCD} \\ \hline
+	  \bp{Minutos}& \bp{1 Octeto}& \bp{Valor en formato BCD} \\ \hline
+	  \bp{Segundos}& \bp{1 Octeto}& \bp{Valor en formato BCD} \\ \hline
+	  \bp{TimeZone}& \bp{1 Octeto}& \bp{Valor en relación al \acs{GMT}. Una unidad son 15 minutos.} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablaot}
+		
+En el ejemplo, el valor \texttt{\textbf{\textcolor {blue}{80308200354100}}} representa la fecha 28 de Marzo de 2008 00:53:14. Al tener el valor que corresponde a la zona horaria en \texttt{\textbf{\textcolor {blue}{00}}}, se considera que el \ac{SC} no lo tiene en cuenta en sus mensajes distribuidos a sus usuarios.
+
+\item El siguiente valor \texttt{\textbf{\textcolor {cyan}{09}}} indica la cantidad de caracteres del texto plano que contiene el \ac{SMS}.
+\item Los valores \texttt{\textbf{\textcolor {blue}{C8373BDCACBBC96F}}} representan el texto ``HolaMundo'' en hexadecimales representando valores de 8 bits que fueron convertidos por el alfabeto de 7 bits.
+\end{itemize}
+
+\section{Cadena de transmisión de un \ac{SMS}}
+\label{sec:emisionsms}
+
+La figura \ref{fig:emision.sms} presenta las cinco entidades de la red que participan en la cadena de transmisión de un mensaje desde una \ac{MS} hacia el \ac{SC}, los tipos de información y el sentido del intercambio de los mismos~\cite{tisal03}.
+
+\figuraob{Señalización durante la transmisión de un mensaje \ac{SMS}}{fig:emision.sms}{width=\textwidth}{transferencia1}{!b}
+
+La \ac{MS} fuente del mensaje solicita al \ac{VLR} autorización para emitir. Este último, que conoce las opciones del servicio contratado por el cliente, da su autorización~\cite{tisal03}.
+
+La \ac{MS} transmite el mensaje al \ac{MSC}. Luego, el \ac{MSC} actualiza el registro del abonado en el \ac{VLR}, anotando la fecha y la hora de emisión del mensaje, así como otras referencias. El \ac{MSC} puede, con esta información, proporcionar un informe al usuario que envió el mensaje \ac{SMS}~\cite{tisal03}.
+
+El \ac{MSC} encamina el mensaje al \ac{SC}, que lo almacena y anota sus características. El \ac{SC} retransmite el mensaje hacia la \ac{SME} de destino y posterior a la retransmisión, proporciona un informe detallado al \ac{MSC}. Por último , el \ac{MSC} informa al abonado de que el mensaje ha llegado al destinatario~\cite{tisal03}.
+
+\section{Cadena de recepción de un \ac{SMS}}
+\label{b}
+
+La figura \ref{fig:recepcion.sms} presenta seis entidades de la red que participan en la cadena de recepción de un mensaje \ac{SMS} hacia un \ac{TC}, los tipos de información y el sentido de intercambio de los mismos~\cite{tisal03}.
+
+\figuraob{Señalización durante la recepción de un mensaje \ac{SMS}}{fig:recepcion.sms}{width=\textwidth}{transferencia2}{!b}
+
+La \ac{SME} fuente del mensaje emite un \ac{SMS} hacia el \ac{SC}, que registra el mensaje y sus características (emisor, destinatario, prioridad, fecha límite delvalidez). El \ac{SC} interroga al \ac{HLR} del abonado móvil para localizarlo. El \c{HLR} proporciona las referencias del \ac{MSC} a
+cargo del abonado móvil y el \ac{SC} transmite el mensaje y las referencias del abonado al \ac{MSC} que gestiona el dominio, en el cual se encuentra el abonado móvil~\cite{tisal03}.
+
+El conmutador interroga su \ac{VLR} para obtener las coordenadas más recientes del abonado. Esta petición va acompañada
+de un proceso de presentación del mensaje, de verificación del estado del terminal móvil, de la identificación y de la autenticación del abonado~\cite{tisal03}. 
+
+El \ac{MSC}, por último, puede enviar el mensaje a la \ac{MS} correspondiente y luego de realizar el envío, proporciona un informe detallado al \ac{SC} que a su vez informa al emisor del \ac{SMS} el envío realizado del mensaje \ac{SMS} hacia el destino~\cite{tisal03}.
+

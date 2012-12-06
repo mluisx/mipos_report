@@ -1,0 +1,812 @@
+\chapter{Diseño hardware y configuración software del prototipo de la \acs{IH}}
+\label{sec:proto}
+Esta parte se centra en el diseño del hardware de la \ac{IH}. Esto involucra la configuración de los recursos de hardware que se encuentran incorporados en el \ac{uC} tanto así como el diseño esquemático de los componentes discretos externos.
+
+Desde un punto de vista global se observa en la figura \ref{fig:Host-IH}
+\figuraoo{Vínculo entre el \acs{HOST} y la IH}{fig:Host-IH}{}{Host-IH}{!h}
+la relación que existe entre el \acfn{HOST} y la \ac{IH}. Este vínculo es un puerto \ac{UART} a una velocidad de 115200\un{bps}. Es \textsl{full-duplex} y utiliza 2 líneas de datos (Rx y Tx) y una línea de referencia de masa. Los niveles que se manejan son \acsu{TTL} y no se hace uso de los niveles RS-232C debido a que la comunicación es entre dos placas muy próximas. En la figura \ref{fig:TTL-RS232C}
+\figuraot{Relación de tensiones \acsu{TTL} y RS-232C}{fig:TTL-RS232C}{width=0.7\textwidth}{TTL-RS232C}{!t}
+se observa la correspondencia entre las señales TTL y RS-232C.
+
+\section{Diagrama en bloques de la \acs{IH}}
+\label{sec:proto.digrama}
+
+A grandes rasgos se realiza un diagrama que tiene como núcleo al \ac{uC}. A éste se conectan los diferentes recursos de la \ac{IH} a controlar. En la figura \ref{fig:diag-block-IH}
+\figuraot{Diagrama en bloques de la \ac{IH}}{fig:diag-block-IH}{width=\textwidth}{diag-block-IH}{!t}
+se observa dicho diagrama en el cual figuran conexiones  entre cada recurso y el \ac{uC}. Un recurso se refiere a un periférico como ser el teclado, el \ac{LCD}, etc. Dichas líneas son en su mayoría digitales siendo sólo una de entrada analógica.
+
+
+\subsection{Descripción del puerto \acs{UART}}
+\label{sec:des.UART}
+En la figura \ref{fig:diag-block-IH} se observan dos líneas etiquetadas como \ac{UART}. Estas líneas transmiten bits a una tasa ideal de $V_{I}=115200\un{bps}$ totales, de los cuales sólo 8\un{bits} de 10\un{bits} son de datos útiles. Esto nos da una tasa ideal de datos útiles $V_{IU}=115200\un{bps}*8\un{bits}/10\un{bits}=92160\un{bps}$ como máximo, debido a que la configuración elegida para este puerto serie es 8N1:
+\begin{itemize}
+	\item 1\un{bit} de inicio
+	\item 8\un{bits} de datos
+	\item Sin bit de paridad
+	\item 1\un{bit} de parada
+\end{itemize}
+
+\subsection{Descripción del \acs{LCD}}
+\label{sec:des.LCD}
+El manejo del \ac{LCD} (excluyendo el backlight) se realiza a través de 4 de 5 líneas elementales de control (ver figura \ref{fig:LCD-lineas-elementales}).
+\figuraoo{Líneas de control del \acs{LCD}}{fig:LCD-lineas-elementales}{}{LCD-lineas-elementales}{!h}
+La línea \bnbf{RES} no forma parte de las 4 mencionadas anteriormente, ya que sólo se la inicializa al momento del encendido de la \ac{IH} con un circuito aparte, como se verá más adelante. 
+
+Por mayor información acerca de las líneas de control del \ac{LCD} ver sección \ref{sec:def.pcd8544}.
+
+En el diagrama principal de la figura \ref{fig:diag-block-IH} se observan 2 vínculos entre el \ac{uC} y el \ac{LCD}. Uno corresponde a cuatro líneas antes mencionadas. El otro vínculo es el de control de backlight (línea \bp{BL}) del \ac{LCD}. Este control es mediante una señal \acs{PWM} de baja frecuencia (del orden de los 100\un{Hz} aproximadamente) generada por software por el \ac{uC}.
+
+
+\subsection{Digitalización del audio proveniente del micrófono}
+\label{sec:descrip.adc}
+Para la digitalización del audio de envío, se eligió una frecuencia de muestreo $f_m=8000\un{Hz}$ para trabajar dentro de un ancho de banda ideal $\Delta f_I=4000\un{Hz}$.
+\begin{quote}
+De todos los teoremas y técnicas relacionados con la transformada de Fourier, el que ha tenido más impacto en la transmisión y el procesado de la información ha sido el teorema de muestreo. Dada una señal paso bajo $x(t)$ de banda limitada, de forma que no tiene componentes de frecuencia por encima de $\omega_B$\,rad/s, el teorema de muestreo dice que $x(t)$ queda completamente determinada por sus valores en instantes tomados cada $T$ segundos, si se cumple que $T<\pi/\omega_B$. Este teorema nos permite reconstruir completamente una señal de banda limitada a partir de sus muestras tomadas con una frecuencia de $\omega_S=2\pi/T$, suponiendo que se cumple que $\omega_S$ es mayor o igual que $2\omega_B$, es decir, dos veces la frecuencia más alta presente en la señal de banda limitada $x(t)$. La mínima frecuencia de muestreo $2\omega_B$ se denomina frecuencia de Nyquist.~\cite{soliman.senales.sistemas}
+\end{quote}
+Con este $\Delta f_I$ se trabaja sólo dentro del intervalo $f_1=300\un{Hz}$ a $f_2=3400\un{Hz}$. Para ello se aplica un filtro pasa banda analógico a la señal proveniente del micrófono antes de ser enviada al \ac{ADC}. Esto es necesario, en particular la parte pasa bajos del filtro, para reducir el \textsl{aliasing}\footnote{Ver apéndice \ref{sec:palabras}} tras la conversión analógica$\rightarrow$digital.
+Además se dispone de un amplificador con una tensión de \textsl{offset} para adaptar el nivel de la señal de manera de aprovechar adecuadamente la amplitud del \ac{ADC}.
+
+
+
+\subsection{Conversión del audio digital en analógico}
+\label{sec:des.pwm}
+Para la conversión del audio de retorno, proveniente de un \textsl{streaming} digital, se utiliza un \ac{PWM}. Este audio puede ser dirigido tanto al auricular como al altavoz. Para elegir el destino se utiliza una línea de control llamada \bp{Selector} que se observa en la figura \ref{fig:diag-block-IH}.
+
+El bloque entre las líneas de control, el auricular y el altavoz realiza la conmutación, conformación, filtrado y amplificación de la señal de audio. El filtrado es de las mismas características anteriormente vistas en la sección \ref{sec:descrip.adc}, pero su función principal --en este caso-- es la de atenuar las componentes de frecuencias mayores a 4\un{KHz}. Éstas existen como una repetición ponderada infinita del espectro de $-4\un{KHz}$ a $4\un{KHz}$ cada $f_m=8\un{KHz}$, por la naturaleza digital de la señal a convertir.
+
+El valor nominal de amplitud de salida no es estrictamente constante durante el intervalo de una muestra. Se trata de un valor medio entre 5 periodos de \ac{PWM}, lo que implica una frecuencia de \ac{PWM} de $f_{PWM}=5*8\un{KHz}=40\un{KHz}$.
+
+
+\subsection{Descripción del teclado}
+\label{sec:des.teclado}
+Se dispone también de un teclado de 4 filas por 4 columnas el cual posee las clásicas teclas del ``0'' al ``9'', el ``*'' y el ``\#'' como se observa en la figura \ref{fig:Teclado-lineas}.
+\figuraot{Teclado 4x4 con sus respectivas líneas de entrada y salida}{fig:Teclado-lineas}{}{Teclado-lineas}{!t}
+Las 4 teclas restantes son de funciones especiales definidas por la aplicación.
+
+El \ac{uC} lee el teclado haciendo un barrido secuencial sobre las filas, obteniendo así los estados de las teclas de cada columna correspondientes a una determinada fila. En términos eléctricos las entradas (T0 a T3) se encuentran internamente en \textsl{pull-up}. Entonces al activar una de las filas (por ej. TA) fijando su salida en baja impedancia y con un nivel lógico `0', al presionar algunas de las teclas de esa fila la entrada correspondiente pasará a un nivel lógico `0'. No obstante las entradas que correspondan a teclas no presionadas permanecerán en un nivel lógico `1' debido al \textsl{pull-up}. Es importante activar sólo una fila a la vez para no generar incertidumbre en la decisión de a que fila le corresponde una tecla presionada de una determinada columna.
+
+
+\subsection{Descripción del \acsu{LED} indicador}
+Otro periférico que se controla con un \ac{PWM} por software, de las mismas características que las del \textsl{backlight} del \ac{LCD}, es el \ac{LED} indicador. La utilización de este \ac{LED} es dependiente de la aplicación que se implemente. Por ejemplo podría ser usado para indicar que se recibieron llamadas no atendidas o mensajes de texto aún no leídos.
+
+
+\subsection{Descripción de la orquilla}
+Otro elemento de interfaz importante es el evento de colgar y descolgar el tubo telefónico. Entonces aquí, se denomino ``orquilla'' al objeto susceptible a este evento.
+
+La orquilla sirve para saber el estado del tubo telefónico. Esta información puede ser útil por ejemplo para finalizar una comunicación, en el caso de colgar, o para iniciar el audio en el auricular al momento de descolgar.
+
+
+\subsection{Descripción de \acs{ICSP}}
+\label{sec:des.ICSP}
+Las líneas etiquetadas como \ac{ICSP} se utilizan para trabajar con el \ac{uC} en un modo de programación de bajo nivel, propio de éste. Las líneas \bp{PGC} y \bp{PGD} se encuentran compartidas con dos de las líneas de lectura de columnas del teclado. \bp{PGC} y \bp{PGD} sólo entran en funcionamiento cuando existe una tensión determinada de programación en la línea \bp{Vpp}. No obstante esto no interfiere con el funcionamiento normal del teclado.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Configuración de los recursos de hardware del \acs{uC}}
+\label{sec:confuc}
+En esta sección se realizó el análisis de cuales son los recursos del \ac{uC} a utilizar. Desde un punto de vista exterior, estos recursos se vinculan con puertos, los cuales van a trabajar en el modo que les correspondan a cada periférico, como se observa en la figura \ref{fig:modo.puertos.uc}.
+\figuraoo{Modo de uso de los puertos del \acs{uC}}{fig:modo.puertos.uc}{}{modo-puertos-uc}{!h}
+En la mayoría de los casos, los puertos que se relacionan con módulos de hardware incorporados en el \ac{uC}, realizan tareas específicas. En otros casos sólo son puertos de propósito general.
+
+La configuración de los módulos de hardware es mediante un conjunto de registros de propósito específico. Esta configuración se refiere a la fijación de los estados iniciales de dichos registros.
+
+
+
+
+\subsection{\acf{UART}}
+\label{sec:conf.UART}
+El puerto \ac{UART} en el \ac{uC} pertenece a un módulo llamado \aci{USART}. Como es usado en modo asincrónico sin detección de dirección, se optó por nombrarlo de aquí en adelante \ac{UART}.
+
+A continuación, según lo detallado en la sección \ref{sec:def.USART}, se realiza la configuración de este recurso.
+
+En el registro \reg{TRISC}, que controla el modo de entrada o salida del puerto ``C'' se fijan los siguientes bits:
+\begin{itemize}
+	\item \reg{TRISC<6>} = 1 (\bp{RC6/TX/CK} en modo entrada)
+	\item \reg{TRISC<7>} = 1 (\bp{RC7/RX/DT} en modo entrada)
+\end{itemize}
+Esto es necesario para que el módulo \ac{UART} controle adecuadamente los puertos \bp{TX} y \bp{RX}.
+
+Para el modo asincrónico hay que fijar el bit \bp{SYNC} $=0$.
+
+Se parte del dato de que la frecuencia del oscilador del \ac{uC} es $f_{OSC}=20\un{MHz}$. Para trabajar a una velocidad aproximada a $V_I=115200\un{bps}$ (sección \ref{sec:des.UART}), se hace uso del módulo \ac{BRG} (sección \ref{sec:def.USART.BRG}) el cual permite una tasa de bits de alta velocidad y otra de baja velocidad. Para el caso de baja velocidad (\bp{BRGH} $=0$), aplicando la correspondiente ecuación de la tabla \ref{tab:BRG.formulas}
+\[ V=\frac{f_{OSC}}{64\cdot(\regf{SPBRG}+1)} \]
+despejando \reg{SPBRG} y haciendo $V=V_I$ (ideal)
+\begin{align*} 
+	\regf{SPBRG} 	&= \frac{f_{OSC}}{64\cdot V_I}-1\\
+								&= \frac{20\un{MHz}}{64\cdot115200\un{bps}}-1\\
+								&\approx 1.713\\
+	\intertext{aproximando a un número entero}
+	\regf{SPBRG} 	&= 2
+\end{align*}
+El error relativo respecto al ideal en este caso es
+\[ \frac{2-1.713}{1.713}=0.1678\rightarrow16.78\% \]
+Para el caso de alta velocidad (\bp{BRGH} $=1$), aplicando la correspondiente ecuación de la tabla \ref{tab:BRG.formulas}
+\[ V=\frac{f_{OSC}}{16\cdot(\regf{SPBRG}+1)} \]
+despejando \reg{SPBRG} y haciendo $V=V_I$ (ideal)
+\begin{align*} 
+	\regf{SPBRG} 	&= \frac{f_{OSC}}{16\cdot V_I}-1\\
+								&= \frac{20\un{MHz}}{16\cdot115200\un{bps}}-1\\
+								&\approx 9.851\\
+	\intertext{aproximando a un número entero}
+	\regf{SPBRG} 	&= 10
+\end{align*}
+El error relativo respecto al ideal en este caso es
+\[ \frac{10-9.851}{9.851}=0.01516\rightarrow1.516\% \]
+resultando la mejor opción.
+
+Fijando $\regf{SPBRG}=10$ la velocidad real de tasa de bits ($V_R$) es
+	\[ V_R	= \frac{20\un{MHz}}{16\cdot(10+1)} \approx 113636\un{bps}
+		\label{ref:valor.tasa.bits.uart}
+	\]
+los que nos da, de manera análoga a lo hecho en la sección \ref{sec:des.UART}, una tasa real de datos útiles ($V_{RU}$)
+	\[ V_{RU}=113636\un{bps}\cdot\frac{8\un{bits}}{10\un{bits}} \approx 90909\un{bps} \]
+
+Luego se habilita el puerto serial haciendo $\bpf{SPEN}=1$.
+
+Como se trabaja en modo de 8\un{bits} hay que desactivar los bits \bp{TX9} y \bp{RX9}.
+
+Por el momento, para no generar eventos de interrupción por transmisión o recepción, se fijan $\bpf{TXIE}=0$ (\reg{PIE1<4>}) y $\bpf{RCIE}=0$ (\reg{PIE1<5>}). Pero ya se habilitan los módulos de transmisión y de recepción haciendo $\bpf{TXEN}=1$ (\reg{TXSTA<5>}) y $\bpf{RCEN}=1$ (\reg{RCSTA<4>}).
+
+
+
+
+
+
+
+\subsection{Comunicación con el \acs{LCD}}
+\label{sec:conf.MSSP}
+Para la comunicación con el \ac{LCD} se utiliza principalmente un módulo de hardware incorporado en el \ac{uC} llamado \ac{MSSP} (sección \ref{sec:def.MSSP}, p.\pageref{sec:def.MSSP}). Además se utilizan puertos de propósito general (\bp{RC4}, \bp{RB1} y \bp{RB2}). Los puertos del \ac{uC} utilizados, junto a su vinculación con las líneas del LCD, se observan en la tabla \ref{tab:rel.LCD.port}.
+
+\begin{tablao}{Relación LCD--puertos \ac{uC}}{tab:rel.LCD.port}{!h}
+	\begin{tabular}{c@{}c@{}c}
+		\acs{LCD} & & \acs{uC} \\
+		\hline
+		\bp{SCLK} &$\leftarrow$& \bp{SCK}  \\
+		\bp{SDIN} &$\leftarrow$& \bp{SDO}  \\
+		\bpn{D}{C} &$\leftarrow$& \bp{RC4}  \\
+		\bn{SCE} &$\leftarrow$& \bp{RB1}  \\
+		\bp{BL} &$\leftarrow$& \bp{RB2} \\ 
+		\hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+La descripción del \ac{LCD} como un módulo se ha visto en la sección \ref{sec:des.LCD} y la descripción de su funcionamiento en la sección \ref{sec:def.pcd8544}.
+
+Como se ha visto en la tabla \ref{tab:rel.LCD.port} los puertos, desde el punto de vista del \ac{uC}, son de salida. Por lo tanto la configuración de los registros de dirección de dato para los puertos de propósito general es:
+\begin{itemize}
+	\item \reg{TRISC<4>} $=0$ (\bp{RC4})
+	\item \reg{TRISB<1>} $=0$ (\bp{RB1})
+	\item \reg{TRISB<2>} $=0$ (\bp{RB2})
+\end{itemize}
+Además se fijan las respectivas salidas inicialmente como sigue, implicando:
+\begin{itemize}
+	\item \reg{PORTC<4>} $=1$ (\bp{RC4}) $\rightarrow$ Modo dato (\bpn{D}{C})
+	\item \reg{PORTB<1>} $=1$ (\bp{RB1}) $\rightarrow$ Chip desactivado (\bn{SCE})
+	\item \reg{PORTB<2>} $=0$ (\bp{RB2}) $\rightarrow$ Backlight apagado (\bp{BL})
+\end{itemize}
+
+
+La configuración para el correcto funcionamiento de las líneas de la \ac{SPI}
+%(p.\pageref{ref:SPI.conf.port})
+(sección \ref{ref:SPI.conf.port})
+es en modo salida:
+\begin{itemize}
+	\item \reg{TRISC<3>} $=0$ (\bp{SCK})
+	\item \reg{TRISC<5>} $=0$ (\bp{SDO})
+\end{itemize}
+
+Como la comunicación con el \ac{LCD} es un sólo sentido, es decir sólo se envían instrucciones a éste, la configuración del módulo \ac{MSSP} del \ac{uC} es en modo maestro.
+
+La frecuencia de operación de la \ac{SPI} se puede derivar de la $f_{OSC}=20\un{MHz}$ a través de un \textsl{prescaler}. Las opciones son:
+\begin{enumerate}
+	\item $f_{OSC}/4=5.000\un{MHz}$  
+	\item $f_{OSC}/16=1.250\un{MHz}$
+	\item $f_{OSC}/64=312.5\un{KHz}$
+\end{enumerate}
+Como la primer opción supera la frecuencia máxima de trabajo del \ac{LCD} ($f_{SCLK} \leq 4\un{MHz}$) la opción elegida es la segunda ($f_{OSC}/16=1.250\un{MHz}$). Por lo tanto la configuración para los bits \bp{SSPM} (\reg{SSPCON<3:0>}) es la siguiente:
+\begin{itemize}
+	\item \bp{SSPM} $=0001$ $\rightarrow$ Modo SPI maestro, \textsl{clock} = F\si{OSC}/16
+\end{itemize}
+
+Para compatibilizar la \ac{SPI} con las líneas de comunicación del \ac{LCD} se hizo un análisis de su controlador (PCD8544). Lo importante en este caso es averiguar en que estado de la señal de \textsl{clock} se realiza la transferencia del dato. Según la sección \ref{sec:def.lcd.cmd} \bp{SDIN} es muestreado en el flanco de subida de \bp{SCLK}. Por lo tanto, según las tablas \ref{tab:SSPSTAT} y \ref{tab:SSPCON} (sección \ref{sec:def.MSSP})
+\begin{itemize}
+	\item \bp{CKP} $=0$ (\reg{SSPCON<4>}) $\rightarrow$ El estado de reposo del \textsl{clock} es en bajo
+	\item \bp{CKE} $=1$ (\reg{SSPSTAT<6>}) $\rightarrow$ Dato transmitido en el flanco de subida de \bp{SCK}
+\end{itemize}
+Por último se activa el módulo haciendo:
+\begin{itemize}
+	\item \bp{SSPEN} $=1$ (\reg{SSPCON<5>})
+\end{itemize}
+
+
+
+
+
+
+
+\subsection{El \acs{ADC} y sus dependencias}
+\label{sec:conf.ADC}
+Este \ac{uC} cuenta con un \ac{ADC} incorporado. La descripción técnica se puede ver en la sección \ref{sec:def.ADC}.
+
+La configuración del módulo \ac{ADC} es de acuerdo a lo mencionado en la ``Digitalización de audio proveniente del micrófono'' (sección \ref{sec:descrip.adc}).
+
+
+Además del módulo \ac{ADC} se utilizan otros dos módulos más para lograr la conversión periódica. Estos son el Timer1 y el CCP2 (segundo recurso) perteneciente al módulo \ac{CCP}. Dichos módulos se utilizan en conjunto para generar un evento especial de inicio de conversión para el \ac{ADC} (ver figura \ref{fig:Timer1-CCP2-ADC}). \figuraoo{Interacción de módulos para el \ac{ADC}}{fig:Timer1-CCP2-ADC}{}{Timer1-CCP2-ADC.pdf}{!h}
+Realizando las configuraciones pertinentes se logra disparar este evento a una frecuencia de $f_{CCP2}=8000\un{Hz}$, produciendo una conversión de muestras analógicas a digitales a una tasa de $8000\un{sps}$.\footnote{\un{sps} Muestras por segundo}.
+
+
+Para configurar solamente el módulo \ac{ADC} hacen falta configurar los registro \reg{ADCON0} y \reg{ADCON1} (ver tablas \ref{tab:ADCON0} y \ref{tab:ADCON1} en la sección \ref{sec:def.ADC}).
+
+La fuente del \textsl{clock} para el \ac{ADC} se deriva de la frecuencia del oscilador del sistema ($f_{OSC}$). Además, se dispone de un \textsl{prescaler} para dividir esta frecuencia entre las siguientes opciones:
+\begin{itemize}
+	\item $f_{OSC}/2=10\un{MHz}\rightarrow100\un{ns}$
+	\item $f_{OSC}/8=2.5\un{MHz}\rightarrow400\un{ns}$
+	\item $f_{OSC}/32=625\un{KHz}\rightarrow1.6\un{$\mu$s}$
+\end{itemize}
+La única opción tolerada según la especificada de $1.6\un{$\mu$s}$ (sección \ref{sec:def.ADC}) es la de $f_{OSC}/32$, lo que implica fijar los bits
+\begin{itemize}
+	\item $\bpf{ADCS}=10$ (\reg{ADCON0<7:6>}) $\rightarrow$ $f_{OSC}/32$
+\end{itemize}
+
+Como se observa en la figura \ref{fig:modo.puertos.uc}, el puerto de entrada analógica utilizado es el \bp{AN0}. Entonces según se observa en la tabla \ref{tab:ADCON0}, se configura una sola entrada analógica con referencias de tensión externas y se selecciona el canal 0 haciendo los bits
+\begin{itemize}
+	\item $\bpf{PCFG}=1111$ (\reg{ADCON1<3:0>})
+	\begin{itemize}
+		\item \bp{RA0}$\rightarrow$\bp{AN0}
+		\item \bp{RA3}$\rightarrow$\bp{V\si{REF+}}
+		\item \bp{RA2}$\rightarrow$\bp{V\si{REF-}}
+	\end{itemize}
+	\item $\bpf{CHS}=000$ (\reg{ADCON0<5:3>}) $\rightarrow$ Canal 0 (\bp{AN0})
+\end{itemize}
+Además se configuran los respectivos bits del registro \reg{TRISA} como entradas:
+\begin{itemize}
+	\item \reg{TRISA<0>} $=1$ (correspondiente al pin \bp{RA0})
+	\item \reg{TRISA<3>} $=1$ (correspondiente al pin \bp{RA3})
+	\item \reg{TRISA<2>} $=1$ (correspondiente al pin \bp{RA2})
+\end{itemize}
+
+La justificación de los 10\un{bits} de datos dentro de los 16\un{bits} que concatenan los registros \reg{ADRESH:ADRESL} se ha elegido a la derecha. Esto se debe a la forma en que se convierten los 10\un{bits} adquiridos a 8\un{bits} para ser transportados por el puerto \ac{UART}, lo que se verá más adelante. Para configurar esto basta con fijar el siguiente bit:
+\begin{itemize}
+	\item $\bpf{ADFM}=1$ (\reg{ADCON1<7>}) $\rightarrow$ Justificación derecha
+\end{itemize}
+
+Por el momento se mantiene el módulo \ac{ADC} apagado, para ser encendido sólo en el momento del \textsl{streaming} de audio, haciendo:
+\begin{itemize}
+	\item $\bpf{ADON}=0$ (\reg{ADCON0<0>}) $\rightarrow$ \ac{ADC} apagado
+\end{itemize}
+
+Ahora, para la configuración de la generación del evento de disparo para el \ac{ADC} se configura primero el Timer1 y luego el CCP2.
+
+Para la configuración del Timer1 (sección \ref{sec:def.Timer1}) se fijan los bits del registro T1CON (tabla \ref{tab:T1CON}) a cero, configurándolo de la siguiente manera:
+\begin{itemize}
+	\item \textsl{Clock} interno ($f_{OSC}/4=5\un{MHz}$)
+	\item \textsl{Prescaler} 1:1 (No se divide el \textsl{clock}, lo que implica una tasa de incremento del temporizador de $5\un{MHz}$ también)
+	\item Timer1 detenido
+\end{itemize}
+
+Para la configuración del CCP2 en modo comparación (sección \ref{sec:def.CCP.comp}) se deben fijar los bits \bp{CCP2M} en el modo de operación de disparo de evento especial, de modo que se reinicie el Timer1 e inicie una nueva conversión A/D de forma periódica (ver tabla \ref{tab:CCPxCON}).
+\begin{itemize}
+	\item \bp{CCP2M} $=1011$ (\reg{CCP2CON<3:0>})
+\end{itemize}
+Además, se fija el período para el Timer1 cargando el valor adecuado en el registro \reg{CCPR2} (\reg{CCPR2H:CCPR2L}). El valor se deduce de la siguiente ecuación:
+\[ f_{CCP2}=\frac{f_{OSC}/4}{\regf{CCPR2}} \]
+Despejando \reg{CCPR2}
+\begin{align*}
+	\regf{CCPR2} &= \frac{f_{OSC}/4}{f_{CCP2}} \\
+	&= \frac{5\un{MHz}}{8\un{KHz}} \\
+	&= 625
+\end{align*}
+Para cargar adecuadamente este valor hace falta cargar los 8\un{\acs{LSb}} de 625 en el registro \reg{CCPR2L} y los 8\un{\acs{MSb}} de 625 en el registro \reg{CCPR2H}.
+
+
+
+
+
+
+
+\subsection{El \acs{PWM} y sus dependencias}
+\label{sec:proto.conf.PWM}
+Como se puede ver en la sección \ref{sec:def.CCP.PWM}, para la operación en el modo \ac{PWM} hace falta de la configuración de uno de los módulos \ac{CCP} y del módulo Timer2 (sección \ref{sec:def.Timer2}).
+
+Para trabajar a una frecuencia $f_{PWM}=40\un{KHz}$, como se especifica en la sección \ref{sec:des.pwm}, hace falta determinar el valor para el registro de periodo del Timer2 (\reg{PR2}) y el valor del \textsl{prescaler} del Timer2 (\bpf{T2CKPS}). Según la ecuación de $f_{PWM}$ de la sección \ref{sec:def.CCP.PWM}
+\begin{align*}
+	f_{PWM} &= \frac{f_{OSC}}{4\cdot(\regf{PR2}+1)\cdot\bpf{T2CKPS}} \\
+	\intertext{despejando \reg{PR2} tenemos}
+	\regf{PR2} &= \frac{f_{OSC}}{4\cdot f_{PWM}\cdot\bpf{T2CKPS}}-1 \\
+\end{align*}
+Valuando el \textsl{prescaler} con todas sus posibles opciones se calcula \regf{PR2}
+\begin{itemize}
+	\item \framebox{$\bpf{T2CKPS}=00$ (1:1) $\rightarrow \regf{PR2}=124$} (opción elegida)
+	\item $\bpf{T2CKPS}=01$ (1:4) $\rightarrow \regf{PR2}=30.25$
+	\item $\bpf{T2CKPS}=1X$ (1:16) $\rightarrow \regf{PR2}=6.813$
+\end{itemize}
+Se opta por la primera opción ya que da el único resultado entero y que además otorga la mejor resolución al \ac{PWM}. Esto es porque cuanto más grande es el valor de \reg{PR2} mayor es la amplitud del contador del Timer2 con respecto a la unidad de variación.
+
+Como en realidad la frecuencia de actualización de las muestras de audio se realiza a $f_m=8\un{KHz}$ y no a $f_{PWM}=40\un{KHz}$, hay que hacer uso del \textsl{postscaler} del Timer2 fijándolo en una escala 1:5, haciendo:
+\begin{itemize}
+	\item $\bpf{T2OUTPS}=0101$ (1:5) (\reg{T2CON<6:3>})
+\end{itemize}
+
+Analizando la figura \ref{fig:diag.PWM}
+\figuraoo{Diagrama del bloque PWM}{fig:diag.PWM}{width=\textwidth}{PWM}{!h}
+se observa como se divide la frecuencia de \textsl{clock} para obtener por un lado la frecuencia del \ac{PWM} $f_{PWM}=\un{40KHz}$ y por otro lado la actualización de la muestra de audio a 
+un frecuencia $f_m=8\un{KHz}$.
+
+Ahora, el TMR2 cuenta desde 0 hasta 124 inclusive, pero este valor desplazado 2\un{bits} a la izquierda equivale a multiplicarlo por 4. Esto significa que el número comparado en el módulo CCP1 varia entre 0 a 499 ($4\cdot124+3)$. Por lo tanto se utiliza el valor de la mitad (250) para definir el nivel cero de salida analógica. Para esto se debe cargar inicialmente los registros \reg{CCPR1L} concatenado con \reg{CCP1CON<5:6>} con el valor 250. Ahora bien, $250 \equiv$ b'0011111010', por lo tanto:
+\begin{itemize}
+	\item \reg{CCPR1L} $=00111110$ (62 en decimal) 
+	\item \reg{CCP1CON<5:6>} $=10$ (2 en decimal)
+\end{itemize}
+\[ 4\cdot62+2=250 \] 
+Teniendo este valor como nivel cero, la muestras de audio de 8\un{bits} producen un desvío de amplitud pico a pico de 255 unidades, en el rango
+\begin{itemize}
+	\item $250+127=377$
+	\item $250-127=123$
+\end{itemize}
+lo que en porcentaje de trabajo del \ac{PWM} es
+\begin{itemize}
+	\item $377/500\approx 0.7540 \rightarrow 75.40\%$
+	\item $123/500\approx 0.2460 \rightarrow 24.60\%$
+\end{itemize}
+\begin{quote}
+Los valores para las muestras de audio se eligieron de un intervalo \mbox{[-127, +127]} en vez de \mbox{[-128, +127]}. Por un lado, para tener simetría en la amplitud. Además, para utilizar el valor -128 (equivalente a 128 en 8\un{bits}) como carácter comodín, lo que se verá en la sección \ref{sec:pc}. 
+\end{quote}
+
+
+Por último, se activa el Timer2 pero por el momento se dejar desactivada su interrupción, haciendo:
+\begin{itemize}
+	\item $\bpf{TMR2IE}=0$ (\reg{PIE1<1>})
+	\item $\bpf{TMR2ON}=1$ (\reg{T2CON<2>})
+\end{itemize}
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+\subsection{Puertos para el teclado}
+\label{sec:proto.conf.teclado}
+Según lo descripto en la sección \ref{sec:des.teclado} son necesarios 8 puertos, de los cuales 4 son de entrada al \ac{uC} (T0 a T3) y otros 4 de salida desde el \ac{uC} (TA a TD). La correspondencia entre las líneas T\si{x} y los puertos del \ac{uC} es la que se observa en la tabla \ref{tab:rel.T.port}.
+\begin{tablaot}{Relación teclado--puertos \ac{uC}}{tab:rel.T.port}{!t}
+	\begin{tabular}{cc}
+		\hline
+		\bp{T0}$\rightarrow$\bp{RB4} & \bp{TA}$\leftarrow$\bp{RA1} \\
+		\bp{T1}$\rightarrow$\bp{RB5} & \bp{TB}$\leftarrow$\bp{RA4} \\
+		\bp{T2}$\rightarrow$\bp{RB6} & \bp{TC}$\leftarrow$\bp{RA5} \\
+		\bp{T3}$\rightarrow$\bp{RB7} & \bp{TD}$\leftarrow$\bp{RC0} \\
+		\hline
+	\end{tabular}\\[5mm]
+\end{tablaot}
+
+La ubicación de las líneas se debe a que como son requeridos puertos de propósito general solamente para el teclado, prevaleció la elección de los puertos de propósito específico para otros periféricos. Esto hizo que para el teclado se elijan los puertos que quedaron libres, no significando ningún detrimento para la lectura del teclado. No obstante para las entradas se eligieron puertos con la característica de \textsl{pull-up} interno. Esto es necesario para que en las entradas se presente un nivel lógico `1' mientras no se presione ninguna tecla. Nótese que por conveniencia y teniendo la posibilidad, se eligieron puertos consecutivos y ordenados para la lectura de las columnas del teclado, pero no así para la selección de las filas. Esto es porque la lectura puede hacerse simultáneamente en todas las columnas. En cambio la selección de filas se hace de forma secuencial.
+
+Para la configuración propiamente dicha de los puertos se deben fijar como entrada los puertos \bp{RB4} a \bp{RB7}, fijando los siguientes bits del registro \reg{TRISB}:
+\begin{itemize}
+	\item \reg{TRISB<4>} $=1$ (\bp{RB4})
+	\item \reg{TRISB<5>} $=1$ (\bp{RB5})
+	\item \reg{TRISB<6>} $=1$ (\bp{RB6})
+	\item \reg{TRISB<7>} $=1$ (\bp{RB7})
+\end{itemize}
+Ahora se habilita el \textsl{pull-up} para el puerto ``B'' haciendo:
+\begin{itemize}
+	\item \bn{RBPU} $=0$ (\reg{OPTION\_REG<7>})
+\end{itemize}
+La configuración de los puertos de salida es algo más confusa. Esto se debe a que si bien son utilizados como salidas, los puertos que no estén activando una fila deben estar en \ac{hiz}. En otras palabras deben estar configurados inicialmente como entradas:
+\begin{itemize}
+	\item \reg{TRISA<1>} $=1$ (\bp{RA1})
+	\item \reg{TRISA<4>} $=1$ (\bp{RA4})
+	\item \reg{TRISA<5>} $=1$ (\bp{RA5})
+	\item \reg{TRISC<0>} $=1$ (\bp{RC0})
+\end{itemize}
+Al mismo tiempo se fijan las salidas de estos puertos a un nivel lógico `0':
+\begin{itemize}
+	\item \bp{RA1} $=0$ (\reg{PORTA<1>})
+	\item \bp{RA4} $=0$ (\reg{PORTA<4>})
+	\item \bp{RA5} $=0$ (\reg{PORTA<5>})
+	\item \bp{RC0} $=0$ (\reg{PORTC<0>})
+\end{itemize}
+Esto es necesario para que cuando alguno de estos puertos se fije en modo salida --con intención de seleccionar una fila-- pase su salida de un estado de \ac{hiz} a un nivel lógico `0'.
+
+
+\subsection{Puerto para la lectura de la orquilla}
+El puerto para la lectura de la orquilla es sólo un puerto de entrada digital. Se eligió el puerto \bp{RB0/INT} por una posible utilización de la funcionalidad de generación de interrupción, la cual quedó descartada por la utilización de una técnica de muestreo. Esta técnica sólo significa observar el estado del puerto cada cierto intervalo de tiempo, de manera de no tener que transmitir este evento a una tasa muy elevada. Incluso, el evento es transmitido sólo cuando el estado actual de la entrada es distinto al observado con anterioridad.
+
+Para fijar el puerto como entrada e inhabilitar la interrupción se hace:
+\begin{itemize}
+	\item \reg{TRISB<0>} $=1$
+	\item \bp{INTE} $=0$ (\reg{INTCON<4>}) $\rightarrow$ Inhabilita la interrupción externa
+\end{itemize}
+
+Otra cosa a tener en cuenta es que este pin (\bp{RB0}), junto con todos los pines del puerto ``B'' se encuentran en \textsl{pull-up} interno. Esto se ha sido fijado en la configuración del teclado (sección \ref{sec:proto.conf.teclado}). No obstante, es de utilidad y se verá más adelante en el ``Circuito esquemático de la \ac{IH} (sección \ref{sec:proto.esquematico})''.
+
+
+\subsection{Puerto para el \acs{LED} indicador}
+% Meter esta subsección al final de la sección así queda mejor lo de por descarte
+Si bien el control del \ac{LED} indicador es mediante una señal \ac{PWM}, la configuración de este recurso es muy sencilla, debido a que se trata solamente de un puerto de propósito general. Esto es porque en este caso el \ac{PWM} es generado por software, cosa que se verá más adelante.
+
+Por descarte se adoptó el puerto \bp{RB3}. Como se trata de una salida, la cual se fija inicialmente en un valor lógico `0', se configuran los siguientes bits como se observa a continuación:
+\begin{itemize}
+	\item \reg{TRISB<3>} $=0$ $\rightarrow$ \bp{RB3} como salida
+	\item \reg{PORTB<3>} $=0$ $\rightarrow$ \bp{RB3} $=0$
+\end{itemize}
+
+\subsection{Bits de configuración del \ac{uC}}
+Haciendo uso de la tabla \ref{tab:confbits} (p.\pageref{tab:confbits}) se realiza la configuración de los bits.
+
+\begin{itemize}
+
+	\item \bp{CP1:CP0} $=11$ $\rightarrow$ Sin protección de datos. Esto es debido a la necesidad de actualizar el código de programa en tiempo de ejecución.
+
+	\item \bp{DEBUG} $=1$ $\rightarrow$ Modo de depuración desactivado.
+
+	\item \bp{WRT} $=1$ $\rightarrow$ Habilitación de escritura de memoria de programa. Esto es necesario para la actualización del código de programa en tiempo de ejecución.
+
+	\item \bp{CPD} $=1$ $\rightarrow$ Sin protección del código de memoria de datos \acs{EEPROM}.
+
+	\item \bp{LVP} $=0$ $\rightarrow$ Sin programación en baja tensión. Esto implica el uso de alta tensión en el pin \bp{V\sit{PP}} para hacer entrar en modo programación por hardware al \ac{uC}. No se usa en baja tensión a través del pin \bp{RB3/PGM} debido a que no se dispone de pines libres.
+
+	\item \bp{BODEN} $=1$ $\rightarrow$ Habilitación de reset por baja tensión. Para evitar inestabilidad de la ejecución del código de programa.
+
+	\item \bn{PWRTE} $=0$ $\rightarrow$ Habilitación del temporizador de inicio. Esto es útil en el momento del inicio del \ac{uC} para retardar su arranque de manera que se establezcan correctamente las tensiones de alimentación.
+
+	\item \bp{WDTE} $=0$ $\rightarrow$ Temporizador de perro guardián (\textsl{Watchdog timer}) deshabilitado.
+
+	\item \bp{FOSC1:FOSC0} $=10$ $\rightarrow$ Oscilador HS. Oscilador que utiliza un cristal en modo de alta velocidad.
+
+\end{itemize}
+
+
+Todos estos bits individuales conforman la palabra binaria \bp{\mbox{b'11 1111 0111 0010'}} que expresada en codificación hexadecimal es \mbox{3F72h}.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Circuito esquemático de la placa del LCD}
+\label{sec:sch.LCD}
+Como el \ac{LCD} se encuentra en una placa separada, CON1 es el vinculo de conexión tanto en la placa de la \ac{IH} como en la placa del \ac{LCD}. En la figura \ref{fig:sch.LCD} se puede observar el circuito esquemático de la conexión entre CON1, el \ac{LCD} y uno componentes auxiliares.
+
+\figuraot{Circuito esquemático de la placa del LCD}{fig:sch.LCD}{width=\textwidth}{sch-placa-LCD}{!t}
+
+V\si{SS} es común a todo el circuito. No así V\si{DD} que es regulado a 3,3\un{V} a través del circuito compuesto por U1, R1, R2, C1 y C2 el cual es un circuito de aplicación de la hoja de datos \cite{LM317L}. Para el cálculo de R1 y R2 se utiliza la siguiente ecuación extraída de la hoja de datos:
+\[ V_{OUT}=1.25\un{V}\cdot \left(1+\frac{R_2}{R_1}\right)+100\un{$\mu$A}\cdot R_2 \]
+De esta ecuación se dedujeron los valores para $R_1$ y $R_2$ teniendo en cuenta el uso de resistencias de un bajo valor --como se observa en la hoja de datos--. Tratando de conseguir una buena combinación de resistencias estandarizadas se opto por los valores:
+\begin{itemize}
+	\item $R_1=330\un{$\Omega$}$
+	\item $R_2=470\un{$\Omega$}$
+\end{itemize}
+Esto devuelve un valor teórico de regulación:
+\[ V_{OUT}=1.25\un{V}\cdot \left(1+\frac{470\un{$\Omega$}}{330\un{$\Omega$}}\right)+100\un{$\mu$A}\cdot 470\un{$\Omega$}\approx 3.077\un{V} \]
+Este resultado es adecuado para las especificaciones del \ac{LCD} \cite{pcd8544}.
+
+
+Para utilizar el oscilador interno del \ac{LCD} hace falta un nivel lógico `1' en el pin \bp{OSC} (ver sección \ref{sec:def.pcd8544}).
+
+El capacitor C4 no es realmente necesario. Experimentalmente se probó sin C4 y no se han presentado inconvenientes. Sin embargo, se decidió por utilizarlo con el valor sugerido en \cite{astleiner.pcd8544} y \cite{bergthaller.pcd8544}.  
+
+
+Para no hacer uso de la señal \bn{RES} se construyó un circuito de inicialización con R5 y C3, de manera de inicializar correctamente el \ac{LCD} cuando se alimenta el circuito. La constante de tiempo $\tau$ de este circuito es:
+\[ \tau=R_5\cdot C_3=10\un{ms} \]
+Esto da una idea del período del pulso de reset el cual ronda estos 10\un{ms}.
+
+Las resistencias R3, R4, R6, R7 son sólo de precaución como para limitar la corriente por la diferencia de tensión de trabajo del \ac{LCD}, la cual es de 3,3\un{V}, y la tensión de la señal desde el \ac{uC}, la cual es de 5\un{V}.
+
+
+
+
+
+
+
+
+
+
+\section{Circuito esquemático de la \acs{IH}}
+\label{sec:schih}
+\label{sec:proto.esquematico}
+El circuito esquemático es la representación de la \ac{IH} en términos de componentes y conexiones eléctricas. El mismo se realizó mediante \ac{CAD}, el cual además se va a utilizar al final para el diseño de la \ac{PCB}. En la figura \ref{fig:sch.ih} se observa, aunque en escala reducida, el circuito esquemático completo.
+Partiendo de éste se hace un análisis por parte, haciendo una correlación con los diagramas en bloques antevistos en la sección \ref{sec:proto.digrama}. El primer diagrama en bloques a correlacionar con el circuito esquemático completo es el diagrama en bloques de la \ac{IH} (figura \ref{fig:diag-block-IH}).
+
+
+
+\subsection{Fuente de alimentación}
+
+La alimentación principal de la \ac{IH} es mediante una tensión continua del orden de 12\un{V} no necesariamente regulada, con la posibilidad de caer hasta unos 7\un{V}. A esta tensión se la denomina VNR y a partir de la misma se derivan las tensiones V5, V5S y Vr25 como se observa en la figura \ref{fig:sch.ih.fuentes}.
+\figuraoo{Circuito esquemático de las fuentes}{fig:sch.ih.fuentes}{}{sch-ih-fuentes}{!h}
+\figuraos{Circuito esquemático de la \acs{IH}}{fig:sch.ih}{width=0.95\textwidth}{sch-ih}{p}
+V5 se logra a partir de un regulador fijo (U1) de 5\un{V} de tensión con capacidad de corriente de hasta 1,5\un{A} \cite{L7800}. El mismo alimenta la mayoría de los circuitos digitales, principalmente al \ac{uC} y además la parte de iluminación. V5S es otra fuente de tensión de 5\un{V} utilizada en la parte de señal analógica, que se encuentra separada para reducir la interferencia
+por el consumo de la parte de potencia. La misma se obtiene a través de un regulador de tensión fijo (U2) de 5\un{V} con capacidad de corriente de hasta 100\un{mA} \cite{LM78LXX}. Vr25 más que una fuente de alimentación es una referencia de tensión de 2,5\un{V} conformada por R6, R8, C7 y C11. Ésta se utiliza en la parte analógica como punto de referencia cero para el trabajo conveniente de la señal analógica sin necesidad de una fuente bipolar. Su valor se logra a través de un divisor resistivo (R6 y R8) el cual tiene un equivalente --como fuente de tensión-- de
+\[ V_{r25}=V_{5S}\frac{R_8}{R_8+R_6}=2.5\un{V}  \]
+con una resistencia de salida de
+\[ R_{eq25}=\frac{R_6\cdot R_8}{R_6+R_8}=5\un{K$\Omega$} \]
+
+Por otro lado la masa (referencia de 0\un{V}) se encuentra dividida en tres, llamadas GNDT, GNDD y GNDS. Esto se diseñó así para reducir la interferencia por camino resistivo, teniendo como único punto en común a JP3, en el cual son interconectadas eléctricamente. Es decir, aunque JP3 está compuesto por 3 terminales, compone un único punto de conexión eléctrica común a las tres redes de masas. Conviene ubicar este punto lo más próximo al punto de alimentación principal de la \ac{IH}.
+
+
+
+\subsection{Conexiones del puerto UART}
+
+El puerto \ac{UART} cuenta con dos resistores (R11 y R12), que hacen las veces de limitadores de corriente en el caso que se produzca una mala conexión en JP1 o por diferencias de tensiones entre los niveles lógicos interconectados.
+
+Se eligió la configuración para el conector JP1, que se observa en la figura \ref{fig:sch.ih.UART}, por compatibilidad con el puerto UART de la placa de un Router Wireless Linksys WRT54G v4.0.
+\figuraob{Circuito esquemático del puerto UART}{fig:sch.ih.UART}{}{sch-ih-UART}{!b}
+
+
+
+
+\subsection{Conexiones con el LCD}
+
+En la figura \ref{fig:sch.ih.LCD} se puede observar con detalle como el \ac{uC} se conecta con el \ac{LCD}.
+\figuraot{Circuito esquemático de las conexiones con el LCD}{fig:sch.ih.LCD}{}{sch-ih-LCD}{!t}
+Estas conexiones incluyen tanto el control del \ac{LCD} como el control del \textsl{backlight}\footnote{Ver apéndice \ref{sec:palabras}}. CON1 es una interfaz de conexión a una \ac{PCB} separada y dedicada a controlar el \ac{LCD} con \textsl{su backlight}, la cual se energiza a través de las líneas \bp{VDD} y \bp{VSS}. Las líneas de control \bn{SCE}, \bpn{D}{C}, \bp{SDIN} y \bp{SCLK} se conectan directamente al \ac{uC}. En cambio el \textsl{backlight} se maneja a través del transistor Q2 para la alimentación con mayor corriente. R22 se deduce sabiendo que:
+\begin{itemize}
+	\item Cada \ac{LED} del backlight trabaja con una corriente máxima de $I_{LED}=30\un{mA}$
+	\item La tensión de operación de estos LEDs es de $V_{LED}=2.1\un{V}$
+	\item La \ac{PCB} del \ac{LCD} cuenta con $n=6$ LEDs
+	\item La tensión de saturación de Q2 es aproximadamente $V_{CE}=0.2\un{V}$
+	\item La tensión de alimentación es $V_{DD}=5\un{V}$
+\end{itemize}
+Haciendo
+\begin{align*}
+	V_{DD} &= V_{LED} + V_{CE} + n\cdot I_{LED}\cdot R_{20}\\
+	V_{DD} - V_{LED} - V_{CE} &= n\cdot I_{LED}\cdot R_{20}\\
+	V_{DD} - V_{LED} - V_{CE} &= n\cdot I_{LED}\cdot R_{20}\\
+	R_{20} &= \frac{V_{DD} - V_{LED} - V_{CE}}{n\cdot I_{LED}}\\
+	R_{20} &= 15\un{$\Omega$}
+\end{align*}
+Y el cálculo de R22 es el siguiente
+\begin{itemize}
+	\item El $h_{FE}=100$ del transistor Q2, como mínimo
+	\item La tensión de polarización $V_{BE}=0.7\un{V}$
+\end{itemize}
+Haciendo
+\begin{align}
+	V_{DD} &= V_{BE} + I_B\cdot R_{22}\\
+	V_{DD} - V_{BE} &= I_B\cdot R_{22}\\
+	R_{22} &= \frac{V_{DD} - V_{BE}}{I_B}\label{ec:R22}
+\end{align}
+Sabiendo que
+\begin{align}
+	n\cdot I_{LED} &= I_C=I_B \cdot h_{FE}\\
+	I_B &= \frac{n\cdot I_{LED}}{h_{FE}}\label{ec:Q2.Ib}
+\end{align}
+Se reemplaza \ref{ec:Q2.Ib} en \ref{ec:R22} y se obtiene
+\begin{align*}
+	R_{22} &= \frac{V_{DD} - V_{BE}}{\frac{n\cdot I_{LED}}{h_{FE}}}\\
+	R_{22} &= \frac{h_{FE}\cdot(V_{DD} - V_{BE})}{n\cdot I_{LED}}\\
+	R_{22} &\approx 2.389\un{K$\Omega$}\\
+	\intertext{pero las prueba experimentales determinaron que para lograr  una $V_{CE}$ adecuada hubo que fijar R22 en un valor estándar de}
+	R_{22} &= 1\un{K$\Omega$}
+\end{align*}
+
+
+
+\subsection{Adaptación de la señal del micrófono}
+
+El circuito de la figura \ref{fig:sch.ih.mic}
+\figuraot{Circuito esquemático de la conexión con el micrófono}{fig:sch.ih.mic}{}{sch-ih-mic}{!t}
+realiza la alimentación necesaria para el micrófono, el filtrado, el desplazamiento de tensión y la amplificación de la señal del micrófono.
+
+La alimentación del micrófono se realiza a través de R1. Esta alimentación debe encontrarse cerca de C1, el cual desacopla --en cierta medida-- el posible ruido de la fuente V5S. El filtro conformado por U4A, R3 y C2 es un filtro activo inversor pasa bajos de primer orden, el cual presenta --en su terminal no inversor-- una tensión de offset Vr25 $=2.5\un{V}$. Este filtro tiene una frecuencia de corte $f_2$ de:
+\[ f_2 = \frac{1}{2\cdot\pi\cdot R_3\cdot C_2} \approx 3386\un{Hz} \]
+
+Como R2 es igual a R3, la amplificación es unitaria y además es R2 el que define la resistencia de entrada de este filtro. Ahora con C5 en serie, además de desacoplar la continua del micrófono, el circuito --que incorpora también a R2-- produce un filtro pasivo pasa altos de primer orden que determina una frecuencia de corte $f_1$ de:
+\[ f_1 = \frac{1}{2\cdot\pi\cdot R_2\cdot C_5} \approx 33.86\un{Hz} \]
+La segunda etapa, con R4, R5, C3 y U4B conforman solamente un filtro activo pasa bajos de primer orden con frecuencia de corte $f_2$ igual a la primera etapa. Al estar las dos etapas de filtros pasa bajos en cascada, se interpreta como un filtro de segundo orden pero con $-6\un{dB}$ en $f_2$. Esto duplica (en decibeles) la pendiente de corte del filtro pasa bajos, disminuyendo aún más el \textsl{aliasing} en frecuencia producido por la digitalización.
+
+Mediante la medición experimental de la señal producida por el micrófono, se observó una tensión pico a pico aproximada de 2\un{V}. Como la tensión que pueden manejar los amplificadores (U4A y U4B) sin producir distorsión es menor a su alimentación (5\un{V}), se optó por una amplificación final unitaria. Esto hace no tener que modificar los valores de R2, R3, R4 y R5.
+
+
+\subsection{Selector del destino del audio de retorno}
+\label{sec:sch.ih.selector}
+
+Este selector, compuesto por U5 y observado en la figura \ref{fig:sch.ih.selector}, cumple dos funciones.
+\figuraot{Circuito esquemático del selector}{fig:sch.ih.selector}{}{sch-ih-selector}{!t}
+Una propiamente dicha de seleccionar el destino de la señal \ac{PWM}, tanto hacia el altavoz como al auricular. Además realiza la función de conformar los pulsos del \ac{PWM} con una amplitud fija y dependiente de la fuente V5S en vez de la fuente V5. Esto se logra alimentando U5, aunque no figura en el circuito esquemático, con la fuente V5S, la cual es más estable.
+
+La tabla de verdad del circuito selector se observa en la tabla \ref{tab:sch.sel.verdad}.
+\begin{tablaot}{Tabla de verdad del circuito selector}{tab:sch.sel.verdad}{!t}
+	\begin{tabular}{|c|c||c|c|}
+		\hline
+		\bp{Sel} & \bp{PWM} & \bp{Aur} & \bp{Alt}\\
+		\hline\hline
+		0 & 0 & 0 & 0\\\hline
+		0 & 1 & 1 & 0\\\hline
+		1 & 0 & 0 & 0\\\hline
+		1 & 1 & 0 & 1\\\hline
+	\end{tabular}\\[5mm]
+\end{tablaot}
+
+
+
+\subsection{Filtro y amplificador para el auricular}
+
+Esta parte del circuito, observado en la figura \ref{fig:sch.ih.auricular},
+\figuraob{Circuito esquemático de la conexión al auricular}{fig:sch.ih.auricular}{}{sch-ih-auricular}{!h}
+recibe la señal de audio de la salida respectiva del ``selector'' (ver sección \ref{sec:sch.ih.selector}).
+Esta señal, que tiene característica de \ac{PWM} es filtrada a través de R14 y C12 respecto al punto de masa virtual producida por la configuración de U4D. Entonces, R14 y C12 producen un filtro pasivo pasa altos con frecuencia de corte $f_1$ de:
+\[ f_1=\frac{1}{2\cdot\pi\cdot R_{14}\cdot C_{12}}\approx  33.86\un{Hz} \]
+Luego esta señal es aplicada al filtro pasa bajos formado por R13 y C8, el cual determina una frecuencia de corte $f_2$ de:
+\[ f_2=\frac{1}{2\cdot\pi\cdot R_{13}\cdot C_{8}}\approx  3386\un{Hz} \]
+La señal no es amplificada debido a que $R_{13}=R_{14}$. Luego esta señal ingresa a un amplificador inversor unitario, conformado por U4C, R10 y R7, el cual presenta a su salida una señal igual en amplitud absoluta pero de polaridad inversa a la de su entrada. Esto hace que la tensión aplicada a J2 sin carga, sea del doble de amplitud que la señal que ingresa a U4C, entonces:
+\begin{align*}
+	V_{J2} &= V_{U4C}-V_{U4D}\\
+	V_{J2} &= V_{U4C}-(-V_{U4C})\\
+	V_{J2} &= -2\cdot V_{U4C}\\
+\intertext{Como $V_{U4C}$ se encuentra invertida respecto a la señal a la entrada de U4C:}
+	V_{J2} &= -2\cdot (-V_I)\\
+	V_{J2} &= 2\cdot V_I\\
+\end{align*}
+Donde $V_I$ es una señal de tensión pico a pico de $2.54\un{V}$. Esto parte de una amplitud de \ac{PWM} de $5\un{V}$ proveniente del ``selector'' y un ciclo de trabajo que se calculó en la sección \ref{sec:proto.conf.PWM}, lo que equivale a las tensiones medias de:
+\begin{align*}
+	V_{127} &= 0.754\cdot5\un{V}=3.77\un{V} \\
+	V_{-127} &= 0.246\cdot5\un{V}=1.23\un{V} \\
+\end{align*}
+Con esto se obtiene una tensión pico a pico de:
+\[ V_{pp}=V_{127}-V_{-127}=2.54\un{V} \]
+Esto equivale a una tensión eficaz de:
+\[ V_{ef}=\frac{V_{pp}}{2\cdot\sqrt{2}}\approx 0.8980\un{V} \]
+Sabiendo ahora esto y que la impedancia de salida real de U4 es de $R_O = 200\un{$\Omega$}$ aproximadamente \cite{TL084}; y además, que la carga producida por el auricular es de $R_L = 120\un{$\Omega$}$, entonces se puede calcular la potencia media aplicada al auricular ($P_L$):
+
+\begin{align*}
+	P_L &= \frac{\left(V_{J2_{ef}}\cdot \frac{R_L}{2\cdot R_O+R_L}\right)^2}{R_L}\\
+	P_L &= \frac{\left[(2\cdot V_{ef})\cdot\frac{R_L}{2\cdot R_O+R_L}\right]^2}{R_L}\\
+	P_L &= 4\cdot\left(\frac{R_L}{2\cdot R_O+R_L}\right)^2\frac{V_{ef}^2}{R_L}\\
+	P_L &= 4\cdot\left(\frac{120\un{$\Omega$}}{2\cdot 200\un{$\Omega$}+120\un{$\Omega$}}\right)^2\frac{V_{ef}^2}{R_L}\\
+	P_L &\approx 0.213\cdot\frac{V_{ef}^2}{R_L}\\
+	P_L &\approx 1.432\un{mW}\\
+\end{align*}
+Aunque esta potencia pareciera muy pequeña, experimentalmente se percibieron buenos resultados.
+
+
+
+
+\subsection{Filtro y amplificador para el altavoz}
+\label{sec:schih.altavoz}
+
+Lo que se observa en la figura \ref{fig:sch.ih.altavoz} es el filtro y amplificador para el altavoz.
+\figuraot{Circuito esquemático de la conexión al altavoz}{fig:sch.ih.altavoz}{}{sch-ih-altavoz}{!t}
+Lo importante de este filtro pasivo pasa bajos es integrar el periodo del \ac{PWM} que proviene del ``selector''. El filtro está compuesto principalmente por R15 y C13, pero no hay que descartar la influencia de R16, el cual es un resistor variable, ni la influencia de la impedancia de entrada del amplificador ($Z_I$).
+
+El circuito amplificador compuesto por U7, C14, C15, C16, C17, C18, C21, C22, R18, R19, R21 y R23 fue extraído de la nota de aplicación de la hoja de datos del amplificador de audio TDA2003 \cite{TDA2003}. Como esta configuración corresponde a una aplicación de mayor potencia que la necesaria para la \ac{IH}, se han hecho modificaciones en lo que respecta a la ganancia de tensión y al filtro pasa altos. La ecuación de la ganancia de tensión, extraída de la hoja de datos, se calcula haciendo:
+\begin{align}
+ A_V = \frac{R_{18}}{R_{23}}+1\label{ec:altavoz.AV}
+\end{align}
+Otro dato importante extraído es la impedancia de entrada del amplificador, lo que arroja un valor mínimo de $Z_I=70\un{K$\Omega$}$. Ahora, estos datos son suficientes para calcular el filtro pasivo pasa bajos y la modificación para el cambio de la ganancia del amplificador.
+
+Para el cálculo del filtro pasivo pasa bajos hizo falta determinar R15 y C13. Para esto, comenzamos simplificando la influencia de C17, sabiendo que:
+\begin{itemize}
+	\item $f_M=3400\un{Hz}$
+	\item $C_{17}=10\un{$\mu$F}$
+\end{itemize}
+La reactancia capacitiva de C17 es:
+\[ X_{C17} = \frac{1}{2\cdot\pi\cdot f_M\cdot C_{17}}\approx 4.681\un{$\Omega$} \]
+Entonces, se observa que ésta es muy pequeña respecto a $Z_I$. Por lo tanto, existen dos casos de análisis: el caso de volumen máximo ($Z_I$ en paralelo a R16) y el caso de volumen mínimo (sólo R16). Entonces, eligiendo R15 lo suficientemente bajo respecto a R16 en paralelo a $Z_I$ (peor caso), se puede hacer el filtro prácticamente estable a la variación de volumen. Entonces, se han elegido: 
+\begin{itemize}
+	\item $R_{15}=1\un{K$\Omega$}$
+	\item $C_{13}=47\un{$\mu$F}$
+\end{itemize}
+Esto da, en primera instancia, una frecuencia de corte $f_2$ de:
+\[ f_2 = \frac{1}{2\cdot\pi\cdot R_{15}\cdot C_{13}}\approx 3386\un{Hz} \]
+Ahora, para observar la estabilidad del filtro a la variación del volumen, se calculan las resistencias equivalentes para los casos de máximo y mínimo volumen respectivamente:
+\[ R_{eM} = \frac{1}{\frac{1}{R_{25}}+\frac{1}{R_{16}}+\frac{1}{Z_I}} \approx 962.2\un{$\Omega$} \]
+\[ R_{em} = \frac{1}{\frac{1}{R_{25}}+\frac{1}{R_{16}}} \approx 975.6\un{$\Omega$} \]
+Esto resulta en las frecuencias de corte siguientes:
+\[ f_{2M} = \frac{1}{2\cdot\pi\cdot R_{eM}\cdot C_{13}}\approx 3519\un{Hz} \]
+\[ f_{2m} = \frac{1}{2\cdot\pi\cdot R_{em}\cdot C_{13}}\approx 3471\un{Hz} \]
+Como se observa, éstas no representan una diferencia sensible para la aplicación.
+
+Para el cálculo de la ganancia del amplificador se toma el caso del volumen al máximo, fijando la potencia máxima para el altavoz en $P_L=0.5\un{W}$. Antes hizo falta determinar el nivel máximo de la señal a la entrada del filtro y a la entrada del amplificador. Ésta es una señal \ac{PWM} que proviene del ``selector'' con una amplitud de 5\un{V} y un ciclo de trabajo que se calculó en la sección \ref{sec:proto.conf.PWM}, lo que equivale a las tensiones medias de:
+\begin{itemize}
+	\item $V_{127}=0.754\cdot5\un{V}=3.77\un{V}$
+	\item $V_{-127}=0.246\cdot5\un{V}=1.23\un{V}$
+\end{itemize}
+Esto da una tensión pico a pico de amplitud:
+\[ V_{pp}=V_{127}-V_{-127}=2.54\un{V} \]
+Ahora, para hacer el calculo en términos de potencia media se pasa $V_{pp}$ a una tensión eficaz:
+\[ V_{ef}=\frac{V_{pp}}{2\cdot\sqrt{2}}\approx 0.8980\un{V} \]
+Para encontrar la tensión de entrada ($V_I$) al amplificador hay que aplicar $V_{ef}$ al filtro:
+\[ V_I=\frac{V_{ef}}{\frac{1}{\frac{1}{R_{16}}+\frac{1}{Z_I}}+R15}\cdot \frac{1}{\frac{1}{R_{16}}+\frac{1}{Z_I}}\approx 0.8641\un{V} \]
+El otro valor a deducir es la tensión eficaz deseada en el altavoz:
+\[ V_O=\sqrt{P_L\cdot R_L}=\sqrt{0.5\un{W}\cdot 8\un{$\Omega$}}=2\un{V} \]
+Esto implica lograr una ganancia de:
+\begin{align}
+	A_V = \frac{V_O}{V_I}\approx 2.315\label{ec:altavoz.AV2}
+\end{align}
+Igualando las ecuaciones \ref{ec:altavoz.AV2} y \ref{ec:altavoz.AV} se obtiene:
+\begin{align*}
+	\frac{R_{18}}{R_{23}}+1 &\approx 2.315\\
+	\intertext{Despejando $R_{23}$ y fijando $R_{18}=220\un{$\Omega$}$:}
+	\frac{R_{18}}{R_{23}} &\approx 2.315-1\\
+	\frac{R_{18}}{2.315-1} &\approx R_{23}\\
+	R_{23} &\approx \frac{220\un{$\Omega$}}{2.315-1}\\
+	R_{23} &\approx 167.4\un{$\Omega$}\\
+	\intertext{Pero, $R_{23}$ se fija en un valor estandarizado de:}
+	R_{23} &= 160\un{$\Omega$}\\
+\end{align*}
+
+El último componente modificado es C16 y es el que determina la frecuencia de corte inferior. El valor se fijó en:
+\begin{itemize}
+	\item $C_{16}=100\un{$\mu$F}$
+\end{itemize}
+Entonces, para el pequeño tamaño del altavoz utilizado, esto determina una frecuencia de corte adecuada de:
+\[ f_1=\frac{1}{2\cdot\pi\cdot R_L\cdot C_{16}} \approx 198.9\un{Hz} \]
+
+
+
+\subsection{Conformación del teclado y disposición del LED indicador}
+
+El teclado en conjunto con el \ac{LED} indicador se encuentran representados a través del bloque KB1, el cual se observa en la figura \ref{fig:sch.ih.kbled}.
+\figuraot{Circuito esquemático de la conexión con teclado y con el LED indicador}{fig:sch.ih.kbled}{}{sch-ih-kbled}{!t}
+Se realizó de esta manera, porque el \ac{LED} indicador se encuentra ubicado --en la \ac{PCB} de la \ac{IH}-- de forma relativa a los contactos del teclado, lo que resultó una conveniencia en términos de diseño.
+
+El teclado es simplemente una matriz de contactos que interconectan su respectiva fila con su respectiva columna. El mismo se verá ejemplificado en el diseño de la \ac{PCB} (sección \ref{sec:pcb}).
+
+Los pines \bp{LED+} y \bp{LED-} del bloque KB1 representan respectivamente las conexiones directas al ánodo y cátodo del \ac{LED} indicador. Esto quiere decir que no posee resistores, inclusive la conexión al pin \bp{RB3} es directa sin resistor. Esto no es un problema debido a que \bp{RB3} tiene limitado internamente la circulación de corriente a unos 25\un{mA}. Además esta corriente, en promedio, se puede regular con la característica de \ac{PWM} de esta salida.
+
+
+\subsection{Dispositivo de detección de la orquilla}
+
+Para la detección del evento de la orquilla se utilizó un sensor de efecto HALL tipo \textsl{switch}. El mismo detecta la presencia del tubo telefónico a través del campo magnético producido por el imán del parlante del auricular. Este sensor (U3), observado en la figura \ref{fig:sch.ih.hall},
+\figuraob{Circuito esquemático de la conexión al sensor de orquilla}{fig:sch.ih.hall}{}{sch-ih-hall}{!b}
+tiene un conexionado externo muy simple debido a sus características integradas.
+
+En un principio se utilizó el sensor \mbox{FS177LF-A}, el cual si bien detectaba sin inconvenientes la proximidad del tubo telefónico, no regresaba al estado previo cuando el tubo se alejaba. El problema fue que se trata de un sensor tipo \textsl{latch} de doble polaridad magnética. Esto significa que para cambiarlo al estado inicial había que someterlo a un campo magnético inverso. Entonces el sensor utilizado actualmente es un sensor HALL tipo \textsl{switch} con el código \mbox{A3141EU} \cite{A3141EU}. Éste se alimenta con 5\un{V} y posee internamente a su salida (\bp{OUT}, pin 3) un transistor en modo colector abierto. Este transistor en conjunto con la resistencia interna de \textsl{pull-up} del puerto ``B'' del \ac{uC} fijan el estado lógico `0' o `1' en el pin \bp{RB0} del \ac{uC}.
+
+La ventaja de utilizar este sensor a modo de \textsl{switch} es su característica de estado sólido (no mecánico) y su rango de histéresis, lo cual que evita el rebote octal en los cambios de estado.
+
+
+
+\subsection{Interfaz ICSP, oscilador y reset}
+
+La interfaz \ac{ICSP}, como se ha visto de forma descriptiva en la sección \ref{sec:des.ICSP}, comparte sus pines con el teclado (\bp{RB7/PGD} y \bp{RB6/PGC}) y con el reset (\bn{MCLR}\bp{/V\sit{PP}}).
+
+Con un nivel lógico `0' (0\un{V}) sobre el pin \bn{MCLR}\bp{/V\sit{PP}} se somete al \ac{uC} al modo reset (ver figura \ref{fig:sch.ih.misc}).
+\figuraob{Circuito esquemático de conexiones varias}{fig:sch.ih.misc}{}{sch-ih-misc}{!b}
+Esto se logra presionando el interruptor S1, lo cual produce una caída de tensión en el punto entre D3 y R17, logrando que se produzca la descarga de C23 a través de R9. En el caso de soltar S1 o en la primera vez que se energiza todo el sistema, C23 se carga a través de R17 y D3 con una tensión $V_{C_{23}}$ de:
+\[ V_{C_{23}}=\frac{V_5-V_{D_3}}{R_{17}+R_9}\cdot R_9 = \frac{5\un{V}-0.7\un{V}}{1\un{K$\Omega$}+100\un{K$\Omega$}}\cdot 100\un{K$\Omega$} \approx 4.257\un{V} \]
+Esta es de un valor suficientemente alto, tal que se interpreta como un nivel lógico `1' ($\approx$5\un{V}). Esto establece al \ac{uC} en el modo de operación normal.
+
+Para que el \ac{uC} entre en modo programación hace falta aplicar sobre el pin \bn{MCLR}\bp{/V\sit{PP}} una tensión, como mínimo de $V_{DD} + 3.5\un{V}=8.5\un{v}$ y como máximo de $13.5\un{V}$ \cite{pic16f87x.programming}. Es ahí donde D3 cumple la función de impedir la circulación de corriente hacia la fuente V5 y evitar el posible cortocircuito al presionar S1.
+
+La tensión de \bp{V\sit{PP}} es accesible vía el pin 4 del conector JP4. A través de los pines 2 y 3 de JP4 se accede también a \bp{RB6/PGC} y \bp{RB7/PGD} respectivamente. Esto se hace sin la necesidad de alguna protección porque en el modo de operación normal del \ac{uC} estos pines son entradas digitales, es decir --de alta impedancia--.
+
+Los pines 1 y 5 de JP4 otorgan un acceso directo a la alimentación del \ac{uC}, la cual es necesaria al momento de la programación (\ac{ICSP}).
+
+El oscilador está conformado externamente por un cristal (Y1) de 20MHz y dos capacitores de 15\un{pF} (C19 y C20) necesarios según \cite{pic16f87x}.
+
+
+
+%\section{Programación y ensayo del prototipo}
+

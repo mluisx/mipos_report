@@ -1,0 +1,882 @@
+%\chapter{Descripción del Hardware a Utilizar}
+\chapter{Estudio exploratorio de carácter bibliográfico del Hardware a utilizar en el desarrollo de la \acs{IH}}
+%\sffamily
+
+Para la construcción de la \ac{IH} se utiliza una serie de componentes de los cuales los más importantes van a ser descriptos a continuación.
+
+\section{El \acs{LCD} LPH7366 y su controlador PCD8544}
+\label{sec:def.pcd8544}
+El \ac{LCD} es un display blanco y negro de 48x84 píxeles. El manejo de este \ac{LCD} lo realiza un controlador \cite{pcd8544} incorporado.  Esto reduce notablemente el inconveniente del control del barrido y actualización de los píxeles, así como también el manejo de una gran cantidad de contactos de filas y columnas del \ac{LCD}. El controlador se maneja a través de 9 contactos, los cuales se describen a continuación:
+\begin{enumerate}
+	\label{ref:LCD-lineas}
+	\item \bp{VCC} Alimentación (positivo)
+	\item \bp{SCLK} Señal de \textsl{clock}
+	\item \bp{SDIN} Entrada serial de datos
+	\item \bpn{D}{C} Datos o Comandos
+	\item \bn{SCE} Chip activado
+	\item \bp{OSC} Entrada de oscilador externo de 32768\un{Hz} (opcional)
+	\item \bp{GND} Alimentación (masa)
+	\item \bp{VOUT} Tensión generada internamente para el LCD
+	\item \bn{RES} Reset del controlador
+\end{enumerate}
+La alimentación puede ser como máximo de 3,3\un{V} para el modo de generación interna de tensión para el \ac{LCD}.
+Las señales \bp{SCLK} y \bp{SDIN} son las principales encargadas de la transmisión serial de bits.
+La señal \bpn{D}{C} indica el tipo instrucción que se transmite, pudiendo ser un dato de píxeles o un comando específico.
+\bn{SCE} se utiliza para activar el chip (o seleccionarlo en otras palabras) y al mismo tiempo reiniciar el contador interno de bits.
+A través de estas señales y de un protocolo se puede acceder a controlar todos los recursos del \ac{LCD}. Por ejemplo, el control de los píxeles se hace mediante la abstracción de manejar una memoria, en donde cada bit de esa memoria corresponde a un píxel de la pantalla. Esa memoria está integrada dentro del controlador del \ac{LCD}.
+
+
+\subsection{Instrucciones}
+\label{sec:def.lcd.cmd}
+El formato de instrucción se divide en dos modos: Si \bpn{D}{C} $=0$, el byte actual es interpretado como un byte de comando. Si  \bpn{D}{C} $=1$, el siguiente byte se almacena en la \ac{RAM} de datos de presentación. Ver tabla \ref{tab:lcd.cmd}. El contador de dirección se incrementa automáticamente luego de cada byte.
+
+\begin{tablaob}{Conjunto de instrucciones del PCD8544}{tab:lcd.cmd}{!b}
+	\footnotesize
+%\begin{tabular}[c]{||c||@{}c@{}||@{}c@{}|@{}c@{}|@{}c@{}|@{}c@{}|@{}c@{}|@{}c@{}|@{}c@{}|@{}c@{}||p{4cm}||}
+	\begin{tabular}[c]{||c|@{\,}c@{\,}|c@{}c@{}c@{}c@{}c@{}c@{}c@{}c|p{4cm}||}
+			\hline
+			\hline
+			\textbf{Instrucciones} & \bpn{D}{C} & \multicolumn{8}{|c|}{\textbf{Comando}} & \textbf{Descripción}\\
+			\cline{3-10}
+			& & 7 & 6 & 5 & 4 & 3 & 2 & 1 & 0 & \\ \hline
+			\multicolumn{11}{|l|}{\textbf{H = X}}\\ \hline
+			NOP & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & Operación nula\\ \hline
+			Configuración de función & 0 & 0 & 0 & 1 & 0 & 0 & PD & V & H & Control de apagado; Modo de entrada; Control de conjunto de instrucciones extendida\\ \hline
+			 Escritura de datos & 1 & D\sit{7} & D\sit{6} & D\sit{5} & D\sit{4} & D\sit{3} & D\sit{2} & D\sit{1} & D\sit{0} & Escribe datos a la \ac{RAM} de presentación\\ \hline
+			\multicolumn{11}{|l|}{\textbf{H = 0}}\\ \hline
+			Reservado & 0 & 0 & 0 & 0 & 0 & 0 & 1 & X & X & No usado\\ \hline
+			Control de pantalla & 0 & 0 & 0 & 0 & 0 & 1 & D & 0 & E & Fija la configuración de pantalla\\ \hline
+			Reservado & 0 & 0 & 0 & 0 & 1 & X & X & X & X & No usado\\ \hline
+			Fija dirección Y de RAM & 0 & 0 & 1 & 0 & 0 & 0 & Y\sit{2} & Y\sit{1} & Y\sit{0} & 0 $\leq$ Y $\leq$ 5\\ \hline
+			Fija dirección X de RAM & 0 & 1 & X\sit{6} & X\sit{5} & X\sit{4} & X\sit{3} & X\sit{2} & X\sit{1} & X\sit{0} & 0 $\leq$ X $\leq$ 83\\ \hline
+			\multicolumn{11}{|l|}{\textbf{H = 1}}\\ \hline
+			Reservado & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & No usado\\ \hline
+			Reservado & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & X & No usado\\ \hline
+			Control de temperatura & 0 & 0 & 0 & 0 & 0 & 0 & 1 & TC\sit{1} & TC\sit{0} & Fija el coeficiente de temperatura (TC\sit{X})\\ \hline
+			Reservado & 0 & 0 & 0 & 0 & 0 & 1 & X & X & X & No usado\\ \hline
+			\textsl{Bias} del sistema & 0 & 0 & 0 & 0 & 1 & 0 & BS\sit{2} & BS\sit{1} & BS\sit{0} & Fija el \textsl{bias} del sistema (BS\sc{X})\\ \hline
+			Reservado & 0 & 0 & 1 & X & X & X & X & X & X & No usado\\ \hline
+	 		Fijar V\sit{OP} & 0 & 1 & V\sit{6} & V\sit{5} & V\sit{4} & V\sit{3} & V\sit{2} & V\sit{1} & V\sit{0} & Escribe el registro V\sit{OP}\\ \hline
+		 \hline
+		\end{tabular}\\[5mm]
+	\normalsize
+\end{tablaob}
+
+\begin{tablaot}{Referencias de la tabla \ref{tab:lcd.cmd}}{tab:lcd.cmd.ref}{!t}
+	\begin{tabular}{||r|l||}
+		\hline
+		\multicolumn{2}{||l||}{\textbf{PD}} \\
+		\hline
+		0 & Chip activo\\
+		1 & Chip en modo de bajo consumo\\
+		\hline\hline
+		\multicolumn{2}{||l||}{\textbf{V}} \\
+		\hline
+		0 & Direccionamiento horizontal\\
+		1 & Direccionamiento vertical\\
+		\hline\hline
+		\multicolumn{2}{||l||}{\textbf{H}} \\
+		\hline
+		0 & Usar conjunto básico de instrucciones\\
+		1 & Usar conjunto extendido de instrucciones\\
+		\hline\hline
+		\multicolumn{2}{||l||}{\textbf{D:E}} \\
+		\hline
+		00 & Pantalla en blanco\\
+		01 & Pantalla en negro\\
+		10 & Modo normal\\
+		11 & Modo negativo\\
+		\hline\hline
+		\multicolumn{2}{||l||}{\textbf{TC\sit{1}:TC\sit{0}}} \\
+		\hline
+		00 & Coeficiente de temperatura 0 de V\sit{LCD}\\
+		01 & Coeficiente de temperatura 1 de V\sit{LCD}\\
+		10 & Coeficiente de temperatura 2 de V\sit{LCD}\\
+		11 & Coeficiente de temperatura 3 de V\sit{LCD}\\
+		\hline
+	\end{tabular}\\[5mm]
+\end{tablaot}
+
+El valor de \bpn{D}{C} es leído durante el último bit del actual byte transmitido.
+
+Las instrucciones pueden ser enviadas al PCD8544 en cualquier orden. El \ac{MSb} de un byte se transmite primero.
+
+La interfaz serial se inicializa cuando \bn{SCE} $=1$. En este estado son ignorados los pulsos de \textsl{clock}  sobre \bp{SCLK} y la interfaz serial se encuentra en bajo consumo. Un flanco de bajada sobre \bn{SCE} habilita la interfaz serial e indica el inicio de una transmisión de datos.
+
+\bp{SDIN} es muestreado en el flanco de subida de \bp{SCLK}.
+
+Si se mantiene \bn{SCE} $=0$ luego del último bit del byte de instrucción, la interfaz serial esperará el bit 7 del próximo byte en el siguiente flanco positivo de \bp{SCLK}.
+
+Un pulso de \bn{RES} $=0$ interrumpe la transmisión. Los datos no son escritos en la \ac{RAM}. Se borran los registros. Si \bn{SCE} $=0$ luego del flanco de subida de \bn{RES}, la interfaz serial estará lista para recibir el bit 7 de un byte de instrucción.
+
+La frecuencia de \textsl{clock} permitida para la transferencia de datos es $f_{SCLK} \leq 4\un{MHz}$.
+
+Si se desea utilizar el oscilador interno del \ac{LCD} es necesario conectar la señal \bp{OSC} a \bp{VCC}.
+
+
+\section{El \ac{uC} PIC16F876}
+\label{sec:des.uc}
+Este \ac{uC} \cite{pic16f87x} es el componente central del control de la \ac{IH}.
+Éste, incorpora un módulo que se encarga de la conversión \mbox{analógica$\rightarrow$digital} de la señal de audio --previamente filtrada-- proveniente del micrófono. Este \ac{uC} también realiza la conversión \mbox{digital$\rightarrow$analógica} de la secuencia de audio digital, a través de un \ac{PWM}, la cual es reproducida en el altavoz y/o en el auricular. Es decir, el auricular siempre está reproduciendo el audio de retorno y solo es el altavoz el cual es habilitado o inhabilitado por el \ac{uC}. Además, para la interconexión con el \ac{HOST} se utiliza un puerto \ac{UART}. Éste se encuentra configurado con una tasa de bits de 115200\un{bps} aproximadamente, con un solo bit de parada y sin bit de paridad. Este puerto es controlado por un módulo que se encuentra incorporado en el \ac{uC}. Este \ac{uC}, también realiza las tareas de manejar un teclado multiplexado, leer el estado de la orquilla del teléfono, controlar un \ac{LCD} y manejar un LEDs indicador.
+
+
+\subsection*{Las características principales de este \ac{uC} son}
+
+\begin{itemize}
+	\item \acsu{CPU} \acsu{RISC}
+	\item 35 instrucciones de programa
+	\item Todas las instrucciones son de un solo ciclo de maquina excepto las de salto
+	\item Velocidad de Operación: DC--20\un{MHz} para la frecuencia de \textsl{clock} o para el período del ciclo de maquina de \mbox{DC--200\un{ns}}
+	\item \acfn{FLASH} de programa de \mbox{4\un{K} x 14\un{bits}} (capacidad para 8192 instrucciones)
+	\item Memoria estática de datos para el usuario de 368\un{Bytes}
+	\item \acfn{EEPROM} de datos para el usuario de 256\un{Bytes}
+	\item Pinout compatible con PIC16C73B/74B/76/77
+	\item Capacidad de interrupción (por 13 fuentes)
+	\item Ocho niveles de profundidad para la pila de hardware (referido a la cantidad de subrutinas embebidas)
+	\item Modos de direccionamiento: directo, indirecto y relativo
+	\item \ac{POR}
+	\item \ac{PWRT} y Temporizador de arranque del oscilador (\acs{OST})
+	\item \ac{WDT} con su propio oscilador RC interno para una operación independiente
+	\item Protección del código programable
+	\item \acfn{SLEEP} para ahorro de energía
+	\item Selección de modos del oscilador
+	\item Tecnología \acsu{CMOS} \mbox{\acs{FLASH}/\acsu{EEPROM}} de bajo consumo y alta velocidad
+	\item \ac{ICSP} a través de 2 pines
+	\item Capacidad \ac{ICSP} con alimentación simple de 5\un{V} (sin necesidad de alta tensión de programación)
+	\item Debugging In-Circuit (depuración ya soldado en la placa) a través de 2 pines
+	\item Acceso a la memoria de programa en tiempo de ejecución (run-time)
+	\item Amplio rango de tensión de alimentación: 2,0\un{V} a 5,0\un{V}
+	\item Alta capacidad de salida o entrada de corriente por los puertos de propósito general: 25\un{mA}
+	\item Rangos de temperatura Comercial, Industrial y Extendido
+	\item Poco consumo:
+	\begin{itemize}
+		\item $<$ 0,6\un{mA} @ 3\un{V} y 4\un{MHz}
+		\item 20\un{$\mu$A} @ 3\un{V} y 32\un{KHz}
+		\item $<$ 1\un{$\mu$A} en modo de suspensión (\acsu{SLEEP})
+	\end{itemize}
+\end{itemize}
+
+\subsection*{Las características de sus periféricos son}
+
+\begin{itemize}
+	\item Timer0: Temporizador/contador de 8\un{bits} con \textsl{prescaler} de 8\un{bits}
+	\item Timer1: Temporizador/contador de 16\un{bits} con \textsl{prescaler}, que puede ser incrementado durante el estado de \acsu{SLEEP} a través del un cristal/\textsl{clock} externo
+	\item Timer2: Temporizador/contador de 8\un{bits} con un registro de un período de 8\un{bits}, \textsl{prescaler} y \textsl{postscaler}
+	\item Dos módulos con funciones de Captura, Comparación o \ac{PWM}
+	\begin{itemize}
+		\item El registro de captura es de 16\un{bits}, con una resolución máxima de 12,5\un{ns}
+		\item El registro de comparación es de 16\un{bits}, con una resolución máxima de 200\un{ns}
+		\item La resolución máxima del \ac{PWM} es de 10\un{bits}
+	\end{itemize}
+\end{itemize}
+
+\figuraob{Distribución de pines del PIC16F876}{fig:PIC16F876-pinout}{width=0.7\textwidth}{PIC16F876-pinout.png}{!b}
+
+
+
+
+
+
+
+
+
+\section{Su módulo \acs{USART}}
+\label{sec:def.USART}
+El módulo \ac{USART} es uno de dos módulos de \ac{io} serial \cite{pic16f87x.usart}. El \ac{USART} puede ser configurado como un sistema asincrónico \textsl{full--duplex} que puede comunicarse con dispositivos tales como computadoras personales, o puede ser configurado como un sistema sincrónico \textsl{half--duplex} que puede comunicarse con dispositivos como ser circuitos integrados A/D o D/A, \acsp{EEPROM} seriales, etc.
+
+El \ac{USART} puede ser configurado en los siguientes modos:
+\begin{itemize}
+	\item Asincrónico (\textsl{full--duplex})
+	\item Sincrónico - Master (\textsl{half--duplex})
+	\item Sincrónico - Esclavo (\textsl{half--duplex})
+\end{itemize}
+
+Para configurar los puertos \bp{RC6/TX/CK} y \bp{RC7/RX/DT} como \ac{USART} se debe fijar el bit \bp{SPEN} (\reg{RCSTA<7>}) y los bits \reg{TRISC<7:6>}, todos en un valor lógico `1'.
+
+El módulo \ac{USART} también cuenta con la capacidad de comunicación multiprocesador haciendo uso de un noveno bit de detección de dirección.
+
+\subsection{\acf{BRG}}
+\label{sec:def.USART.BRG}
+El \ac{BRG} soporta ambos modos del \ac{USART}, asincrónico y sincrónico. El registro \reg{SPBRG} controla el período de un temporizador de 8\un{bits}. En el modo asincrónico, el bit \bp{BRGH} (\reg{TXSTA<2>}) varía la tasa de bits. En cambio en el modo sincrónico es ignorado. La tabla \ref{tab:BRG.formulas} muestra como calcular la tasa de bits en los diferentes casos, los cuales se aplican solo en modo maestro (\textsl{clock} interno).
+\begin{tablao}{Modos de configuración del \acs{BRG}}{tab:BRG.formulas}{!h}
+	\begin{tabular}{|c|r@{$=$}l|c|}
+		\hline
+		\bp{SYNC} & \multicolumn{2}{c|}{\bp{BRGH} = 0 (baja velocidad)} & \reg{BRGH} = 1 (alta velocidad)\\
+		\hline\hline
+		0 & $V$ & $f_{OSC}/[64\cdot(X+1)]$ & $V=f_{OSC}/[16\cdot(X+1)]$\\
+		1 & $V$ & $f_{OSC}/[4\cdot(X+1)]$ & -- \\
+		\hline
+		\multicolumn{4}{c}{\small{Siendo $X = \regf{SPBRG}$}}\\
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+\begin{tablaot}{\reg{TXSTA}: Registro de control y estado de transmisión (dirección 98h)}{tab:TXSTA}{!t}
+	\tablaochobits
+			{R/W-0 & R/W-0 & R/W-0 & R/W-0 & U-0 & R/W-0 & R-1 & R/W-0}
+			{\bp{CSRC}}	{\bp{TX9}}	{\bp{TXEN}}	{\bp{SYNC}}	{--}	{\bp{BRGH}}	{\bp{TRMT}}	{\bp{TX9D}}
+\begin{description}
+	\item[7] \bp{CSRC}: Bit de selección de fuente de \textsl{clock}.\\
+		No usado en modo asincrónico.\\
+		
+	\item[6] \bp{TX9}: Bit de habilitación de la transmisión del noveno bit.\\
+		1 = Selecciona transmisión de 9 bits.\\
+		0 = Selecciona transmisión de 8 bits.\\
+		
+	\item[5] \bp{TXEN}: Bit de habilitación de transmisión.\\
+		1 = Habilitar transmisión.\\
+		0 = Inhabilitar transmisión.\\
+	
+	\item[4] \bp{SYNC}: Bit de selección de modo de \acs{USART}.\\
+		1 = Modo sincrónico.\\
+		0 = Modo asincrónico.\\
+		
+	\item[2] \bp{BRGH}: Bit de selección de alta tasa de bits.\\
+		1 = Alta velocidad.\\
+		0 = Baja velocidad.\\
+		
+	\item[1] \bp{TRMT}: Bit de estado del registro de desplazamiento del transmisor.\\
+		1 = \reg{TSR} vacío.\\
+		0 = \reg{TSR} lleno.\\
+		
+	\item[0] \bp{TX9D}: Noveno bit de transmisión de datos (puede ser un bit de paridad, pero debe ser calculado por software).\\
+\end{description}
+	\vspace{8mm}
+	\textbf{Nota}: La descripción de este registro se encuentra simplificada para el caso del modo asincrónico.
+\end{tablaot}
+
+\begin{tablaot}{\reg{RCSTA}: Registro de control y estado de recepción (dirección 18h)}{tab:RCSTA}{!t}
+	\tablaochobits
+			{R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0 & R-0 & R-0 & R-x}
+			{\bp{SPEN}}	{\bp{RX9}}	{\bp{SREN}}	{\bp{CREN}}	{\bp{ADDEN}}	{\bp{FERR}}	{\bp{OERR}}	{\bp{RX9D}}
+\begin{description}
+	\item[7] \bp{SPEN}: Bit de habilitación del puerto serial.\\
+		1 = Puerto serial habilitado (configura \bp{RC6/TX/CK} y \bp{RC7/RX/DT} como pines del puerto serial).\\
+		0 = Puerto serial inhabilitado.
+		
+	\item[6] \bp{RX9}: Bit de habilitación de la recepción del noveno bit.\\
+		1 = Selecciona recepción de 9\un{bits}.\\
+		0 = Selecciona recepción de 8\un{bits}.\\
+		
+	\item[5] \bp{SREN}: Bit de habilitación de recepción única.\\
+		No usado en modo asincrónico.
+	
+	\item[4] \bp{CREN}: Bit de habilitación de recepción continua.\\
+		1 = Habilita la recepción continua.\\
+		0 = Inhabilita la recepción continua.\\
+		
+	\item[2] \bp{ADDEN}: Bit de habilitación de la detección de dirección.\\
+		\underline{Solo en modo asincrónico de 9\un{bits}}.\\
+		1 = Habilita la detección de dirección.\\
+		0 = Inhabilita la detección de dirección.\\
+		
+	\item[1] \bp{FERR}: Bit de error de entramado.\\
+		1 = Entramado erróneo.\\
+		0 = Sin error de entramado.\\
+		
+	\item[0] \bp{RX9D}: Noveno bit de recepción de datos (puede ser un bit de paridad, pero debe ser calculado por software).\\
+\end{description}
+	\vspace{8mm}
+	\textbf{Nota}: La descripción de este registro se encuentra simplificada para el caso del modo asincrónico.
+\end{tablaot}
+
+
+\subsection{Modo asincrónico}
+\label{sec:def.USART.asincro}
+En este modo, el \ac{USART} usa el formato estándar \ac{NRZ}. La secuencia es un bit de START, ocho o nueve bits de datos y un bit de STOP. El formato de datos más común es de 8\un{bits}. La tasa de bits estándar puede ser derivada de un generador de tasa de bits de 8\un{bits}, dedicado e incorporado en el chip. El \ac{USART} transmite y recibe el \ac{LSb} primero. La transmisión y la recepción funcionan independientemente pero usan el mismo formato de datos y tasa de bits.
+
+
+\subsection{Transmisor asincrónico}
+\label{sec:def.USART.asincro.tx}
+El corazón del transmisor es un registro de desplazamiento de transmisión (\reg{TSR}), el cual obtiene sus dato desde un registro buffer de transmisión de lectura/escritura llamado \reg{TXREG}. El \reg{TXREG} es cargado con datos desde el software. El registro \reg{TSR} no es cargado hasta que no haya sido trasmitido el bit de STOP de la carga anterior. Tan pronto como este bit sea transmitido, \reg{TSR} es cargado con un nuevo dato procedente del registro \reg{TXREG}, si es que este dato está disponible. Una vez que se ha producido la transferencia, \reg{TXREG} se vacía y se activa el bit de bandera de interrupción \bp{TXIF} (\reg{PIR1<4>}). Esta interrupción puede ser habilitada o inhabilitada, activando o desactivando el bit \bp{TXIE} (\reg{PIE1<4>}). El bit \bp{TXIF} no puede ser desactivado por software.
+
+Para configurar la transmisión asincrónica se pueden seguir estos pasos:
+\begin{enumerate}
+	\item Inicializar el registro \reg{SPBRG} con el valor apropiado a la tasa de bits. Si se opta por una alta tasa de bits, activar el bit \bp{BRGH} (sección \ref{sec:def.USART.BRG}).
+	\item Habilitar el modo asincrónico haciendo
+		\begin{itemize}
+			\item \bp{SYNC} $=0$ (\reg{TXSTA<4>})
+			\item \bp{SPEN} $=1$ (\reg{RCSTA<7>})
+	\end{itemize}
+	\item Si se opta por la interrupción, activar el bit \bp{TXIE}.
+	\item Si se opta por la transmisión de 9\un{bits}, activar el bit \bp{TX9}.
+	\item Habilitar la transmisión activando el bit \bp{TXEN}, el cual activará también el bit \bp{TXIF}.
+	\item Si se ha seleccionado la transmisión de 9\un{bits}, el noveno bit se fijará en función del bit \bp{TX9D}.
+	\item Cargando datos en el registro \reg{TXREG} se iniciará la transmisión.
+	\item Si se utiliza interrupción, asegurarse de activar los bits \bp{GIE} (\reg{INTCON<7>}) y \bp{PEIE} (\reg{INTCON<6>}).
+\end{enumerate}
+
+\subsection{Receptor asincrónico}
+\label{sec:def.USART.asincro.rx}
+Los datos son recibidos sobre el pin \bp{RC7/RX/DT} los cuales son procesados por un bloque de recuperación. Dicho bloque es un registro de desplazamiento el cual opera a 16 veces la velocidad de la tasa de bits.
+
+La recepción se habilita activando el bit \bp{CREN} (\reg{RCSTA<4>}).
+
+El corazón del receptor es un registro de desplazamiento de recepción (\reg{RSR}). Luego del muestreo del bit de STOP, el dato recibido en \reg{RSR} es transferido al registro \reg{RCREG}. Si la transferencia se ha completado se activa el bit de bandera de interrupción \bp{RCIF} (\reg{PIR1<5>}). La interrupción puede ser habilitada o inhabilitada, activando o desactivando el bit de habilitación \bp{RCIE} (\reg{PIE1<5>}). El bit \bp{RCIF} es de solo lectura y es desactivado por hardware cuando el registro \reg{RCREG} ha sido leído. Este registro es un doble buffer, o sea un FIFO de tamaño 2. Entonces si se recibe un tercer byte, estando \reg{RCREG} lleno, se produce un desbordamiento tras la detección del bit de STOP. Esto produce la activación del bit \bp{OERR} (\reg{RCSTA<1>}) y el descarte del antedicho tercer byte. \bp{OERR} tiene que ser borrado por software. Para hacerlo hay que resetear la lógica de recepción, desactivando y luego activando el bit \bp{CREN}. Es importante hacer esto porque mientras \bp{OERR} permanezca activo se inhabilita la transferencia de \reg{RSR} a \reg{RCREG} lo que impide la recepción de nuevos datos.
+
+El bit \bp{FERR} (\reg{RCSTA<2>}) se activa cuando se ha detectado un bit de STOP como `0'. Los bits \bp{FERR} y \bp{RX9D} son almacenados en el FIFO de la misma manera que el dato recibido. Leyendo \reg{RCREG} se permitirá la nueva carga de los bits \bp{FERR} y \bp{RX9D} junto con el próximo dato. Por eso es importante leer \reg{RCSTA} antes de la nueva lectura de \reg{RCREG} de manera de no perder la información de estado precedente.
+
+Para configurar la recepción asincrónica seguir estos pasos:
+\begin{enumerate}
+	\item Inicializar el registro \reg{SPBRG} con el valor apropiado a la tasa de bits. Si se opta por una alta tasa de bits, activar el bit \bp{BRGH} (sección \ref{sec:def.USART.BRG}).
+	\item Habilitar el modo asincrónico haciendo
+		\begin{itemize}
+			\item \bp{SYNC} $=0$ (\reg{TXSTA<4>})
+			\item \bp{SPEN} $=1$ (\reg{RCSTA<7>})
+		\end{itemize}
+	\item Si se opta por la interrupción, activar el bit \bp{RCIE}.
+	\item Si se opta por la recepción de 9\un{bits}, activar el bit \bp{RX9}.
+	\item Habilitar la recepción activando el bit \bp{CREN}.
+	\item Cuando la recepción se ha completado se activa el bit \bp{RCIF}, además si el bit \bp{RCIE} está activo se genera una interrupción.
+	\item Leer el registro \reg{RCSTA} para obtener, de ser el caso, el noveno bit y además determinar los errores ocurridos durante la recepción.
+	\item Leer los 8\un{bits} recibidos leyendo el registro \reg{RCREG}.
+	\item Si ha ocurrido algún error, limpiarlo reseteando el bit \bp{CREN}.
+	\item Si se utiliza interrupción, asegurarse de activar los bits \bp{GIE} (\reg{INTCON<7>}) y \bp{PEIE} (\reg{INTCON<6>}).
+\end{enumerate}
+\begin{quote}
+	Los primeros dos puntos y el último punto son comunes a la configuración tanto de receptor como del transmisor.
+\end{quote}
+
+
+
+
+
+
+\section{Su módulo Timer1}
+\label{sec:def.Timer1}
+El módulo Timer1 \cite{pic16f87x.timer1} es un temporizador/contador que consiste de 2 registros de 8\un{bits} (\reg{TMR1H} y \reg{TMR1L}), los cuales son de lectura y escritura. La pareja de registros del Timer1 (\reg{TMR1H:TRM1L}) se incrementa desde 0000h a FFFFh volviendo en el próximo paso a 0000h.
+
+El Timer1 puede operar en uno de dos modos:
+\begin{itemize}
+	\item Como un temporizador
+	\item Como un contador
+\end{itemize}
+El modo de operación se determina fijando el bit de selección de \textsl{clock}, \bp{TMR1CS} (\reg{T1CON<1>}).
+
+En modo temporizador, el Timer1 se incrementa por cada ciclo de instrucción ($f_{OSC}/4$). En modo contador, se incrementa por cada flanco de subida de la entrada externa de \textsl{clock}.
+
+El Timer1 se puede habilitar/inhabilitar activando/desactivando el bit de control \bp{TMR1ON} (\reg{T1CON<0>}).
+
+El Timer1 cuenta con una entrada de reset interna. Este reset puede ser generado por cualquiera de los dos módulos \acs{CCP} (sección \ref{sec:def.CCP}). La tabla \ref{tab:T1CON} muestra el registro de control del Timer1.
+
+\begin{tablaot}{\reg{T1CON}: Registro de control del Timer1 (dirección 10h)}{tab:T1CON}{!t}
+	\tablaochobits
+		{U-0 & U-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0}
+		{--}	{--}	{\bpt{T1CKPS1}}	{\bpt{T1CKPS0}}	{\bpt{T1OSCEN}}	{\bnt{T1SYNC}}	{\bpt{TMR1CS}}	{\bpt{TMR1ON}}
+	\begin{description}
+		\item[7:6] \bp{No implementados}: Leídos como `0'.
+		
+		\item[5:4] \bp{T1CKPS1:T1CKPS0}: Bits de selección del \textsl{prescaler} del \textsl{clock}.\\
+		11 = 1:8\\
+		10 = 1:4\\
+		01 = 1:2\\
+		00 = 1:1
+		
+		\item[3] \bp{T1OSCEN}: Bit de control de habilitación del oscilador del Timer1.\\
+		1 = Oscilador habilitado (externo).\\
+		0 = Oscilador apagado (el inversor del oscilador esta apagado para reducir el consumo de energía).
+		
+		\item[2] \bn{T1SYNC}: Bit de control de la sincronización de la entrada de \textsl{clock} externa.\\
+		Cuando \bp{TMR1CS} $=0$, el bit \bn{T1SYNC} es ignorado.
+		
+		\item[1] \bp{TMR1CS}: Bit de selección de fuente de \textsl{clock} para el Timer1.\\
+		1 = \textsl{Clock} externo desde el pin \bp{RC0/T1OSO/T1CKI} (en el flanco de subida).\\
+		0 = \textsl{Clock} interno ($f_{OSC}/4$).
+		
+		\item[0] \bp{TMR1ON}: Bit de encendido del Timer1.\\
+		1 = Habilita el Timer1.\\
+		0 = Detiene el Timer1.
+		
+	\end{description}
+	\begin{quote}
+		Esta tabla se encuentra simplificado para el caso de la elección de oscilador interno.
+	\end{quote}
+\end{tablaot}
+
+\section{Su módulo Timer2}
+\label{sec:def.Timer2}
+Timer2 es un temporizador de 8\un{bits} con un \textsl{prescaler} y un \textsl{postscaler}\footnote{Ver  descripción de palabras en el apéndice \ref{sec:palabras} (pág. \pageref{sec:palabras})}. Se lo puede utilizar como una base de tiempo para el modo de \ac{PWM} del módulo \ac{CCP}. El registro \reg{TMR2} es de lectura y escritura y es borrado por algún dispositivo de RESET.
+
+La entrada de \textsl{clock} ($f_{OSC}/4$) tiene una opción de \textsl{prescaler} de 1:1, 1:4 o 1:16, que se selecciona con los bits de control \bp{T2CKPS} (\reg{T2CON<1:0>}).
+
+El módulo Timer2 cuenta con un registro de período de 8\un{bits} llamado \reg{PR2}. Timer2 incrementa desde 00h hasta coincidir con \reg{PR2} y luego se reinicia a 00h en el próximo ciclo de incremento. PR2 es un registro de lectura y escritura y es inicializado a FFh en RESET.
+
+La salida de coincidencia del TMR2 pasa a través de un \textsl{postscaler} de 4\un{bits} (el cual produce un escalamiento de 1:1 a 1:16 inclusive) para generar una interrupción por Timer2 --indicado en el bit \bp{TMR2IF} (\reg{PIR<1>})--.
+
+Desactivando el bit de control \bp{TMR2ON} (\reg{T2CON<2>}) se puede apagar el Timer2 para minimizar el consumo de energía.
+
+La tabla \ref{tab:T2CON} muestra el registro de control del Timer2.
+
+\begin{tablaot}{\reg{T2CON}: Registro de control del Timer2 (dirección 12h)}{tab:T2CON}{!t}
+	\tablaochobits
+		{U-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0}
+		{--}	{\bp{TOPS3}}	{\bp{TOPS2}}	{\bp{TOPS1}}	{\bp{TOPS0}}	{\bp{TMR2ON}}	{\bp{T2CKPS1}}	{\bp{T2CKPS0}}
+	\begin{description}
+		\item[7] \bp{No implementado}: Leídos como `0'.
+		
+		\item[6:3] \bp{TOPS3:TOPS0}: Bits de selección del \textsl{postscaler} de salida del Timer2.\\
+			0000 = 1:1\\
+			0001 = 1:2\\
+			0010 = 1:3\\
+			~\vdots\\
+			1111 = 1:16
+			
+		\item[2] \bp{TMR2ON}: Bit de activación del Timer2.\\
+			1 = Timer2 activado.\\
+			0 = Timer2 desactivado.
+			
+		\item[1:0] \bp{T2CKPS}: Bits de selección del \textsl{prescaler} del \textsl{clock} del Timer2.\\
+			00 = 1:1\\
+			01 = 1:4\\
+			1x = 1:16
+
+	\end{description}
+\end{tablaot}
+
+
+
+
+
+
+\section{Su módulo \acs{CCP}}
+\label{sec:def.CCP}
+Cada módulo \ac{CCP} contiene un registro de 16\un{bits} (\reg{CCPRxH:CCPRxL}) el cual opera como un:
+\begin{itemize}
+	\item Registro de captura de 16\un{bits}
+	\item Registro de comparación de 16\un{bits}
+	\item Registro de período del pulso del \acs{PWM} master/esclavo
+\end{itemize}
+Ambos módulos, CCP1 y CCP2, son idénticos en su operación, excepto la operación de disparo de evento especial.
+Las tablas \ref{tab:CCP.recu} y \ref{tab:CCP.inte} muestran los recursos y las interacciones de los módulos \ac{CCP}.
+\begin{tablaot}{Modos CCP - Recursos de Timer requeridos}{tab:CCP.recu}{!t}
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{Modo CCP} & \textbf{Recurso} \\
+		\hline\hline
+		Captura & Timer1\\	
+		Comparación & Timer1\\
+		PWM & Timer2\\
+		\hline
+	\end{tabular}\\[5mm]
+\end{tablaot}
+\begin{tablaot}{Interacción entre los dos módulos CCP}{tab:CCP.inte}{!t}
+	\begin{tabular}{|c|c|p{7cm}|}
+		\hline
+		\textbf{CCP\si{x}}	& \textbf{CCP\si{y}} & \textbf{Interacción}\\
+		\hline\hline
+		Captura & Captura & Misma base de tiempo Timer1\\\hline
+		Captura & Comparación & El comparador debería ser configurado para el disparo del evento especial, el cual reinicia el Timer1\\\hline
+		Comparación & Comparación & El/Los comparador/es debería/n ser configurado/s para el disparo del evento especial, el cual reinicia Timer1\\\hline
+		PWM & PWM & Los PWMs tendrán la misma frecuencia y tasa de actualización (interrupción del Timer2)\\\hline
+		PWM & Captura & Ninguna\\\hline
+		PWM & Comparación & Ninguna\\\hline
+	\end{tabular}\\[5mm]
+\end{tablaot}
+
+La tabla \ref{tab:CCPxCON} muestra la descripción tanto del registro \reg{CCP1CON} como la del \reg{CCP2CON}.
+
+\begin{tablaot}{\reg{Registro CCP1CON o CCP2CON} (dirección 17h o 1Dh)}{tab:CCPxCON}{!t}
+	\tablaochobits
+		{U-0 & U-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0}
+		{--}	{--}	{\bp{CCPxX}}	{\bp{CCPxY}}	{\bp{CCPxM3}}	{\bp{CCPxM2}}	{\bp{CCPxM1}}	{\bp{CCPxM0}}
+	\begin{description}
+		\item[7:6] \bp{No implementados}: Leídos como `0'.
+		
+		\item[5:4] \bp{CCPxX:CCPxY}: Bits menos significativos del PWM.\\
+		\underline{Modo Captura}: No usado.\\
+		\underline{Modo Comparación}: No usado.\\
+		\underline{Modo PWM}: Estos bits son los dos \acs{LSb}s del ciclo de trabajo del PWM. Los ocho \acs{MSb}s se encuentran en \reg{CCPRxL}.
+		
+		\item[3:0] \bp{CCPxM3:CCPxM0}: Bits de selección del modo.\\
+			0000 = CCPx inhabilitado (reinicia el módulo CCPx).\\
+			0100 = Modo captura, en cada flanco de bajada.\\
+			0101 = Modo captura, en cada flanco de subida.\\
+			0110 = Modo captura, en cada 4to flanco de subida.\\
+			0111 = Modo captura, en cada 16to flanco de subida.\\
+			1000 = Modo comparación, al coincidir se pasa a `1' la salida (se activa el bit \bp{CCPxIF}).\\
+			1001 = Modo comparación, al coincidir se pasa a `0' la salida (se activa el bit \bp{CCPxIF}).\\
+			1010 = Modo comparación, al coincidir sólo se genera una interrupción de software (se activa el bit \bp{CCPxIF}, el pin CCPx no es afectado).\\
+			1011 = Modo comparación, evento especial de disparo donde: CCP1 reinicia el Timer1 y CCP2 reinicia el Timer1 e inicia una conversión A/D (solo si el módulo A/D se encuentra habilitado).\\
+			11xx = Modo PWM.
+ 
+	\end{description}
+\end{tablaot}
+
+
+
+\subsection{Modo comparación}
+\label{sec:def.CCP.comp}
+En el modo comparación, el valor de los 16\un{bits} del registro \reg{CCPR1} es constantemente comparado frente al par de registros del Timer1 (ver sección \ref{sec:def.Timer1}). Cuando coinciden, el pin \bp{RC2/CCP1} es:
+\begin{itemize}
+	\item Puesto en `1'
+	\item Puesto en `0'
+	\item Mantenido sin modificación
+\end{itemize}
+La acción sobre el pin está basada en el valor del los bits de control \bp{CCP1Mx} (\reg{CCP1CON<3:0>}) (ver tabla \ref{tab:CCPxCON}). Al mismo tiempo, el bit de bandera de interrupción \bp{CCP1IF} es activado.
+
+En el modo de disparo de evento especial se genera un disparo de hardware interno el cual puede ser usado para iniciar una acción.
+
+La salida del disparo de evento especial del CCP1 reinicia el par de registros del Timer1. Esto permite al registro \reg{CCPR1} ser efectivamente un registro de periodo programable de 16\un{bits} para el Timer1.
+
+La salida de disparo de evento especial del CCP2 reinicia el par de registros del Timer1 e inicia una conversión A/D (solo si el módulo A/D se encuentra habilitado).
+
+\begin{center}
+	\begin{tabular}{|cp{0.7\textwidth}|}
+		\hline
+		\textbf{Nota:} & Los disparos de eventos especiales de los módulos CCP1 y CCP2 no activarán el bit de bandera de interrupción \bp{TMR1IF} (\reg{PIR1<0>}).\\
+		\hline
+	\end{tabular}
+\end{center}
+
+
+
+
+
+\subsection{Modo \acs{PWM}}
+\label{sec:def.CCP.PWM}
+%Como el \ac{uC} no cuenta explícitamente con un \ac{DAC}, se lo simula con una técnica de \ac{PWM}. El %\ac{PWM} se logra, por hardware, configurando uno de los temporizadores del \ac{uC}. Luego la salida digital %\acs{PWM} se la pasa por un filtro pasa--banda con el objetivo de integrar el período del \ac{PWM} y obtener %una señal analógica y bipolar.
+
+
+%Los recursos del \ac{uC} utilizados para el \ac{PWM} son un módulo llamado CCP1~\cite{pic16f87x.ccp} y el %Timer2~\cite{pic16f87x.timer2}.
+
+En el modo \ac{PWM} el pin \bp{CCP\sit{X}} es una salida de \ac{PWM} de hasta 10\un{bits} de resolución. Como  este pin está multiplexado con el puerto ``C'' de datos, el respectivo bit de \reg{TRISC} debe ser puesto a `0' para configurarlo como salida.
+
+Para calcular la frecuencia de operación del \ac{PWM} se utiliza la siguiente ecuación:
+	\[ f_{PWM}=\frac{f_{OSC}}{4\cdot(\regf{PR2}+1)\cdot\bpf{T2CKPS}} \]
+
+Donde \bp{T2CKPS} (\reg{T2CON<1:0>}) es el valor del \textsl{prescaler} del Timer2, \reg{PR2} es el registro que controla el período total del \ac{PWM} y $f_{OSC}$ es la frecuencia del cristal --para el oscilador usado con el \ac{uC}--. 
+
+Por lo tanto el período de PWM es de:
+	\[ t_{PWM}=\frac{1}{f_{PWM}}=\frac{4\cdot(\regf{PR2}+1)\cdot\bpf{T2CKPS}}{f_{OSC}} \]
+
+El período activo del ciclo es de:
+	\[ t_{activo}=\frac{\regf{DUTY}\cdot\bpf{T2CKPS}}{f_{OSC}} \]
+	
+\reg{DUTY} es la concatenación del registro \reg{CCPR1L} con los 2\un{bits} \reg{CCP1CON<5:4>}, conformando 10\un{bits} en total, donde \reg{CCPR1L} son los 8\un{MSb} y \reg{CCP1CON<5:4>} son los 2\un{LSb}.
+
+El porcentaje de período activo del ciclo \ac{PWM} es:
+	\[ p_{PWM}=\frac{t_{activo}}{t_{PWM}}=\frac{\regf{DUTY}}{4\cdot(PR2+1)} \]
+
+% La idea seria trabajar con una f_OSC de 16384KHz para hace obtener una f_PWM de 16KHz y 10bits completos de resolución del PWM, cargando PR2=0xFF y PreS_TMR2=1. 
+
+En adelante se enumeran los pasos a seguir para configurar el módulo CCP1 para ser usado como \ac{PWM}:
+\begin{enumerate}
+	\item Fijar el período del PWM cargando el registro PR2.
+	\item Fijar el período de ciclo activo cargando \reg{DUTY} (registro \reg{CCPR1L} junto con los bits 4 y 5 del registro \reg{CCP1CON}).% con un valor correspondiente al valor medio de la variación dinámica del registro (este valor representa los 0\un{V} en la salida analógica luego del filtro pasa--banda).
+	\item Configurar el pin \bp{CCP\sit{X}} como salida fijando a cero el respectivo bit en \reg{TRISC}.
+	\item Fijar el valor del \textsl{prescaler} del Timer2 (\bp{T2CKPS}) y habilitarlo cargando el registro \reg{T2CON}.
+	\item Configurar el módulo CCP\si{X} para usarlo como \ac{PWM} cargando en el registro \reg{CCP1CON} el valor binario \mbox{b'xxxx1100'}.
+	\begin{itemize}
+		\item \bp{CCP\sit{X}M3:CCP\sit{X}M0} $=1100$ $\rightarrow$ CCP\si{X} en modo \ac{PWM} 
+	\end{itemize}
+\end{enumerate}
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Su módulo \acs{ADC}}
+\label{sec:def.ADC}
+Este \ac{uC} incorpora un \ac{ADC} de 10\un{bits} de resolución que tiene cinco entradas. Cada una de las entradas analógicas carga un único capacitor de muestreo y retención (\textsl{Sample and Hold}). La salida de este último va a la entrada de \ac{ADC}, el cual genera una salida digital correspondiente al nivel analógico con el método de aproximaciones sucesivas. El \ac{ADC} cuenta con entradas de tensiones de referencia, tanto para el valor máximo como para el mínimo, que se pueden seleccionar vía software entre V\si{DD}, V\si{SS}, \bp{RA2} o \bp{RA3}.
+
+\begin{tablaob}{Registro \reg{ADCON0} (dirección 1Fh)}{tab:ADCON0}{!b}
+	\tablaochobits
+		{R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0 &					 U-0 & R/W-0}
+		{\bp{ADCS1}}	{\bp{ADCS0}}	{\bp{CHS2}}	{\bp{CHS1}}	{\bp{CHS0}}	{\bpn{GO}{DONE}}	{--}	{\bp{ADON}}
+\begin{description}
+	\item[7:6] \bp{ADCS1:ADCS0}: Bits de selección de relación de \textsl{clock} para el \ac{ADC}.\\
+	00 = F\si{OSC}/2\\
+	01 = F\si{OSC}/8\\
+	10 = F\si{OSC}/32\\
+	11 = F\si{RC} (\textsl{clock} proveniente del oscilador RC interno del \ac{ADC}).
+
+	\item[5:3] \bp{CHS2:CHS0}:  Bits de selección del canal analógico\Si{(a)}.\\
+	000 = canal 0, (\bp{RA0/AN0}).\\
+	001 = canal 1, (\bp{RA1/AN1}).\\
+	010 = canal 2, (\bp{RA2/AN2}).\\
+	011 = canal 3, (\bp{RA3/AN3}).\\
+	100 = canal 4, (\bp{RA5/AN4}).\\
+	
+	\item[2] \bpnbf{GO}{DONE}: Bit de estado de conversión del \ac{ADC}.\\
+	1 = El \ac{ADC} está en progreso de conversión (activando este bit se inicia la conversión del \ac{ADC}).\\
+	0 = El \ac{ADC} no está en progreso de conversión (este bit es puesto a cero por hardware de forma automática cuando se termina una conversión).
+	
+	\item[1] \textbf{No implementado:} Se lee como cero.
+	
+	\item[0] \bp{ADON}: Bit de encendido del \ac{ADC}.\\
+	1 = El \ac{ADC} está en modo operativo.\\
+	0 = El \ac{ADC} está apagado y solo consume la corriente del modo de no operación.
+
+\end{description}
+	\textbf{Nota \Si{a}:} Los canales de 5 al 7 no están disponibles para este \ac{uC}.
+\end{tablaob}
+
+El módulo \ac{ADC} se vincula con 4 registros, que se mencionan a continuación:
+\begin{itemize}
+	\item Registro más significativo del resultado (\bp{ADRESH})
+	\item Registro menos significativo del resultado (\bp{ADRESL})
+	\item Registro0 de control (\bp{ADCON0})
+	\item Registro1 de control (\bp{ADCON1})
+\end{itemize}
+
+El registro \reg{ADCON0} (tabla \ref{tab:ADCON0}) controla las operaciones del \ac{ADC}. El registro \reg{ADCON1} (tabla \ref{tab:ADCON1}) configura las funciones de los pines vinculados con los puertos. Estos pines se pueden configurar tanto como entradas analógicas, o como entradas/salidas digitales. Para el caso de los pines configurados como entradas analógicas, se deben configurar los respectivos bits del registro \reg{TRIS} como entradas.
+
+
+\begin{tablaob}{Registro \reg{ADCON1} (dirección 9Fh)}{tab:ADCON1}{!b}
+	\tablaochobits
+		{U-0 & U-0 & R/W-0 & U-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0}
+		{\bp{ADFM}}	{--}	{--}	{--}	{\bp{PCFG3}}	{\bp{PCFG2}}	{\bp{PCFG1}}	{\bp{PCFG0}}
+\begin{description}
+	\item[7] \bp{ADFM}: Bits de selección del formato del resultado\\
+	0 = Alineación a la derecha. Los 6\un{MSb} de \reg{ADRESH} son leídos como `0'\\
+	1 = Alineación a la izquierda. Los 6\un{LSb} de \reg{ADRESL} son leídos como `0'\\
+
+	\item[6:4] \bp{No implementados}:  Leídos como `0'\\
+
+	\item[3:0] \bp{PCFG3:PCFG0}: Bits de control de la configuración del puerto A/D\\[3mm]
+	
+	\footnotesize
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+		\hline
+		PCFG3: & AN4 & AN3 & AN2 & AN1 & AN0 & V\sit{REF+} & V\sit{REF-} & Cas./ \\
+		PCFG0 & RA5 & RA3 & RA2 & RA1 & RA0 & & & Refs\Si{a} \\
+		\hline\hline
+		0000 & A & A & A & A & A & V\sit{DD} & V\sit{SS} & 8/0 \\\hline
+		0001 & A & V\sit{REF+} & A & A & A & RA3 & V\sit{SS} & 7/1 \\\hline
+		0010 & A & A & A & A & A & V\sit{DD} & V\sit{SS} & 5/0 \\\hline
+		0011 & A & V\sit{REF+} & A & A & A & RA3 & V\sit{SS} & 4/1 \\\hline
+		0100 & D & A & D & A & A & V\sit{DD} & V\sit{SS} & 3/0 \\\hline
+		0101 & D & V\sit{REF+} & D & A & A & RA3 & V\sit{SS} & 2/1 \\\hline
+		011x & D & D & D & D & D & V\sit{DD} & V\sit{SS} & 0/0 \\\hline
+		1000 & A & V\sit{REF+} & V\sit{REF-} & A & A & RA3 & RA2 & 6/2 \\\hline
+		1001 & A & A & A & A & A & V\sit{DD} & V\sit{SS} & 6/0 \\\hline
+		1010 & A & V\sit{REF+} & A & A & A & RA3 & V\sit{SS} & 5/1 \\\hline
+		1011 & A & V\sit{REF+} & V\sit{REF-} & A & A & RA3 & RA2 & 4/2 \\\hline
+		1100 & A & V\sit{REF+} & V\sit{REF-} & A & A & RA3 & RA2 & 3/2 \\\hline
+		1101 & D & V\sit{REF+} & V\sit{REF-} & A & A & RA3 & RA2 & 2/2 \\\hline
+		1110 & D & D & D & D & A & V\sit{DD} & V\sit{SS} & 1/0 \\\hline
+		1111 & D & V\sit{REF+} & V\sit{REF-} & D & A & RA3 & RA2 & 1/2 \\\hline
+	\end{tabular}
+	\\A = Entrada analógica \hspace{1cm} D = Entrada/Salida digital
+	\normalsize
+
+\end{description}
+\begin{description}
+		\item[Nota \Si{a}] Esta columna indica el número de canales analógicos disponibles como entradas A/D y el número de canales analógicos usados como entradas de referencia de tensión.
+\end{description}
+\end{tablaob}
+
+
+\subsection{Requerimientos de adquisición A/D}
+Para una adecuada conversión son necesarias las siguientes condiciones:
+\begin{itemize}
+	\item La impedancia máxima asociada a la entrada analógica es de $10\un{K$\Omega$}$
+	\item El tiempo de conversión por bit ($T_{AD}$) debe ser como mínimo de $1.6\un{$\mu$s}$
+	\item El tiempo total de conversión para los 10\un{bits} es de $12\cdot T_{AD}\geq 19.2\un{$\mu$s}$
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Su módulo \acs{MSSP}}
+\label{sec:def.MSSP}
+El módulo \ac{MSSP} es una interfaz serial utilizada para la comunicación con otros periféricos o microcontroladores \cite{pic16f87x.mssp}. Estos periféricos pueden ser \acp{EEPROM}, registros de desplazamiento, controladores de display, conversores A/D, etc. El módulo \ac{MSSP} puede operar en uno de los siguientes dos modos:
+\begin{itemize}
+	\item \acf{SPI}
+	\item \acf{i2c}
+\end{itemize}
+
+El modo utilizado en este trabajo es solo \ac{SPI} en modo maestro. Así que la descripción de registros siguiente está simplificada a este modo. Por mayor información ver \cite{pic16f87x.mssp}.
+
+\begin{tablaot}{\reg{SSPSTAT}: Registro de estados del puerto serial sincrónico (dirección 94h)}{tab:SSPSTAT}{!t}
+	\tablaochobits
+		{R/W-0 & R/W-0 & R-0 & R-0 & R-0 & R-0 & R-0 & R-0}
+		{\bp{SMP}}	{\bp{CKE}}	{\bpn{D}{A}\,\Si{a}}	{\bp{P}\,\Si{a}}	{\bp{S}\,\Si{a}}	{\bpn{R}{W}\,\Si{a}}	{\bp{UA}\,\Si{a}}	{\bp{BF}}
+\begin{description}
+	\item[7] \bp{SMP}: bit de muestra.\\
+	1 = Muestreo de la entrada luego del momento de salida de datos.\\
+	0 = Muestreo de la entrada a la mitad del momento de la salida de datos.\\
+
+	\item[6] \bp{CKE}: Selección del flanco del \textsl{clock}.\\
+	Para \bp{CKP} = 0\\
+	1 = Dato transmitido en el flanco de subida de \bp{SCK}.\\
+	0 = Dato transmitido en el flanco de bajada de \bp{SCK}.\\
+	Para \bp{CKP} = 1\\
+	1 = Dato transmitido en el flanco de bajada de \bp{SCK}.\\
+	0 = Dato transmitido en el flanco de subida de \bp{SCK}.\\
+
+	\item[0] \bp{BF}: Bit de estado de buffer lleno.\\
+	1 =  Recepción completada, \reg{SSPBUFF} está cargado.\\
+	0 =  Recepción no completada, \reg{SSPBUFF} está vacío.\\
+
+\end{description}
+	\vspace{8mm}
+	\textbf{Nota\,\Si{a}:} No utilizado en modo \ac{SPI}.
+\end{tablaot}
+
+\begin{tablaot}{\reg{SSPCON}: Registro de control del puerto serial sincrónico (dirección 14h)}{tab:SSPCON}{!t}
+	\tablaochobits
+		{R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0 & R/W-0}
+		{\bp{WCOL}\Si{a}}	{\bp{SSPOV}}	{\bp{SSPEN}}	{\bp{CKP}}	{\bp{SSPM3}}	{\bp{SSPM2}}	{\bp{SSPM1}}	{\bp{SSPM0}}
+\begin{description}
+	\item[6] \bp{SSPOV}: Bit indicador de \textsl{overflow} en recepción.\\
+	1 = Se recibió un nuevo dato mientras \reg{SSPBUFF} mantenía el dato anterior. En el modo maestro el bit de \textsl{overflow} no es fijado.\\
+	0 = Sin \textsl{overflow}.\\
+
+	\item[5] \bp{SSPEN}: Bit de habilitación de puerto serial sincrónico.\\
+	1 = Habilita el puerto serial y configura \bp{SCK}, \bp{SDO}, \bp{SDI} y \bn{SS} como líneas del puerto serial.\\
+	0 = Inhabilita el puerto serial y configura sus líneas como \ac{io}.\\
+	
+	\item[4] \bp{CKP}: Bit de selección de polaridad del \textsl{clock}.\\
+	1 = El estado de reposo del \textsl{clock} es en alto.\\
+	0 = El estado de reposo del \textsl{clock} es en bajo.\\
+	
+	\item[3--0] \bp{SSPM3:SSPM0}: Bits de selección del modo del puerto serial sincrónico.\\
+	0000 = Modo SPI maestro, \textsl{clock} = F\si{OSC}/4.\\
+	0001 = Modo SPI maestro, \textsl{clock} = F\si{OSC}/16.\\
+	0010 = Modo SPI maestro, \textsl{clock} = F\si{OSC}/64.\\
+	0011 = Modo SPI maestro, \textsl{clock} = (Salida TMR2)/2.\\
+	0100 = Modo SPI esclavo, \textsl{clock} = (línea \bp{SCK}). Línea de control \bn{SS} habilitada.\\
+	0100 = Modo SPI esclavo, \textsl{clock} = (línea \bp{SCK}). Línea de control \bn{SS} inhabilitada. \bn{SS} puede ser usado como una línea de \ac{io}.\\
+\end{description}
+	\vspace{8mm}
+	\textbf{Nota \Si{a}:} No utilizado en modo \ac{SPI}.
+\end{tablaot}
+
+\subsection{Modo \acs{SPI}}
+El modo \ac{SPI} permite la transmisión y recepción simultanea sincrónica de datos de 8\un{bits}. Para la comunicación se utilizan generalmente 3 líneas:
+\begin{itemize}
+	\item Salida de datos serial (\bp{SDO})
+	\item Entrada de datos serial (\bp{SDI})
+	\item \textsl{Clock} serial (\bp{SCK})
+\end{itemize}
+Adicionalmente, se puede utilizar una cuarta línea en el modo esclavo:
+\begin{itemize}
+	\item Selección de esclavo (\bn{SS})
+\end{itemize}
+Cuando se inicializa el \ac{SPI}, es necesario especificar varias opciones. Esto se hace fijando apropiadamente los bits \reg{SSPCON<5:0>} y \reg{SSPSTAT<7:6>}.
+
+Para habilitar el puerto serial, se debe activar el bit \bp{SSPEN}. Para reiniciarlo o reconfigurarlo, se desactiva el bit \bp{SSPEN}, se reconfigura el registro \reg{SSPCON} y se activa nuevamente el bit \bp{SSPEN}. Esto configura las líneas \bp{SDI}, \bp{SDO}, \bp{SCK} y \bn{SS} como puertos seriales. Además, se deben fijar correctamente los bits de dirección de datos (registro \reg{TRIS}). Es decir:
+\begin{itemize}
+	\label{ref:SPI.conf.port}
+	\item \bp{SDI} es controlado automáticamente por el módulo \ac{SPI}
+	\item \bp{SDO} debe tener \reg{TRISC<5>} $=0$
+	\item \bp{SCK} (Modo maestro) debe tener \reg{TRISC<3>} $=0$
+	\item \bn{SS} debe tener \reg{TRISA<5>} $=1$ y no estar configurado como una salida analógica.
+\end{itemize}
+El maestro puede iniciar la transferencia de datos en cualquier momento porque controla la línea \bp{SCK}.
+
+
+\section{Modo de \acs{ICSP}}
+\label{def.ICSP}
+El microcontrolador PIC16F876 se puede programar por una vía serial, incluso luego de su aplicación final en el circuito. Esto se logra fácilmente mediante dos líneas, una de \textsl{clock} y otra de datos; y otras tres líneas, una de alimentación, otra de masa y una de tensión de programación. Esto permite mandar a fabricar las placas con los componentes soldados pero no programados y luego programarlos, justo antes de entregar el producto. Esto permite contar con el \textsl{firmware} más actualizado o personalizado al momento de programar el dispositivo.~\cite{pic16f87x.icsp}
+
+\section{Bits de configuración}
+\label{sec:def.confbits}
+Los bits de configuración pueden ser programados (leídos como `0') o dejados sin programar (leídos como `1'), para seleccionar diversos modos de configuración del dispositivo. El valor de la palabra de configuración borrada o no programada es leída como 3FFFh. Estos bits se encuentran localizados en la dirección de memoria 2007h.~\cite{pic16f87x.confbits}
+
+Es importante saber que la dirección de memoria 2007h está más allá del espacio de memoria de programa de usuario, el cual puede ser accedido solamente durante la programación (por ejemplo en \acs{ICSP}).
+
+Para mayor información acerca de la programación serial consultar \cite{pic16f87x.programming}.
+
+\begin{tablaob}{\reg{Palabra de configuración (1/2)} (dirección 2007h)}{tab:confbits}{!h}
+\begin{tabular}[h]{|c|c|c|c|c|c|}
+	\hline
+		\bp{CP1} & \bp{CP0} & \bp{DEBUG} & \bp{--} & \bp{WRT} & \bp{CPD}\\ 
+		\hline
+		\multicolumn{3}{@{}l}{bit13} &  \multicolumn{3}{r@{}}{bit8} \\
+	\end{tabular}
+
+	\begin{description}
+		\item[13:12=5:4] \bp{CP1:CP0}: Bits de protección del código de la memoria \acs{FLASH} de programa.\Si{(a)}\\
+			11 = Protección inhabilitada.\\
+			10 = Protegido de 1F00h a 1FFFh.\\
+			01 = Protegido de 1000h a 1FFFh.\\
+			00 = Protegido de 0000h a 1FFFh.
+
+		\item[11] \bp{DEBUG}: Modo de depuración In-Circuit.\\
+			1 = Inhabilitado, \bp{RB6} y \bp{RB7} son pines de propósito general.\\
+			0 = Habilitado, \bp{RB6} y \bp{RB7} son dedicados para el depurador.
+
+		\item[10] \bp{No implementado}: Leído como `1'.
+
+		\item[9] \bp{WRT}: Habilitación de escritura de memoria de programa.\\
+			1 = La memoria de programa no protegida puede ser escrita por el control \reg{EECON}.\\
+			0 = La memoria de programa no protegida NO puede ser escrita por el control \reg{EECON}.
+
+		\item[8] \bp{CPD}: Protección del código de memoria de datos \acs{EEPROM}.\\
+			1 = Protección inhabilitada.\\
+			0 = Protección habilitada.
+	\end{description}
+	\begin{description}
+		\item[Nota \Si{a}] Ambos CP1 y ambos CP0 deben tener el mismo valor para habilitar la protección del código.
+	\end{description}
+
+	\begin{center}
+		\textsl{Continúa en tabla \ref{tab:confbits60}}
+	\end{center}
+\end{tablaob}
+
+
+
+
+\begin{tablaos}{\reg{Palabra de configuración (2/2)} (dirección 2007h)}{tab:confbits60}{!p}
+\begin{tabular}[h]{|c|c|c|c|c|c|c|c|}
+	\hline
+		\bp{LVP} & \bp{BODEN} & \bp{CP1} & \bp{CP0} & \bn{PWRTE} & \bp{WDTE} & \bp{FOSC1} & \bp{FOSC0}\\
+		\hline
+		\multicolumn{4}{@{}l}{bit7} &  \multicolumn{4}{r@{}}{bit0} \\
+	\end{tabular}
+
+	\begin{description}
+		\item[7] \bp{LVP}: Bit de habilitación de \acs{ICSP} de baja tensión.\\
+			1 = Habilitado, el pin \bp{RB3/PGM} tiene la función PGM.\\
+			0 = Inhabilitado, el pin \bp{RB3/PGM} es una \ac{io} digital. Entonces, para la programación se debe usar alta tensión sobre el pin \bn{MCLR}.
+
+		\item[6] \bp{BODEN}: Bit de habilitación del reinicio por baja tensión.\Si{(b)}\\
+			1 = Habilitado.\\
+			0 = Deshabilitado.
+
+		\item[3] \bn{PWRTE}: Bit de habilitación del temporizador de inicio.\Si{(b)}\\
+			1 = PWRT inhabilitado.\\
+			0 = PWRT habilitado.
+
+		\item[2] \bp{WDTE}: Bit de habilitación del temporizador de perro guardián (\textsl{Watchdog Timer}).\\
+			1 = Habilitado.\\
+			0 = Inhabilitado.
+
+		\item[1:0] \bp{FOSC1:FOSC0}: Bits de selección del oscilador.\\
+			11 = Oscilador RC.\\
+			10 = Oscilador HS.\\
+			01 = Oscilador XT.\\
+			00 = Oscilador LP.
+			
+	\end{description}
+	\begin{description}
+		\item[Nota \Si{b}] Habilitando el reinicio por baja tensión, automáticamente se habilita el temporizador de inicio (PWRT), indistintamente del valor del bit \bn{PWRTE}.
+	\end{description}
+\end{tablaos}
+
+
+
+

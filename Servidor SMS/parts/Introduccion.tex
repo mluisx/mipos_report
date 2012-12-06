@@ -1,0 +1,36 @@
+% Redactar en presente
+% Ver de meter una explicaci�n de la interrelaci�n del texto
+
+La necesidad de cambiar la forma en la que los sistemas de gesti\'on y stock funcionan actualmente lleva a disparar la idea de pensar en una nueva metodolog\'ia en la que el cliente tenga una experiencia de compra diferente y sumamente atractiva, la cual pueda llevar a diferenciarse de la competencia y pueda, de una manera m\'as eficiente, implementar las transacciones de compras en un local comercial.
+
+El actual avance en el desarrollo de las aplicaciones m\'oviles y el uso de los dispositivos de pantallas t\'actitles lleva al desarrollo de sistemas a una nueva forma de generar aplicaciones  donde los usuarios se sienten m\'as a gusto gracias a la facilidad en su uso.
+
+Para este proyecto se utilizaron dispositivos t\'actiles con sistemas operativos Android\Si{\texttrademark}, por eso, para este \ac{TFE}\footnote{A lo largo de todo el presente desarrollo escrito se utilizaron distintas abreviaciones y acr\'onimos donde sus significados pueden encontrarse en la parte final de este trabajo, en la secci\'on ``Siglas y acr\'onimos'' (ver p\'agina \pageref{sec:acronimos}).}, se desarrollaron aplicaciones en la plataforma Eclipse\Si{\texttrademark} con el \ac{SDK} de Android\Si{\texttrademark}. Se llev\'o a cabo la investigaci\'on y utilizaci\'on de distintas librer\'ias para llevar a extender todas las funciones que estas aplicaciones puedan brindar.
+
+\begin{quote}
+Denominamos \ac{SIG} a toda la plataforma de venta desarrollado para este \ac{TFE} y en donde el funcionamiento de cada una de sus partes y sus interacciones entre estas permite abarcar todos los requerimientos que un local comercial pueda necesitar.
+\end{quote}
+
+El \ac{SIG} que representa este \ac{TFE} se encuentra desarrollado en tres partes, las cuales tienen una dependencia entre cada uno de ellos para que el sistema pueda funcionar correctamente.
+
+La primer parte consiste en el \ac{TPV} que consisti\'o en el desarrollo de una aplicaci\'on que funciona en un \ac{DPT} de la marca \textbf{\textit{ASUS}}. Esta aplicaci\'on permite realizar las actividades de aperturas y cierres de caja, almacena datos de las ventas realizadas, permite generar las transacciones correspondientes de acuerdo a la forma de pago del cliente, genera los tickets requeridos, lista el historial de un cliente en particular, entre otras cosas m\'as. El objetivo de esta parte del \ac{TFE} es brindar al vendedor una plataforma de cobro y gesti\'on que pueda brindarle todo lo necesario para llevar adelante las actividades comerciales diariamente.
+
+La segunda parte es la \ac{TID} que se pens\'o para que un dispositivo con Android\Si{\texttrademark} pueda interactuar con el cliente que realiza una compra en el local comercial. Este dispositivo tiene instalado una aplicaci\'on que permite hacer de interfaz con el comprador, dandole la posibilidad de ingresar los datos de su tarjeta de cr\'edito mediante un \ac{LTM}, poder ingresar su firma para autenticar la transacci\'on, poder darle la posiblidad de interactuar con las distintas redes sociales para que pueda esta persona generar publicidad en su perf\'il de usuario sobre el local y en cambio recibir un descuento en el total de su compra y, por \'ultimo, permitir recibir informaci\'on detallada respecto a la compra que realiza.
+
+Se analizaron 4 formas posibles de poder realizar un pago utilizando este \ac{SIG}. Las opciones consisten en:
+
+\begin{enumerate}
+\item Pago en efectivo: se recibe dinero por el monto a pagar de la compra y se ingresa la informaci\'on en el \ac{TPV} a trav\'es del vendedor.
+\item Pago en tarjeta de cr\'edito: el cliente pasa su tarjeta por el \ac{LTM} y los datos se env\'ian a un gateway de pagos para autenticar los datos de la tarjeta y autorizar la transacci\'on del mismo.
+\item Pago con un dispositivo con tecnolog\'ia \ac{NFC}: se procede a acercar el dispositivo del cliente a un lector \ac{NFC} para que este pueda tomar lectura y una vez autorizada la transacci\'on, almacenar la informaci\'on en el dispositivo nuevamente.
+\item Pago utilizando las plataformas PayPal\Si{\texttrademark}, MercadoPago\Si{\texttrademark} y DineroMail\Si{\texttrademark}: a trav\'es de una cuenta en cualquiera de estas tres entidades, y mediante la implementac\'ion de los correspondientes \ac{SDK} para cada una de ellas, se ofrece la posibilidad de realizar pagos mediante estos medios, permitiendo as\'i dar m\'as opciones a los clientes, en especial para aquellos de nacionalidad extranjera.
+\end{enumerate}
+
+La tercera parte de este \ac{TFE} es la elaboraci\'on de un \textbf{\textit{back-end}} que consiste en una aplicaci\'on \textbf{\textit{Java}} que permite funcionar como un \ac{SMD}, recibiendo y enviando datos al \ac{TPV} las cuales pueden ser almacenados y requeridos mediante la implementaci\'on de una base de datos \textbf{\textit{MySQL}} instalada en el mismo servidor donde el \textbf{\textit{Tomcat}} se encuentra corriendo la aplicaci\'on que actua como \ac{SMD}.
+
+El objetivo principal de este \ac{TFE} consisti\'o en el dise\~no, el desarrollo, las pruebas y la implementaci\'on de este \ac{SIG} utilizando las m\'as actuales tecnolog\'ias, tanto en la parte de dispositivos m\'oviles, como en la parte de aplicaciones webs que existen en el mercado.
+
+Este escrito fue desarrollado sobre la tecnolog\'ia \textbf{\textit{LaTeX}} que permite crear documentos con un aspecto profesional, siguiendo una metodolog\'ia similar a la de la creaci\'on de c\'odigo compilado, teniendo archivos fuentes que contienen los textos y pudiendo aplicar distintas librerias que contienen plantillas que definen el aspecto final del escrito elaborado y utilizandose comunmente este lenguaje en los escritos matem\'aticos debido a la facilidad para la generaci\'on de f\'ormulas.
+
+La presentaci\'on elaborada para la demostraci\'on de este \ac{TFE} se realiz\'o en \textbf{\textit{HTML5}} utilizando una librer\'ia conocida como \textbf{\textit{Reveal.JS}} que permite, en forma similar al \textbf{\textit{LaTeX}}, generar una presentaci\'on web a partir de archivos fuentes que contienen los textos y otros datos necesarios para que esta pueda ser creada y a su vez reproducida en un navegador o browser al momento de realizar la presentaci\'on del \ac{TFE} ante las autoridades correspondientes.
+

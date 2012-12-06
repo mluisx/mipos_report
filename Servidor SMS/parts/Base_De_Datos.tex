@@ -1,0 +1,119 @@
+%\chapter{Descripción del Hardware a Utilizar}
+\chapter{Diseño de la \ac{BD}}
+%\sffamily
+
+En este capítulo se hace referencia al motor de \ac{BD} utilizado en el \ac{TFC} y a como están compuestas todas las tablas que interactuan con la aplicación del servidor de \ac{SMS}.
+
+\section{El motor MySQL}
+\label{sec:def.mysql}
+
+El motor de base de datos utilizado en este \ac{TFC} es el MySQL\footnote{Nombre de la compañía que desarrollo el sistema de base de datos MySQL} Server\,v5.0\,.
+
+Los sistemas de bases de datos MySQL son los más utilizados en el área del código abierto\footnote{En inglés: open source}. Las razones son varias. Entre ellas, podemos encontrar que MySQL es rápido, estable, fácil de aprender, corre en la mayoria de los populares sistemas operativos (\acs{SO}), sus aplicaciones pueden ser creadas en varios tipos de lenguajes de programación (entre ellos Java), tiene una gran documentación disponible en internet, contiene la \ac{GPL}\footnote{Licencia importante para software de código abierto}, entre otras cosas más ~\cite{kofler05}.
+
+MySQL es un sistema de \ac{BD} relacional, como la mayoria de los demás sistemas de \ac{BD}s del mercado. Contiene una arquitectura del tipo cliente/servidor donde hay un servidor (MySQL) y arbitrariamente varios clientes (aplicaciones) que se comunican con el servidor, esto significa que, consultan datos, salvan cambios en los datos, etc ~\cite{kofler05}.
+
+MySQL se basa en el \ac{SQL} que es un lenguaje estandarizado para consultas y actualizaciones de datos, como también para la administración de una \ac{BD} ~\cite{kofler05}.
+
+Se instaló la versión 5.0 para el sistema operativo Windows\Si{\textregistered} en conjunto con una aplicación para administrar la \ac{BD} (actualizar datos, visualizarlos, eliminarlos, etc.) con el nombre ``EMS SQL Manager 2005 for MySQL''\footnote{EMS es el nombre de la empresa que desarrolló la aplicación}. % \\ <http://www.sqlmanager.net>}.
+
+Esta aplicación permite de una manera fácil conectarse a una \ac{BD} MySQL para poder realizar acciones sobre los datos que están disponibles. Se lo utilizó en el \ac{TFC} para generar las tablas correspondientes al desarrollo de la aplicación del servidor SMS y para cargar datos de prueba para poder realizar todas las pruebas relacionadas con la implementación de la aplicación.
+
+\section{Estructura de la \ac{BD}}
+\label{sec:estruc.bd}
+
+En la figura \ref{fig:DiagramaBD} podemos ver un diagrama que contiene la estructura de la \ac{BD}. Cada rectángulo representa una tabla de datos cuyo nombre se encuentra en la parte superior marcado en un área de color gris. Debajo del nombre podemos ver todos los atributos que componen la tabla de datos. La columna del lado izquierdo indica si el atributo corresponde a una \ac{PK}\footnote{Atributo cuyo valor es único en todas las ocurrencias de la tabla} o a una \ac{FK}\footnote{Se lo considera como una clave externa en donde el mismo atributo representa ser una \ac{PK} en otra tabla de la \ac{BD}}. Las flechas hacen converger las llaves externas con las primarias a las que se refieren. Los nombres de los atributos en color negro indican que estos no pueden tomar valores nulos, o sea que no pueden ser indeterminados.
+
+\figuraoo{Diagrama de la \ac{BD} del servidor \ac{SMS}}{fig:DiagramaBD}{width=\textwidth}{DiagramaBD}{!t}
+
+\section{Descripción de las tablas}
+\label{sec.tablas}
+
+En esta sección se explicará detalladamente el contenido de cada una de las tablas que componen la estructura de la \ac{BD}.
+
+\subsection{Los aeropuertos}
+\label{subsec:tabla.aeropuertos}
+
+En la tabla de datos cuyo nombre es ``aeropuertos'' se cargan todos datos de los aeropuertos que se encuentran en las ciudades donde la aerolínea opera. Cuando se procede a cargar un aeropuerto se debe introducir el nombre del mismo, la cantidad de pistas que contiene, la ciudad y provincia donde pertenece y el código internacional de tres letras que tiene. Al saber que este código de tres letras es un código único que lo identifica (es decir, no hay dos aeropuertos en el mundo que puedan tener el mismo código) lo utilizamos en la tabla como la correspondiente \ac{PK} de la tabla.
+
+%\figuraoo{
+
+\subsection{Los aviones}
+\label{subsec:tabla.aviones}
+
+La tabla ``aviones'' contiene los datos relacionados a los aviones de la compañía. La tabla tiene almacenado el módelo del avión, la cantidad de pasajeros que puede transportar, y un código que identifica al avión y se lo utiliza como \ac{PK} de la tabla.
+
+%\figuraoo{
+
+\subsection{Los destinos}
+\label{subsec:tabla.ciudades}
+
+Cada destino tiene registrado todos sus datos en la tabla ``ciudades''. Aquí se almacena el nombre de la ciudad, la zona horaria que posee de acuerdo al \ac{GMT}\footnote{El Meridiano de Greenwich marca el punto inicial de cada zona de tiempo en el mundo. Consiste en el promedio de tiempo que toma la tierra para rotar de un mediodía a otro}, la cantidad de aeropuertos que tiene, la provincia a la que pertenece y finalmente un código identificatorio único de tres letras que corresponde a la \ac{PK} de la tabla. En la figura \ref{fig:ciudades.destinos} se puede apreciar los destinos que la empresa de fantasía creada para este \ac{TFC} dispone para sus clientes.
+
+\figuraoo{Rutas aéreas que indican los destinos disponibles para realizar las búsquedas de vuelos}{fig:ciudades.destinos}{width=\textwidth}{rutasaereas}{!p}
+
+\subsection{Los clientes}
+\label{subsec:tabla.clientes}
+
+Los clientes de la empresa tienen sus datos registrados en la base de datos para posteriormente poder enviarles información a través de mensajes SMS sobre alguna novedad u oferta. En la tabla ``clientes'' se almacenan el nombre, tipo de documento y número, fecha de nacimiento y lo más importante, su número de \ac{TC}. Las \ac{PK} de esta tabla son el número de documento y el \ac{TC} ya que estos datos son únicos y no pueden ser repetidos en otros clientes. La fecha de cumpleaños se almacena para poder enviarles un mensaje SMS el día correspondiente a fin de saludarlo y quizás enviarle alguna novedad sobre pasajes aéreos.
+
+\subsection{Los contactos}
+\label{subsec:tabla.contactos}
+
+La tabla ``contactos'' difiere con la de clientes en que esta es la tabla que almacena los grupos de contactos que se almacenan y visualizan en una lista de contactos que se encuentra en la \ac{GUI} de la aplicación. Estos contactos no son considerados clientes, sino solamente personas a las que se les conoce el número de \ac{TC} y se les desean enviar mensajes SMS desde el servidor. Un contacto puede pasar a ser cliente de la compañía si llegado el caso quisiera serlo. Aquí en esta tabla se almacena el nombre del grupo al que pertenece el contacto, su nombre y su número de \ac{TC}.
+
+\subsection{Los pedidos}
+\label{subsec:tabla.pedidos}
+
+La aplicación, luego de leer un mensaje \ac{SMS} entrante e identificarlo como un mensaje válido que fue enviado con el fin de obtener alguno de los servicios brindados por este servidor, generará una nueva fila de datos en la tabla ``pedidos'', colocando el número de teléfono del originador del mensaje \ac{SMS}, el tipo de \ac{SMS} (ver sección \ref{tipos.sms.respuestas}) enviado por ultima vez a este usuario, el tipo de SMS recibido por ultima vez de este usuario ver sección \ref{tipos.sms.recibidos}), un indicador de si la persona que mandó el mensaje es cliente o no de la compañía, un número de pedido único que sirve de \ac{PK} a la tabla, y un valor de tipo entero de varios dígitos que agrega automaticamente la aplicación a la fila para indicar la hora en que se originó este pedido del usuario.
+	
+\subsection{Las reservas}
+\label{subsec:tabla.reservas}
+
+Una vez que el cliente realizó una búsqueda de vuelos y optó por uno o dos vuelos de los que fueron ofrecidos, se recibirá un \ac{SMS} del cliente indicando que números de vuelos reservar. Al recibir el \ac{SMS}, la aplicación verifica que el mensaje consiste en la confirmación sobre la reserva de una búsqueda realizada previamente por ese usuario. Se verifica que el pedido de búsqueda se encuentre almacenado en la tabla ``pedidos'' y se procede a generar la reserva creando una tupla que contiene el número del celular de la persona que realiza la reserva, el número de pedido que se encuentra en la tabla ``pedidos'' de acuerdo a la búsqueda de vuelos correspondiente, El número o los números de vuelos a reservar y por último, un indicador de si la persona que realiza la reserva es cliente de la compañia o no.
+
+\subsection{La bandeja de entrada de mensajes SMS}
+\label{subsec:tabla.smsinbox}
+
+La tabla ``smsinbox'' almacena todos los \ac{SMS} entrantes al servidor. Se almacena un ID del \ac{SMS} generado por la aplicación que se va incrementando a medida que ingresan otros mensajes, el índice de la memoria del \ac{TC}, el texto contenido en el mensaje, el número celular del originador, el tipo de \ac{SMS} y por último, el tipo de dato.
+
+El tipo de \ac{SMS} indica en que consiste el mensaje recibido de acuerdo a una clasificación realizada por la aplicación. Un \ac{SMS} puede ser del tipo ``Error'' si el mensaje recibido no contiene información que pueda ser procesada por el servidor. Si se recibe un \ac{SMS} de búsquedas de vuelos, el \ac{SMS} se clasifica de tipo ``Vuelo''. En el caso de un \ac{SMS} de confirmación de reservas, el tipo es ``Reservar''. Para los mensajes de chequeos de estados de vuelos, el tipo es ``Estado'' y para el pedido de ayuda si se envió un \ac{SMS} con la palabra ``ayuda'' el tipo es ``Ayuda'' o si se envio un \ac{SMS} con el nombre de la empresa ``IguazuAir'' el tipo es ``IguazuAir''.
+
+El tipo de dato hace referencia a la tabla \ref{tab:tipos.sms.recibidos} de la página \pageref{tab:tipos.sms.recibidos} que con más detalle que el campo ``Tipo\_SMS'' indica que datos contiene el \ac{SMS} recibido.
+
+\subsection{La bandeja de salida de mensajes SMS}
+\label{sec:tabla.smsoutbox}
+
+Esta tabla contiene los \ac{SMS}s salientes del servidor hacia los usuarios. Los datos almacenados son el ID del \ac{SMS} generado por la aplicación, el texto del mensaje y el tipo de dato de acuerdo a la tabla \ref{tab:tipos.sms.respuestas} de la pág. \pageref{tab:tipos.SMS.respuestas}. El diagrama de las tablas ``smsinbox'' y ``smsoutbox'' se encuentra en la figura \ref{fig:DiagramaInOutbox}
+
+\figuraoo{Diagrama de las tablas ``smsinbox'' y ``smsoutbox''}{fig:DiagramaInOutbox}{}{DiagramaBD2}{!h}
+
+\subsection{Las ventas}
+\label{subsec:tabla.ventas}
+
+Una vez realizada la confirmación de uno o dos vuelos, el operador de la aplicación del servidor es el que se encarga de llamar estos clientes (o potenciales clientes) para poder realizar la venta de los vuelos reservados. Debido a la complejidad que existe en la realización de una venta y dependiendo de la pequeña cantidad de datos que un \ac{SMS} puede contener, se pensó en la idea de que el operador de la aplicación sea el encargado de realizar las llamadas a los clientes para poder realizar la venta de los vuelos reservados a través del uso del servidor de \ac{SMS}.
+
+Una vez que el operador se comunica con el usuario del sistema, este toma algunos datos referentes a la venta y los almacena en la ventana de ventas de la aplicación. Al finalizar la carga de datos y de concluir la operación de venta, se genera una tupla en la tabla ``Ventas'', conteniendo el nombre y apellido del cliente, el método de pago, la forma en que recibirá el ticket, el precio final de los pasajes y el número de pedido (\ac{PK}) generado cuando el usuario realizo la búsqueda de los vuelos que ahora los compró.
+
+\subsection{Los vuelos}
+\label{subsec:tabla.vuelos}
+
+La tabla ``vuelos'' es la que contiene los datos de todos los vuelos programados por la empresa aérea. Los datos de los vuelos se cargan mediante una ventana de la aplicación del servidor que permite introducir todos los datos referentes al mismo. La \ac{PK} de esta tabla es el atributo ``NroVuelo'' que indica el número de vuelo programado por la compañia. Por cada número de vuelo se agregan los siguientes datos:
+
+\begin{enumerate}
+	\item Horario de salida del vuelo desde la ciudad de origen.
+	\item Horario de llegada a la ciudad destino.
+	\item Cantidad de asientos libres disponibles.
+	\item Código del avión que se utilizará para realizar el vuelo.
+	\item Código del aeropuerto de origen.
+	\item Código del aeropuerto de destino.
+	\item Fecha de salida del vuelo.
+	\item Fecha de llegada a destino.
+	\item Precio del pasaje.
+	\item Estado del vuelo.
+\end{enumerate}
+
+Para almacenar las fechas, se utiliza el formato DD/MM/AAAA. Para las horas, el formato de 12 horas con indicador AM/PM. El estado del vuelo hace referencia del estado del vuelo próximo a partir. El valor que este dato contenga es el que se informa a los usuarios que realizan pedidos de estados de vuelos. El estado puede ser ``En Horario'' o ``Demorado''.
+
+\figuraoo{La tabla ``vuelos''}{fig:tabla.vuelos}{width=\textwidth}{TablaVuelos}{!h}
+

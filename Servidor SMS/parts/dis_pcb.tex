@@ -1,0 +1,587 @@
+\chapter{Diseño y armado de la \acs{PCB}}
+\label{sec:pcb}
+El diseño de la \ac{PCB} general está compuesto por tres \ac{PCB}. Una es la \ac{PCB-IH}, otra es la \ac{PCB-LCD} y una extra es la \ac{PCB-RS}.
+
+La \ac{PCB-IH} es la placa en donde van soldados los componentes electrónicos principales que componen el circuito de la \ac{IH}. El diseño de ésta implica condiciones que tienen que ver con sus dimensiones, forma, ubicación de sus componentes libres y componentes con posiciones determinadas. También tiene que ver con el tamaño y forma del gabinete en donde se va a montar la \ac{PCB-IH}.
+
+La \ac{PCB-LCD} es la placa de soporte para el \ac{LCD}. Que ésta se encuentre separada de la \ac{PCB-IH} permite ubicarla en una posición más elevada y adecuada.
+
+La \ac{PCB-RS} es una placa extra que se utiliza en caso de conectar la \ac{IH} directamente al puerto serie de una \ac{PC} que actúe como un \ac{HOST}.
+
+Luego, en función de las dimensiones de la \ac{PCB-IH}, la \ac{PCB-LCD} y la \ac{PCB-RS}, y de las posiciones de los componentes con ubicaciones específicas, se realiza el diseño de la \ac{PCB} general mediante \ac{CAD}.
+
+\section{Dimensiones y disposiciones requeridas}
+\label{sec:pcb.pos}
+El marco de referencia que acota las dimensiones de la \ac{PCB} es la carcasa de un teléfono analógico, del cual podemos ver una fotografía en la figura \ref{fig:carcasa}.
+\figuraot{Carcasa de un teléfono analógico usada como gabinete de la \acs{IH}}{fig:carcasa}{}{carcasa}{!t}
+Esta carcasa determina las posiciones fijas del conector para el tubo telefónico (J1), del teclado (KB1), del sensor de estado de la orquilla (U6), del conector para el control de volumen del altavoz (R16) y del conector para el altavoz (J3). Además, hubo que realizar una ranura en la carcasa para que se pueda ver la imagen del \ac{LCD}. Esto determinó la ubicación del conector CON1, el cual interconecta la \ac{PCB-IH} con la \ac{PCB-LCD}.
+
+La \ac{PCB} completa se diseñó teniendo en cuenta la ubicación de algunas conexiones de una \acs{PCB-WRT}. La \ac{PCB-WRT} podría cumplir las características necesarias para ser un \ac{HOST}. A continuación, podemos ver algunas de las características de la \acs{PCB-WRT}:
+\begin{itemize}
+	\item \ac{RAM}: 16\un{MB}
+	\item \acs{FLASH}: 4\un{MB}
+	\item \ac{CPU}: Arquitectura MIPS a una velocidad de 200\un{MHz}
+	\item 2 puertos \acs{UART}
+	\item 4+1 puertos \textsl{Ethernet} IEEE 802.3
+	\item 1 puerto \textsl{wireless} IEEE 802.11b/g 
+\end{itemize}
+Por mayor información ver \cite{wikipedia.wrt54g} y \cite{openwrt.wrt54g}.
+
+En la figura \ref{fig:pcb.wrt54g} podemos ver una fotografía de la \ac{PCB-WRT}.
+\figuraot{\acf{PCB-WRT}}{fig:pcb.wrt54g}{}{pcb-wrt54g}{!p}
+
+\begin{quote}
+	\textsl{\textbf{NOTA}: En este \ac{TFC} no se pretende armar un teléfono \acs{IP} completo, sino solamente la \ac{IH}. Pero, para el diseño de la \ac{PCB-IH} se decidió tener en cuenta las posiciones de las conexiones de la \acs{PCB-WRT} antes mencionada, para una posible y sencilla futura interconexión.}
+\end{quote}
+
+Las conexiones que se tuvieron en cuenta respecto a la \acs{PCB-WRT} fueron: la alimentación (JP5), el puerto \ac{UART} (JP3) y la conexión a uno de sus puertos \textsl{Ethernet} (J4).
+
+En la figura \ref{fig:pcb.carcasa-con-wrt} podemos ver una fotografía de la carcasa inferior del teléfono con la \acs{PCB-WRT} montada en su interior.
+\figuraos{Fotografía de la carcasa inferior del teléfono con la \acs{PCB-WRT}}{fig:pcb.carcasa-con-wrt}{}{carcasa-con-wrt}{!p}
+Por encima de esta placa irá montada la \ac{PCB-IH}, como se verá más adelante.
+
+
+
+
+
+\section{Diseño de la \acs{PCB}}
+\label{sec:pcb.dis}
+El diseño de la \ac{PCB-IH} se ha realizado en función de su circuito esquemático actualizado de la figura \ref{fig:sch.ih.v2}, que hemos visto en la sección \ref{sec:soft.redis.hard}.
+
+Además de la \ac{PCB-IH} se ha realizado la \ac{PCB-LCD}. Ésta última está basada en el circuito esquemático de la figura \ref{fig:sch.LCD}, que hemos visto en la sección \ref{sec:sch.LCD}. También, como se disponía de más espacio en el área rectangular de la placa final, se agregó un circuito para la conversión de señales \acs{TTL} a niveles RS-232C. Esta última placa es útil al momento de utilizar una \acs{PC} como \ac{HOST}, de manera de interconectarla con la \ac{IH} utilizando el puerto serie (en este caso no se utilizaría la \acs{PCB-WRT}).
+
+En la figura \ref{fig:pcb} podemos ver el diseño ya realizado del área rectangular que contiene las tres placas antes mencionadas.
+\figuraoo{\acs{PCB} compuesta por las tres placas (ver sección \ref{sec:pcb.dis})}{fig:pcb}{width=0.9\textwidth}{pcb}{!h}
+Esta \ac{PCB} es una placa tipo doble faz. Las líneas de color rojo representan a las pista que se encuentran en la parte desde la que se ve la placa (\textsl{top layer} -- capa superior). De la misma manera, las líneas de color azul representan a las pista que se encuentran del otro lado de la placa (\textsl{bottom layer} -- capa inferior).
+
+En la figura \ref{fig:pcb-ih} podemos ver solo la \ac{PCB-IH} con el contorno definitivo luego de su recorte.
+\figuraoo{\acf{PCB-IH}}{fig:pcb-ih}{}{pcb-ih}{!h}
+En esta figura también podemos ver el diseño de los contactos para el teclado, los cuales se encuentran en la capa superior. Además, alrededor de éstos, se encuentran visibles los cortes que representan las ranuras de las cuales se sujeta la estructura del teclado.
+
+En las figuras \ref{fig:pcb-lcd} y \ref{fig:pcb-rs232} podemos ver, respectivamente, la \ac{PCB-LCD} y la \ac{PCB-RS} ya recortadas.
+
+\figuraot{\acf{PCB-LCD}}{fig:pcb-lcd}{}{pcb-lcd}{!t}
+\figuraot{\acf{PCB-RS}}{fig:pcb-rs232}{}{pcb-rs232}{!t}
+
+\subsection{Simulación del ensamble}
+\label{sec:pcb.dis.sim}
+En la figura \ref{fig:pcb.ensamble} podemos ver una simulación de como podría quedar el teléfono armado, con la \ac{PCB-IH}, la \acs{PCB-WRT}, la carcasa y el teclado.
+\figuraot{Ensamble virtual de la \ac{PCB-IH} dentro del gabinete junto con la \acs{PCB-WRT}}{fig:pcb.ensamble}{}{ensamble}{!t}
+El ensamble puede no estar acoplado perfectamente. Esto es porque fue hecho encimando fotografías de cada parte en forma de capas. Además, las fotografías pueden tener cierta perspectiva que también influye en la alineación del ensamble virtual.
+
+
+\section{Desarrollo de las \acs{PCB}s}
+\label{sec:pcb.des}
+
+A partir del diseño realizado en la sección \ref{sec:pcb.dis}, en la cual se observó la \ac{PCB} completa en la figura \ref{fig:pcb}, se ha construido físicamente la placa. Ésta se ha hecho en una fábrica de placas. La construcción de ésta incluyó los circuitos impresos, las perforaciones y una película de resina (o flux) que protege las pistas y contactos y ayuda a la soldadura de los componentes.
+
+Luego de recibir la placa, se la separó en tres fragmentos que representan a las placas \ac{PCB-IH}, \ac{PCB-LCD} y \ac{PCB-RS}, mencionadas en la sección \ref{sec:pcb.dis}.
+
+\subsection{Armado de la \acs{PCB-RS}}
+\label{sec:pcb.rs}
+En la figura \ref{fig:pcb.rs.real} podemos ver una fotografía de ambas caras de la \ac{PCB-RS}.
+\figuraot{\acs{PCB-RS} real antes de soldar los componentes}{fig:pcb.rs.real}{width=8cm}{pcb-rs-real}{!t}
+Ésta fue la primera placa en ser armada y probada. Para esto, primero se soldaron sus componentes. Luego se realizaron pruebas de funcionamiento utilizando esta placa en lugar del circuito realizado en la \textsl{protoboard}. Luego de las pruebas se concluyó que había que reemplazar el integrado U9, porque no funcionaba correctamente. Entonces, luego de su reemplazo se comprobó el correcto funcionamiento de la \ac{PCB-RS}. A continuación, se realizó la limpieza de esta placa con alcohol isopropílico para remover el flux. Luego se cubrió toda la placa, de ambos lados, con un protector acrílico aislante. En la figura \ref{fig:pcb.rs.soldado} podemos ver la fotografía de ambas caras de la placa, con sus componentes soldados y el protector acrílico colocado.
+\figuraot{\acs{PCB-RS} después de soldar los componentes}{fig:pcb.rs.soldado}{width=8cm}{pcb-rs-soldado}{!t}
+Por último, luego que el acrílico se había secado, se realizaron nuevamente las pruebas de funcionamiento de esta placa, lo que resultó en un correcto funcionamiento.
+
+\subsection{Armado de la \acs{PCB-LCD}}
+\label{sec:pcb.lcd}
+Luego de armada la \ac{PCB-RS} se pasó al armado de la \ac{PCB-LCD}. Partiendo de la placa ya recortada, que podemos ver como una fotografía en la figura \ref{fig:pcb.lcd.real}, se comenzó haciendo las hendiduras de donde se sujeta el \ac{LCD}.
+\figuraoo{\acs{PCB-LCD} antes de soldar los componentes}{fig:pcb.lcd.real}{width=7cm}{pcb-lcd-real}{!ht}
+Para esto, hubo que producir un desgaste de manera de conseguir hacer más fina la placa en el sector de las dichas hendiduras. También hubo que realizar dos perforaciones que sirven de alineación para el \ac{LCD}. Luego, se soldaron los seis \acs{LED}s de montaje superficial --que hacen de \textsl{backlight}-- y se  soldaron los componentes restantes.
+
+Para realizar las pruebas de funcionamiento, antes de montar el \ac{LCD} sobre la \ac{PCB-LCD} hubo que remover el flux que se encontraba como una película aislante sobre la placa, para exponer los contactos que realizan la interconexión con el \ac{LCD}. Luego, se comprobó el correcto funcionamiento de la \ac{PCB-LCD} junto con el \ac{LCD} en la \textsl{protoboard}, como podemos ver en la figura \ref{fig:pcb.lcd.proto}.
+\figuraoo{Pruebas en protoboard de la nueva \acs{PCB-LCD}}{fig:pcb.lcd.proto}{width=\textwidth}{pcb-lcd-proto}{!ht}
+A continuación, se recortó una esquina innecesaria de la placa que incomodaría el acceso a un conector de la \ac{PCB-IH}.
+
+Para evitar el deterioro de las pistas, se retiró el \ac{LCD} para cubrir la placa con el acrílico aislante teniendo la precaución de no cubrir el sector de los contactos. Para esto se tapó ese sector con una cinta que, luego de la aplicación del acrílico, fue retirada.
+
+En la figura \ref{fig:pcb.lcd.soldado} podemos ver ambos lados de la placa armada y con el \ac{LCD} montado.
+\figuraob{\acs{PCB-LCD} con los componentes soldados y el \acs{LCD} montado}{fig:pcb.lcd.soldado}{width=7cm}{pcb-lcd-soldado}{!b}
+
+\subsection{Armado de la \acs{PCB-IH}}
+\label{sec:pcb.ih}
+Luego de la construcción de las dos placas anteriores, se siguió con la construcción de la placa principal (\acs{PCB-IH}).
+
+Se comenzó por recortar dos esquinas preestablecidas de la \ac{PCB-IH} que obstaculizarían su montaje en la carcasa del teléfono. En la figura \ref{fig:pcb.ih.real} podemos ver ambos lados de la \ac{PCB-IH} ya recortada y antes de soldar sus componentes.
+\figuraoo{\acs{PCB-IH} antes de soldar los componentes}{fig:pcb.ih.real}{width=\textwidth}{pcb-ih-real}{!ht}
+Luego se soldaron todos los componentes. Particularmente, en vez de soldar el \ac{uC} se utilizó un zócalo para no tener que desoldarlo en caso que la placa no funcione correctamente.
+
+Luego de las mediciones que se verán en la sección \ref{sec:pcb.ih.med}, se continúa con el armado de la \acs{PCB-IH} en la sección \ref{sec:pcb.ih.ter}.
+
+\subsection{Mediciones sobre la \acs{PCB-IH}}
+\label{sec:pcb.ih.med}
+A continuación, se realizaron mediciones sobre uno de los filtros analógicos de la \ac{PCB-IH} en el laboratorio de electrónica de la \ac{UBP}. El filtro que se analizó es el que se encarga de atenuar las componentes de frecuencias no deseadas a la salida del \ac{PWM} del audio. En la figura \ref{fig:pcb.FPB.sch}
+\figuraot{Detalle del circuito esquemático del filtro pasa bajos de salida de la \acs{IH}}{fig:pcb.FPB.sch}{}{sch-ih8k-FPB}{!t}
+podemos ver una parte del circuito esquemático de la \ac{IH} que representa a todo este filtro y en donde se realizaron las mediciones. Entonces, haciendo uso del generador de funciones HP 3312A y del osciloscopio digital Tektronix TDS1001B del laboratorio de electrónica de la \ac{UBP} se realizaron mediciones de respuesta en frecuencia y de \ac{THD} sobre este filtro. Para el caso del análisis de respuesta en frecuencia se fijó la señal de entrada del filtro en 1\un{KHz} y 5\un{V} pico a pico, y se obtuvieron --a la salida del filtro-- los resultados de la tabla \ref{tab:pcb.FPB}.
+\begin{tablaot}{Mediciones hechas en la \ac{PCB-IH} sobre el filtro analógico de salida de cuarto orden}{tab:pcb.FPB}{!t}
+	\begin{tabular}{|c|c|c|}
+		\hline
+		\textbf{Frecuencia}&\textbf{Tensión de entrada}&\textbf{Tensión de salida}\\
+		\hline\hline
+$74.21\un{Hz}$ & $5.000\un{V}$ & $580.0\un{mV}$\\\hline
+$147.5\un{Hz}$ & $5.000\un{V}$ & $900.0\un{mV}$\\\hline
+$175.0\un{Hz}$ & $5.000\un{V}$ & $960.0\un{mV}$\\\hline
+$184.6\un{Hz}$ & $5.000\un{V}$ & $1.020\un{V}$\\\hline
+$295.6\un{Hz}$ & $5.000\un{V}$ & $1.200\un{V}$\\\hline
+$601.3\un{Hz}$ & $5.000\un{V}$ & $1.340\un{V}$\\\hline
+$1.916\un{KHz}$ & $5.000\un{V}$ & $960.0\un{mV}$\\\hline
+$2.000\un{KHz}$ & $5.000\un{V}$ & $900.0\un{mV}$\\\hline
+$2.299\un{KHz}$ & $5.000\un{V}$ & $660.0\un{mV}$\\\hline
+$3.393\un{KHz}$ & $5.000\un{V}$ & $180.0\un{mV}$\\\hline
+$4.056\un{KHz}$ & $5.000\un{V}$ & $110.0\un{mV}$\\\hline
+$5.012\un{KHz}$ & $5.000\un{V}$ & $58.00\un{mV}$\\\hline
+$6.046\un{KHz}$ & $5.000\un{V}$ & $35.00\un{mV}$\\\hline
+$7.023\un{KHz}$ & $5.000\un{V}$ & $26.00\un{mV}$\\\hline
+$8.339\un{KHz}$ & $5.000\un{V}$ & $21.00\un{mV}$\\\hline
+$10.82\un{KHz}$ & $5.000\un{V}$ & $20.00\un{mV}$\\\hline
+$19.82\un{KHz}$ & $5.000\un{V}$ & $18.00\un{mV}$\\\hline
+	\end{tabular}\\[5mm]
+\end{tablaot}
+A partir de los datos obtenidos en esta tabla y de las mediciones anteriormente realizadas en protoboard (ver tabla \ref{tab:soft.FPB.4.med}) se realizó un gráfico de magnitud (en decibeles) y frecuencia (en escala logarítmica). Además, para apreciar mejor la característica en frecuencia de ambas mediciones se han normalizado sus magnitudes máximas en 0\un{dB}. El resultado lo podemos ver en el gráfico de la figura \ref{fig:pcb.FPB}.
+\figuraot{Gráfico de las mediciones realizadas en la \ac{PCB-IH} sobre el filtro analógico de cuarto orden de salida}{fig:pcb.FPB}{width=\textwidth}{FPB-PCB}{!t}
+Podemos notar que la característica en alta frecuencia de la mediciones sobre la \ac{PCB} es similar a las realizadas sobre la \textsl{protoboard}. En cambio, para baja frecuencia, el filtro en la \ac{PCB} se ha ajustado en una frecuencia de corte inferior cercana a los 200\un{Hz}. Esto significa un pequeño incremento en el ancho de banda de audio hacia los graves, el cual no representa un inconveniente.
+
+Luego de las mediciones de respuesta en frecuencia se realizaron las mediciones de \ac{THD} a la entrada del filtro, a la salida del filtro y sobre el auricular. Volviendo a observar la figura \ref{fig:pcb.FPB.sch} podemos ver, con mayor detalle, los puntos de contacto en donde se realizaron las mediciones. Estas mediciones se realizaron con el generador de funciones HP 3312A, el osciloscopio digital Tektronix TDS1001B y el software \textsl{NI SignalExpress Tektronix Edition}. Entonces, se generó una señal senoidal de 1\un{KHz} con amplitud pico a pico de 5\un{V} que se introdujo a la entrada del filtro. Luego, se conectó el osciloscopio a una \acs{PC} para hacer, en tiempo real, la medición de \ac{THD} con el antedicho software. La medición se realizó --primero-- a la entrada del filtro, es decir que se midió la \ac{THD} del generador; luego se conectó a la salida del filtro; y por último a la salida al auricular, con el auricular conectado (con carga). Ahora, podemos observar los resultados en la tabla \ref{tab:pcb.FPB.THD}.
+\begin{tablaot}{\ac{THD} de las señales analógicas filtradas a la salida del \acs{PWM} en la \ac{PCB-IH}}{tab:pcb.FPB.THD}{!t}
+	\begin{tabular}{|c|c|c|}
+		\hline
+		\textbf{Nombre}&\textbf{Tensión pico a pico}&\textbf{THD}\\
+		\hline\hline
+		Entrada del filtro & $5.000\un{V}$ & $1.135\un{\%}$\\\hline
+		Salida del filtro & $1.340\un{V}$ & $0.7158\un{\%}$\\\hline
+		Salida al auricular & $0.312\un{V}$ & $1.065\un{\%}$\\\hline
+	\end{tabular}\\[5mm]
+	\textbf{Nota}: Los \ac{THD} se han computado con una frecuencia fundamental de $1\un{KHz}$, teniendo en cuenta hasta el decimonoveno armónico.
+\end{tablaot}
+Estas mediciones demuestran una baja \ac{THD} que se interpreta como un buen resultado. Inclusive, la medición devuelve una menor \ac{THD} a la salida que a la entrada del filtro. Esto se debe al acotamiento de la banda de paso que produce el filtro.
+
+\subsection{Terminación del armado de la \acs{PCB-IH}}
+\label{sec:pcb.ih.ter}
+Continuando con el armado de la \ac{PCB-IH}, se aplicó el protector acrílico aislante sobre la \ac{PCB-IH} teniendo la precaución de no cubrir con éste los conectores o sectores de contacto. Estos contactos son, por ejemplo, los utilizados en el teclado. En la figura \ref{fig:pcb.ih.soldado-top} podemos ver la \ac{PCB-IH} con los componentes soldados y el barniz colocado.
+\figuraob{\acs{PCB-IH} con los componentes soldados}{fig:pcb.ih.soldado-top}{width=9cm}{pcb-ih-soldado-top}{!h}
+
+\section{Montaje de las \acs{PCB}s en la carcasa del teléfono}
+\label{sec:pcb.mon}
+Como hemos visto en la sección \ref{sec:pcb.dis}, la \ac{PCB-IH} se ha diseñado teniendo en cuenta una posible futura interconexión con la \ac{PCB-WRT}. Igualmente, se construyó la \ac{PCB-RS} para poder interconectar la \ac{PCB-IH} con una \acs{PC} que haga de \ac{HOST}, lo que permitió realizar pruebas a través de un puerto serie RS-232C.
+
+A continuación, se realiza el montaje de la \ac{PCB-IH} junto con la \ac{PCB-WRT} dentro de la carcasa del teléfono, lo cual podemos observar en la fotografía de la figura \ref{fig:pcb.montaje-ih-wrt-in}.
+\figuraoo{Vista interior del teléfono, con la \acs{PCB-IH}, la \acs{PCB-LCD} y la \acs{PCB-WRT}}{fig:pcb.montaje-ih-wrt-in}{width=12cm}{montaje-ih-wrt-in}{!ht}
+En ésta se puede ver también la conexión con el altavoz (conector J3, ver figura \ref{fig:pcb}), el cual tiene una impedancia nominal de 8\un{$\Omega$}. Este no era parte de la carcasa, es decir que fue agregado. En cambio, el potenciómetro que se encuentra en la parte posterior del teléfono, era parte de la carcasa. Este sirve para controlar el volumen del altavoz y se encuentra conectado por tres conductores al conector R16 desde el lado inferior de la \ac{PCB-IH}.
+
+La \ac{PCB-LCD} se conecta con la \ac{PCB-IH} a través de los conectores CON2 y CON1 respectivamente. Esta conexión transporta la energía y la información para el \ac{LCD} y el control de los LEDs del \textsl{backlight}.
+
+La \ac{PCB-WRT} se vincula con la \ac{PCB-IH} a través de tres conectores (JP5, J4 y JP3). El conector JP5 provee de alimentación de energía a la \ac{PCB-WRT}. El conector J4 interconecta el \textsl{jack} J2 con uno de los puertos \textsl{Ethernet} de la \ac{PCB-WRT}. Por último, el conector JP3 interconecta los puertos \acs{UART}s de ambas placas. Esta conexión es la que permitiría a la \ac{PCB-WRT} (el \ac{HOST}) controlar todos los recursos de la \ac{IH}.
+
+En esta configuración, en la que se encuentra conectada la \ac{PCB-IH} a la \ac{PCB-WRT}, no se han realizado pruebas, ya que el objetivo general de este trabajo es la realización sólo de la \ac{IH}. Pero en cambio, se hicieron pruebas que han corroborado el correcto funcionamiento de ésta, usando la \ac{PCB-RS} y una \ac{PC} como \ac{HOST}. En la figura \ref{fig:pcb.montaje-ih-rs-in} podemos observar una vista interior del montaje de la \ac{PCB-IH} junto con la \ac{PCB-RS} y la \ac{PCB-LCD} en la carcasa del teléfono.
+\figuraob{Vista interior del teléfono, con la \acs{PCB-IH}, la \acs{PCB-LCD} y la \acs{PCB-RS}}{fig:pcb.montaje-ih-rs-in}{width=12cm}{montaje-ih-rs-in}{!b}
+Aquí podemos ver que no se encuentra montada la \ac{PCB-WRT}. En cambio, se encuentra montada la \ac{PCB-RS} que se encarga de adaptar las señales del puerto \ac{UART} de la \ac{IH} a niveles RS-232C, los cuales se encuentran presentes en el conector J5 de la \ac{PCB-RS}. Este conector sobresale de la carcasa del teléfono a modo de facilitar la conexión con un cable hacia la \acs{PC} (ver figura \ref{fig:pcb.montaje-ih-rs-in}).
+
+\section{Pruebas de funcionamiento}
+Las pruebas de funcionamiento de la \ac{IH} incluyeron:
+\begin{itemize}
+	\item La conectividad con el \acs{HOST}. 
+	\item El funcionamiento del sensor de orquilla.
+	\item La prueba de los contactos del teclado.
+	\item El control de la intensidad del \acs{LED} y del \textsl{backlight}.
+	\item La interconexión con el \ac{LCD}.
+	\item El funcionamiento del audio de envío y retorno en el tubo telefónico.
+	\item El funcionamiento del amplificador del altavoz.
+\end{itemize}
+Esto se realizó armando una aplicación de prueba en el \ac{HOST} que hacía uso de la \ac{API} desarrollada en la sección \ref{sec:soft.host}.
+
+Para comprobar la conectividad con el \ac{HOST} se utilizó el método \cf{Sys\_Ping} que generó la correspondiente respuesta a través del evento \cf{\_Sys\_Pong}.
+
+Para el caso de la orquilla, se utilizó el método \cf{Orquilla\_Leer} --para leer el estado actual de la orquilla-- y los métodos de habilitación del evento de la orquilla. Éstos funcionaron correctamente, pero hizo falta realizar una modificación física sobre el sensor de la orquilla. El problema fue que no era suficiente la intensidad del flujo del campo magnético producido por el imán del auricular. Entonces, hubo que colocar un tornillo metálico debajo del sensor (ver figura \ref{fig:pcb.tornillo}) de manera de concentrar el flujo magnético cerca de éste.
+\figuraoo{Sensor HALL con su concentrador de flujo magnético en la \acs{PCB-IH}}{fig:pcb.tornillo}{width=8cm}{tornillo3}{!h}
+El aumento en la concentración del flujo magnético se produce debido a la característica ferromagnética del metal del tornillo colocado, el cual tiene una permeabilidad magnética mayor a la del aire. Entonces, de manera empírica se ha logrado hacer funcionar correctamente al sensor ante la presencia y ausencia del auricular del tubo telefónico. 
+
+Para la prueba del funcionamiento de los contactos del teclado se realizó algo muy parecido a lo de la orquilla, respecto a la \ac{API}, no presentando ningún inconveniente.
+
+En el control de la intensidad del \acs{LED} y del \textsl{backlight} se utilizaron los métodos \cf{LED\_Intensidad} y \cf{Pantalla\_BackLight\_Intensidad}, dando resultados correctos. Algo que se registró fue que la percepción visual de la intensidad no guarda una relación lineal con los valores de 0\% a 100\%. Con porcentajes pequeños se observaron mayores cambios y con valores cercanos a 100\% se notaron cambios casi imperceptibles.
+
+En el caso del \ac{LCD} se transmitieron imágenes prediseñadas utilizando los métodos \cf{Pantalla\_Matriz} y \cf{Pantalla\_Refrescar}. Los resultados fueron satisfactorios.
+
+Por último, para la parte de audio se ha realizado un programa interactivo que informa, por el altavoz, que se puede presionar la tecla ``1'' para grabar un mensaje por el micrófono y que al presionar la tecla ``2'' se lo puede reproducir por el auricular. De esta manera se comprueba el correcto funcionamiento de la etapa de audio.
+
+Sin más pruebas que realizar se armó la carcasa completa del teléfono --con la \ac{PCB-IH} dentro-- y se ha tomado una fotografía que podemos ver en la figura \ref{fig:pcb.montaje-ih-wrt-out}.
+\figuraob{Vista exterior del teléfono armado, con la \acs{PCB-IH}, la \acs{PCB-LCD} y la \acs{PCB-WRT}}{fig:pcb.montaje-ih-wrt-out}{width=10cm}{montaje-ih-wrt-out}{!h}
+
+
+
+
+
+
+\section{Análisis de costos}
+\label{sec:costos}
+
+En esta sección se realiza un análisis de los costos de la \ac{IH}. Esto involucrará solamente a los componentes y la materialización de la \ac{PCB} general (figura \ref{fig:pcb}). Es decir, no se tendrá en cuenta el costo de la carcasa del teléfono, del armado, del soldado ni del diseño.
+
+En primera instancia este análisis se realiza para la elaboración de una sola unidad. Luego se verá como estos valores pueden variar en una producción en mayor escala.
+
+
+
+\subsection{Costos en materiales para una sola unidad}
+\label{sec:costos.1}
+
+En las tablas \ref{tab:costos.1.c.1}, \ref{tab:costos.1.c.2}, \ref{tab:costos.1.r.1}, \ref{tab:costos.1.r.2}, \ref{tab:costos.1.u} y \ref{tab:costos.1.x} se realiza la descripción de los costos de los componentes electrónicos de la \ac{IH}.
+
+\begin{tablaob}{Costos de los capacitores de la \ac{PCB} general (1/2)}{tab:costos.1.c.1}{!h}
+	\begin{tabular}{|c|r|l||c@{\,}r@{,}l|c|}
+		\hline
+		\textbf{Designación} & \multicolumn{1}{|c|}{\textbf{Valor}} & \multicolumn{1}{|c||}{\textbf{Tipo}} & \multicolumn{3}{|c|}{\textbf{Costo}} & \textbf{Fecha de facturación}\\
+		\hline\hline
+		C1 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+		C2 & $10\un{nF}$ & Plate & \$ & 0 & 340 & 02/03/2007\\\hline
+		C3 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+		C4 & $3.3\un{nF}$ & Plate & \$ & 0 & 550 & 26/02/2007\\\hline
+		C5 & $100\un{$\mu$F}$ & Electrolítico & \$ & 0 & 093 & 22/02/2007\\\hline
+		C6 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+		C7 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+		C8 & $22\un{nF}$ & Plate & \$ & 0 & 350 & 26/02/2007\\\hline
+		C9 & $47\un{nF}$ & Multicapa & \$ & 0 & 170 & 02/03/2007\\\hline
+		C10 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+		C11 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+		C12 & $47\un{nF}$ & Multicapa & \$ & 0 & 170 & 02/03/2007\\\hline
+		C13 & $100\un{$\mu$F}$ & Electrolítico & \$ & 0 & 093 & 22/02/2007\\\hline
+		C14 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+		C15 & $100\un{$\mu$F}$ & Electrolítico & \$ & 0 & 093 & 22/02/2007\\\hline
+		C16 & $10\un{$\mu$F}$ & Electrolítico & \$ & 0 & 078 & 22/02/2007\\\hline
+		C17 & $39\un{nF}$ & Cerámico & \$ & 0 & 070 & 22/02/2007\\\hline
+		C18 & $15\un{pF}$ & Cerámico & \$ & 0 & 068 & 22/02/2007\\\hline
+		C19 & $15\un{pF}$ & Cerámico & \$ & 0 & 068 & 22/02/2007\\\hline
+		C20 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+		C21 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+	\end{tabular}\\[5mm]
+	\begin{flushleft}
+	\footnotesize
+		\textbf{Nota 1}: Los costos se encuentran en pesos argentinos y con impuestos incluidos.\\
+		\textbf{Nota 2}: Todos los capacitores soportan una tensión igual o mayor a $16\unscript{V}$.
+	\normalsize
+	\end{flushleft}
+\end{tablaob}
+
+\begin{tablaol}{Costos de los capacitores de la \ac{PCB} general (2/2)}{tab:costos.1.c.2}{!p}
+	\begin{tabular}{|c|r|l||c@{\,}r@{,}l|c|}
+		\hline
+		\textbf{Designación} & \multicolumn{1}{|c|}{\textbf{Valor}} & \multicolumn{1}{|c||}{\textbf{Tipo}} & \multicolumn{3}{|c|}{\textbf{Costo}} & \textbf{Fecha de facturación}\\
+		\hline\hline
+		C22 & $470\un{$\mu$F}$ & Electrolítico & \$ & 0 & 227 & 02/03/2007\\\hline
+		C23 & $10\un{$\mu$F}$ & Electrolítico & \$ & 0 & 078 & 22/02/2007\\\hline
+		C24 & $10\un{nF}$ & Plate & \$ & 0 & 340 & 02/03/2007\\\hline
+		C25 & $3.3\un{nF}$ & Plate & \$ & 0 & 550 & 26/02/2007\\\hline
+		C26 & $22\un{nF}$ & Plate & \$ & 0 & 350 & 26/02/2007\\\hline
+		C27 & $47\un{nF}$ & Multicapa & \$ & 0 & 170 & 02/03/2007\\\hline
+		C28 & $47\un{nF}$ & Multicapa & \$ & 0 & 170 & 02/03/2007\\\hline
+		C29 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+		C30 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+		C31 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+		C32 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+		C33 & $100\un{nF}$ & Cerámico & \$ & 0 & 125 & 22/02/2007\\\hline
+		C34 & $1\un{$\mu$F}$ & Electrolítico & \$ & 0 & 078 & 22/02/2007\\\hline
+		C35 & $1\un{$\mu$F}$ & Electrolítico & \$ & 0 & 078 & 22/02/2007\\\hline
+		C36 & $1\un{$\mu$F}$ & Electrolítico & \$ & 0 & 078 & 22/02/2007\\\hline
+		C37 & $1\un{$\mu$F}$ & Electrolítico & \$ & 0 & 078 & 22/02/2007\\\hline
+		C38 & $1\un{$\mu$F}$ & Electrolítico & \$ & 0 & 078 & 22/02/2007\\\hline
+		\hline
+		\multicolumn{3}{|r||}{\textbf{Costo de los capacitores}} & \$ & 6 & 168 & ---\\\hline
+		\hline
+	\end{tabular}\\[5mm]
+	\begin{flushleft}
+	\footnotesize
+		\textbf{Nota 1}: Los costos se encuentran en pesos argentinos y con impuestos incluidos.\\
+		\textbf{Nota 2}: Todos los capacitores soportan una tensión igual o mayor a $16\unscript{V}$.
+	\normalsize
+	\end{flushleft}
+\end{tablaol}
+
+\begin{tablaol}{Costos de los resistores de la \ac{PCB} general (1/2)}{tab:costos.1.r.1}{!p}
+	\begin{tabular}{|c|r|l||c@{\,}r@{,}l|c|}
+		\hline
+		\textbf{Designación} & \multicolumn{1}{|c|}{\textbf{Valor}} & \multicolumn{1}{|c||}{\textbf{Detalle}} & \multicolumn{3}{|c|}{\textbf{Costo}} & \textbf{Fecha de facturación}\\
+		\hline\hline
+		R1 & $10\un{K$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R2 & $53.6\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R3 & $100\un{K$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R4 & $7.50\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R5 & $10\un{K$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R6 & $3.65\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R7 & $7.50\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R8 & $5.62\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+	\end{tabular}\\[5mm]
+	\begin{flushleft}
+	\footnotesize
+		\textbf{Nota 1}: Los costos se encuentran en pesos argentinos y con impuestos incluidos.\\
+	\normalsize
+	\end{flushleft}
+\end{tablaol}
+
+\begin{tablaol}{Costos de los resistores de la \ac{PCB} general (2/2)}{tab:costos.1.r.2}{!p}
+	\begin{tabular}{|c|r|l||c@{\,}r@{,}l|c|}
+		\hline
+		\textbf{Designación} & \multicolumn{1}{|c|}{\textbf{Valor}} & \multicolumn{1}{|c||}{\textbf{Detalle}} & \multicolumn{3}{|c|}{\textbf{Costo}} & \textbf{Fecha de facturación}\\
+		\hline\hline
+		R9 & $220\un{$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R10 & $10\un{K$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R11 & $220\un{$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R12 & $3.65\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R13 & $470\un{$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R14 & $1.69\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R15 & $1.0\un{$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R17\Si{a} & $220\un{$\Omega$}$ & $1/2\un{W}, 10\%$ & \$ & 0 & 220 & 22/02/2007\\\hline
+		R18 & $39\un{$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R19\Si{a} & $15\un{$\Omega$}$ & $1\un{W}, 10\%$ & \$ & 0 & 220 & 22/02/2007\\\hline
+		R20 & $330\un{$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R21 & $100\un{K$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R22 & $1\un{$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R23 & $39\un{$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R24 & $10\un{K$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R25 & $47\un{K$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R26 & $10\un{K$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R27 & $15.0\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R28 & $53.6\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R29 & $7.50\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R30 & $3.65\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R31 & $5.62\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R32 & $7.50\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R33 & $1.69\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R34 & $3.65\un{K$\Omega$}$ & $1/4\un{W}, 1\%$ & \$ & 0 & 129 & 02/03/2007\\\hline
+		R35 & $10\un{K$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R37 & $100\un{K$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R39 & $470\un{$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R40 & $1.0\un{$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R41 & $1.0\un{$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R42 & $100\un{K$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R43 & $1.0\un{$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		R44 & $1.0\un{$\Omega$}$ & $1/8\un{W}, 10\%$ & \$ & 0 & 034 & 22/02/2007\\\hline
+		\hline
+		\multicolumn{3}{|r||}{\textbf{Costo de los resistores}} & \$ & 3 & 225 & ---\\\hline
+		\hline
+	\end{tabular}\\[5mm]
+	\begin{flushleft}
+	\footnotesize
+		\textbf{Nota 1}: Los costos se encuentran en pesos argentinos y con impuestos incluidos.\\
+		\textbf{Nota \Si{a}}: Resistor tipo MetalFilm.
+	\normalsize
+	\end{flushleft}
+\end{tablaol}
+
+\begin{tablaol}{Costos de los circuitos integrados de la \ac{PCB} general}{tab:costos.1.u}{!p}
+	\begin{tabular}{|c|l||c@{\,}r@{,}l|c|}
+		\hline
+		\textbf{Designación} & \multicolumn{1}{|c||}{\textbf{Código}} & \multicolumn{3}{|c|}{\textbf{Costo}} & \textbf{Fecha de facturación}\\
+		\hline\hline
+		U1 & MC7805CT & \$ & 0 & 963 & 22/02/2007\\\hline
+		U2 & MC78L05ACP & \$ & 0 & 690 & 22/02/2007\\\hline
+		U3 & TL084CN & \$ & 1 & 037 & 22/02/2007\\\hline
+		U4 & TL084CN & \$ & 1 & 037 & 22/02/2007\\\hline
+		U5 & PIC16F876-20/SP & \$ & 34 & 800 & 07/05/2007\\\hline
+		U6 & A3121EU & \$ & 5 & 515 & 14/02/2007\\\hline
+ 		U7 & TDA2003 & \$ & 1 & 950 & 13/11/2006\\\hline
+ 		U8 & LM317LZ & \$ & 0 & 827 & 22/02/2007\\\hline
+ 		U9 & MAX232CPE & \$ & 3 & 038 & 22/02/2007\\\hline
+		\hline
+		\multicolumn{2}{|r||}{\textbf{Costo de los circuitos integrados}}  & \$ & 49 & 857 & ---\\\hline
+		\hline
+	\end{tabular}\\[5mm]
+	\begin{flushleft}
+	\footnotesize
+		\textbf{Nota}: Los costos se encuentran en pesos argentinos y con impuestos incluidos.\\
+	\normalsize
+	\end{flushleft}
+\end{tablaol}
+
+\begin{tablaol}{Costos de los componentes restantes de la \ac{PCB} general}{tab:costos.1.x}{!p}
+	\begin{tabular}{|c|l||c@{\,}r@{,}l|c|}
+		\hline
+		\textbf{Designación} & \multicolumn{1}{|c||}{\textbf{Código}} & \multicolumn{3}{|c|}{\textbf{Costo}} & \textbf{Fecha de facturación}\\
+		\hline\hline
+		D1 & 1N4004 & \$ & 0 & 026 & 22/02/2007\\\hline
+		D2 & 1N4004 & \$ & 0 & 026 & 22/02/2007\\\hline
+		D3 & 1N4148 & \$ & 0 & 038 & 22/02/2007\\\hline
+		D4 & 1N4004 & \$ & 0 & 026 & 22/02/2007\\\hline
+		D5 & 1N4004 & \$ & 0 & 026 & 22/02/2007\\\hline
+		J1 & MRJ9I & \$ & 0 & 700 & 13/11/2006\\\hline
+		J2 & MRJ45 & \$ & 1 & 200 & 13/11/2006\\\hline
+		J5 & DSUB1.385-2H9 & \$ & 1 & 580 & 22/02/2007\\\hline
+		Q1 & BS170 (TO-92) & \$ & 0 & 718 & 13/11/2006\\\hline
+		Q2 & BS170 (TO-92) & \$ & 0 & 718 & 13/11/2006\\\hline
+		LCD1 & LPH7366 & \$ & 10 & 000 & 03/04/2007\\\hline
+		S1 & TV-062 ($\mu$SW) & \$ & 0 & 825 & 09/11/2006\\\hline
+		XT1 & CRIS20M (XT $20\un{MHz}$) & \$ & 1 & 173 & 22/02/2007\\\hline
+		\multicolumn{2}{|l||}{Altavoz $8\un{$\Omega$}$ $0.25\un{W}$} & \$ & 1 & 900 & 13/11/2006\\\hline
+		\multicolumn{2}{|l||}{Cables} & \$ & 0 & 200 & 02/03/2007\\\hline
+		\multicolumn{2}{|l||}{Conectores varios} & \$ & 3 & 360 & 02/03/2007\\\hline
+		\hline
+		\multicolumn{2}{|r||}{\textbf{Costo de los componentes restante}} & \$ & 22 & 516 & ---\\\hline
+		\hline
+	\end{tabular}\\[5mm]
+	\begin{flushleft}
+	\footnotesize
+		\textbf{Nota}: Los costos se encuentran en pesos argentinos y con impuestos incluidos.\\
+	\normalsize
+	\end{flushleft}
+\end{tablaol}
+
+\clearpage
+
+Además, en estas tablas se describe la fecha de facturación de cada componente. Todos estos componentes fueron comprados en la ciudad capital de Córdoba -- Argentina.
+
+A continuación, en la tabla \ref{tab:costos.1.tc} se encuentra el resumen de las tablas anteriores.
+\begin{tablao}{Costo total de los componentes de la \ac{PCB} general}{tab:costos.1.tc}{!h}
+	\begin{tabular}{|l||c@{\,}r@{,}l|}
+		\hline
+		\textbf{Descripción} & \multicolumn{3}{|c|}{\textbf{Costo}}\\
+		\hline\hline
+		Capacitores & \$ & 6 & 168\\\hline
+		Resistores & \$ & 3 & 225\\\hline
+		Circuitos integrados & \$ & 49 & 857\\\hline
+		Componentes restantes & \$ & 22 & 516\\\hline
+		\hline
+		\textbf{Costo total de los componentes} & \$ & 81 & 766 \\\hline
+		\hline
+	\end{tabular}\\[5mm]
+	\begin{flushleft}
+	\footnotesize
+		\textbf{Nota}: Los costos se encuentran en pesos argentinos y con impuestos incluidos.\\
+	\normalsize
+	\end{flushleft}
+\end{tablao}
+Ahora los costos se encuentras resumidos en grupos. A esto falta agregar el costo de materialización de la \ac{PCB} general, la cual se realizó también en la ciudad capital de Córdoba. Entonces, en la tabla \ref{tab:costos.1.total} podemos ver el cálculo del costo total en materiales, tanto de los componentes como de la \ac{PCB} general, para el armado de una sola unidad.
+\begin{tablao}{Costo total para una sola unidad}{tab:costos.1.total}{!h}
+	\begin{tabular}{|l||c@{\,}r@{,}l|}
+		\hline
+		\textbf{Descripción} & \multicolumn{3}{|c|}{\textbf{Costo}}\\
+		\hline\hline
+		Costo total de los componentes & \$ & 81 & 766 \\\hline
+		Costo de materialización de la \ac{PCB} general & \$ & 78 & 000 \\\hline
+		\hline
+		\textbf{Costo total} & \$ & 159 & 766 \\\hline
+		\hline
+	\end{tabular}\\[5mm]
+	\begin{flushleft}
+	\footnotesize
+		\textbf{Nota}: Los costos se encuentran en pesos argentinos y con impuestos incluidos.\\
+	\normalsize
+	\end{flushleft}
+\end{tablao}
+
+
+\subsection{Costos en materiales para una de 100 unidades}
+\label{sec:costos.100}
+
+En este caso, se logra reducir algunos gastos con la compra al por mayor. Para esto se realizó la consulta a proveedores vía Internet. Para el caso de alguno de los componentes se consultó a \textbf{Digi-Key Corporation} <http://www.digikey.com>. En cambio, para el caso de la construcción de la \ac{PCB} general se consultó a \textbf{PCBCART} <http://www.pcbcart.com>. El presupuesto se hizo para 100 juegos de componentes y \acs{PCB}s generales.
+
+Como hemos visto en las tablas \ref{tab:costos.1.tc} y \ref{tab:costos.1.total}, la mayor parte del costo está representada por los circuitos integrados, los componentes restantes y la \ac{PCB} general. Consultando \textbf{Digi-Key Corporation} se obtuvieron mejores precios para el caso de los componentes U5 y U6. Podemos ver esto con detalle en la tabla \ref{tab:costos.100.u}.
+\begin{tablao}{Costos de U5 y U6}{tab:costos.100.u}{!h}
+	\begin{tabular}{|c|l|r|c@{\,}r@{,}l|}
+		\hline
+		\textbf{Des.} & \multicolumn{1}{|c|}{\textbf{Código}} & \textbf{Cantidad} & \multicolumn{3}{|c|}{\textbf{Costo unitario}}\\
+		\hline\hline
+		U5 & PIC16F876-20/SP & 1   & U\$S & 9&000\\
+		   &                 & 100 & U\$S & 5&250\\
+		 	 &                 & 1   & \$ &  27&900\\
+		 	 &                 & 100 & \$ &  16&275\\
+		\hline
+		U6 & A3121EU & 1   & U\$S & 1&400\\
+		   &         & 100 & U\$S & 0&840\\
+		   &         & 1   & \$ &   4&340\\
+		 	 &         & 100 & \$ &   2&604\\
+		\hline
+	\end{tabular}\\[5mm]
+	\begin{flushleft}
+	\footnotesize
+		\textbf{Nota 1}: U\$S representa dólares estadounidenses y \$ representa pesos argentinos.\\
+		\textbf{Nota 2}: El costo de los componentes y el valor del cambio corresponden al 23/05/2007.\\
+		\textbf{Nota 3}: El valor del cambio utilizado es de \$\,3,10 como valor de venta de dólares.\\
+		\textbf{Nota 4}: Los valores en pesos no incluyen impuestos ni envío.\\
+	\normalsize
+	\end{flushleft}
+\end{tablao}
+
+
+Luego, en \textbf{PCBCART}, en función de los parámetros que podemos ver en la tabla \ref{tab:costos.100.pcb.p}, se obtuvo el presupuesto que luego podemos ver en la tabla \ref{tab:costos.100.pcb.c}.
+
+\begin{tablaol}{Características establecidas en \textbf{PCBCART} acerca de la \ac{PCB} general}{tab:costos.100.pcb.p}{!p}
+	\begin{tabular}{|r|l|p{62mm}|}
+		\hline
+		\textbf{Característica} & \textbf{Asignación} & \textbf{Detalle}\\
+		\hline\hline
+		 Material & FR4 & Es el tipo de resina generalmente usado.\\\hline
+		 Layers & 2 & PCB de doble capa.\\\hline
+		 Board Size (witdh) & $160\un{mm}$ & Ancho de la placa.\\\hline
+		 Board Size (height) & $160\un{mm}$ & Largo o alto de la placa.\\\hline
+		 Thickness & $1.6\un{mm}$ & Espesor de la placa.\\\hline
+		 Quantity & $100\un{pcs}$ & Cantidad de placas.\\\hline
+		 Copper Weight & $35\un{$\mu$m}$ & Espesor de la lámina de cobre.\\\hline
+		 Min. Tracing/Spacing & $0.20\un{mm}$ & Mínimo ancho del trazo y separación entre pistas. La PCB general fue diseñada con una separación mínima de $0.381\un{mm}$.\\\hline
+		 Surface Finish & HASL & Tipo de terminación para la superficie del cobre (Hot Air Solder Leveling). Es anticorrosivo y ayuda a la soldadura.\\\hline
+		 Smallest Holes & $0.40\un{mm}$ & Mínimo diámetro de las perforaciones.\\\hline
+		 Holes Numbers & 300--600 & Cantidad de perforaciones. La PCB general contiene 449 perforaciones.\\\hline
+		 Surface Mount & 2 sides & Los componentes se montan en ambas caras de la PCB general.\\\hline
+		 Soldermask & Both Sides & Ambas superficies con máscara para soldadura.\\\hline
+		 Soldermask Color & Green & Barniz de la máscara de color verde.\\\hline
+		 Silkscreen Legend & 2 sides & Referencias impresas de los componentes en ambas caras.\\\hline
+		 Silkscreen Color & 2 sides & Color de la impresión.\\\hline
+		 Testing & Yes & Verificación de la PCB.\\\hline
+		 Lead Time & in 15 days & Tiempo de elaboración.\\\hline
+	\end{tabular}\\[5mm]
+\end{tablaol}
+
+\begin{tablaot}{Costo de materialización de la \ac{PCB} general en \textbf{PCBCART}}{tab:costos.100.pcb.c}{!t}
+	\begin{tabular}{|r|c@{\,}r@{,}l|}
+		\hline
+		\hline
+		Costo herramental & U\$S & 55&60\\\hline
+		Costo por unidad & U\$S & 3&88\\\hline
+		Cantidad & \multicolumn{3}{|r|}{100}\\\hline
+		\hline
+		Total & U\$S & 444&08\\\hline
+		Total por unidad & U\$S & 4&44\\
+		& \$ & 13&76\\\hline
+		\hline
+	\end{tabular}\\[5mm]
+	\begin{flushleft}
+	\footnotesize
+		\textbf{Nota 1}: U\$S representa dólares estadounidenses y \$ representa pesos argentinos.\\
+		\textbf{Nota 2}: El costo y el valor del cambio corresponden al 23/05/2007.\\
+		\textbf{Nota 3}: El valor del cambio utilizado es de \$\,3,10 como valor de venta de dólares.\\
+		\textbf{Nota 4}: Los valores en pesos no incluyen impuestos ni envío.\\
+	\normalsize
+	\end{flushleft}
+\end{tablaot}
+
+A continuación, se realiza la actualización de los costos totales teniendo en cuenta los presupuestos para 100 unidades.
+
+Para hacer una comparación con el costo total calculado en la sección \ref{sec:costos.1}, se descontará de éste los costos de los componentes U5 y U6 y el costo de la materialización de la \ac{PCB} general, para luego incorporar los nuevos costos. En realidad la comparación no es del todo rigurosa debido a que en los nuevos costos no se incluyen los impuestos ni el envío, pero sirve para tener idea de su reducción.
+
+En la tabla \ref{tab:costos.100.a} podemos ver el resultado del costo total por unidad para el caso de 100 unidades.
+\begin{tablaot}{Actualización de los costo para el caso de 100 unidades}{tab:costos.100.a}{!t}
+	\begin{tabular}{|l|l|c@{\,}r@{,}l|}
+		\hline
+		\textbf{Descripción} & \textbf{Referencia} & \multicolumn{3}{|c|}{\textbf{Valor}}\\
+		\hline\hline
+		Costo total anterior & Tabla \ref{tab:costos.1.total} & \$ & 159&77\\\hline
+		Descuento de U5 & Tabla \ref{tab:costos.1.u} & \$ & -34&80\\\hline
+		Incorporación de U5 & Tabla \ref{tab:costos.100.u} & \$ & 16&28\\\hline
+		Descuento de U6 & Tabla \ref{tab:costos.1.u} & \$ & -5&51\\\hline
+		Incorporación de U6 & Tabla \ref{tab:costos.100.u} & \$ & 2&60\\\hline
+		Descuento de la PCB general & Tabla \ref{tab:costos.1.total} & \$ & -78&00\\\hline
+		Incorporación de la PCB general & Tabla \ref{tab:costos.100.pcb.c} & \$ & 13&76\\\hline
+		\hline
+		\multicolumn{2}{|r|}{\textbf{Costo total por unidad}} & \$ &  74&10\\\hline
+		\hline
+	\end{tabular}\\[5mm]
+	\begin{flushleft}
+	\footnotesize
+		\textbf{Nota 1}: \$ representa pesos argentinos.\\
+		\textbf{Nota 2}: Los valores en pesos incorporados no incluyen impuestos ni envío.\\
+	\normalsize
+	\end{flushleft}
+\end{tablaot}
+De esto también podemos deducir en cuanto se reduce el costo, haciendo:
+\[ \textnormal{Reducción} = \$\,159.77 - \$\,74.10 = \$\,85.67 \]
+Esto respecto al costo en materiales para una sola unidad implica una reducción de:
+\[ \textnormal{Reducción porcentual} = \frac{\$\,85.67}{\$\,159.77}\cdot 100\% =  53.62\%\]
+Entonces, al hacer un presupuesto para 100 unidades, la reducción en el costo es mayor a 50\%.

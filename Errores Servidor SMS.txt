@@ -1,0 +1,38 @@
+TIPOTICJET : RESERVAR
+Mensaje Parseado Completo : #RESERVAR#VUELO#1#Y#4-#MAURIX
+Mensaje Parseado TipoTicket : RESERVAR
+Mensaje Parseado Reserva 1 : 1
+Mensaje Parseado Reserva 2 : 4
+No Se Encontró Pedido Del Cliente
+NUMERO DE CEL DE PERSONA QUE HIZO PEDIDO DE CONFIRMACION: +8236144924
+Envio Al Que Hizo Pedido: 
+
+NO HAY NADA!
+
+
+//////////////////////////
+
+#VUELO#DE#BUENOS#AIRES#A#CORDOBA#FECHA#15/12/07-#MAURIX
+
+Reservar Vuelo - OK
+
+Reservar Vuelo 42
+
+Reservar Vuelo 15 y 4
+
+Reservar Vuelo 2
+
+1) Ver doble reserva de mismo vuelo!
+2) Ver "Reservar Vuelo" mandado por alguien que no tiene pedido.
+3) la palabra "Ayuda" tiene que servir para los que hicieron pedidos.
+4) fijarse resta de vuelos
+5) Permitir que se pueda confirmar un 2do vuelo (sino da error en almacenoreserva)
+
+//////////////////////////
+
+
+latex hasta 21 cm de alto en imagenes toma
+12 cm de ancho
+
+diagramaBD -v1.4
+diagramaclases -v1.4

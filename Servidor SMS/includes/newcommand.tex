@@ -1,0 +1,255 @@
+\newcommand{\si}[1]{\raisebox{0ex}{\scriptsize #1}}
+\newcommand{\sm}[1]{$_{#1}$}
+\newcommand{\sit}[1]{\raisebox{0ex}{\tiny #1}}
+\newcommand{\Si}[1]{\raisebox{+0.6ex}{\scriptsize #1}}
+%\newcommand{\bneg}[1]{$\overline{\textsf{#1}}$}
+
+%\newcommand{\bp}[1]{\footnotesize{\textnormal{\textbf{#1}}}\normalsize}
+\newcommand{\bp}[1]{{\footnotesize \textnormal{\textbf{#1}}}} % Escribe mas chiquito
+%\newcommand{\bn}[1]{\footnotesize{$\overline{\textnormal{\textbf{#1}}}$}\normalsize}
+\newcommand{\bn}[1]{{\footnotesize $\overline{\textnormal{\textbf{#1}}}$}}
+%\newcommand{\bpn}[2]{\footnotesize{\textbf{#1}/$\overline{\textnormal{\textbf{#2}}}$}\normalsize} 
+\newcommand{\bpn}[2]{{\footnotesize \textbf{#1}/$\overline{\textnormal{\textbf{#2}}}$}} 
+%\newcommand{\reg}[1]{\small{\textnormal{\textbf{#1}}}\normalsize}
+\newcommand{\reg}[1]{{\small \textnormal{\textbf{#1}}}}
+\newcommand{\mrx}[1]{\scriptsize{#1}}
+%\newcommand{\rb}[2]{#2\,(reg. \reg{#1})}
+
+\newcommand{\bpt}[1]{{\scriptsize\hspace{1mm}\textnormal{\textbf{#1}}}\hspace{1mm}}
+\newcommand{\bnt}[1]{{\scriptsize\hspace{1mm}$\overline{\textnormal{\textbf{#1}}}$\hspace{1mm}}}
+
+
+\newcommand{\bpf}[1]{\textnormal{\textbf{\footnotesize{#1}}}}
+\newcommand{\bnf}[1]{\overline{\textnormal{\textbf{\footnotesize{#1}}}}}
+\newcommand{\bpnf}[2]{\textnormal{\textbf{\footnotesize{#1/}}}\overline{\textnormal{\textbf{\footnotesize{#2}}}}} 
+\newcommand{\regf}[1]{\textnormal{\textbf{\small{#1}}}}
+
+
+\newcommand{\bnbf}[1]{\bn{#1}}
+\newcommand{\bpnbf}[2]{\bpn{#1}{#2}} 
+
+%\newcommand{\bnbf}[1]{$\overline{\textbf{#1}}$}
+%\newcommand{\bpnbf}[2]{\textbf{#1/}$\overline{\textbf{#2}}$} 
+
+%\newcommand{\fb}[1]{\
+
+
+\newcommand{\tablaochobits}[9]{
+	\begin{tabular}{cccccccc}
+		#1 \\
+		\hline
+		\multicolumn{1}{|c}{#2} & \multicolumn{1}{|c}{#3} &  \multicolumn{1}{|c}{#4} & \multicolumn{1}{|c}{#5} &  \multicolumn{1}{|c}{#6} &  \multicolumn{1}{|c}{#7} & \multicolumn{1}{|c}{#8} & \multicolumn{1}{|c|}{#9}  \\ 
+		\hline
+		bit7 & & & & & & & bit0 \\
+	\end{tabular}
+}	
+\newcommand{\tablaochobitsin}[8]{
+	\begin{tabular}{cccccccc}
+		\hline
+		\multicolumn{1}{|c}{#1} & \multicolumn{1}{|c}{#2} &  \multicolumn{1}{|c}{#3} & \multicolumn{1}{|c}{#4} &  \multicolumn{1}{|c}{#5} &  \multicolumn{1}{|c}{#6} & \multicolumn{1}{|c}{#7} & \multicolumn{1}{|c|}{#8}  \\ 
+		\hline
+		bit7 & & & & & & & bit0 \\
+	\end{tabular}
+}	
+
+\newcommand{\acfn}[1]{\acsu{#1}\footnote{\acl{#1}}}
+\newcommand{\aci}[1]{\acsu{#1} (\acl{#1})}
+
+%\newcommand{\ud}[1]{\,\textnormal{\small{{#1}}}}
+\newcommand{\un}[1]{\,\textnormal{\small{{#1}}}}
+\newcommand{\unscript}[1]{\,\textnormal{\scriptsize{{#1}}}}
+
+\newenvironment{tabla}[2]%
+{%
+\begin{table}[htbp]
+	\rule{\textwidth}{.4mm}%
+	\caption{#1}%
+	\label{#2}%
+	\centering%
+	\vspace{4mm}%
+}%
+{%
+	\rule{\textwidth}{.4mm}%
+\end{table}
+}%
+
+\newenvironment{tablao}[3]%
+{%
+\begin{table}[#3]
+	\rule{\textwidth}{.4mm}%
+	\caption{#1}%
+	\label{#2}%
+	\centering%
+	\vspace{4mm}%
+}%
+{%
+	\rule{\textwidth}{.4mm}%
+\end{table}
+}%
+
+\newenvironment{tablaot}[3]% Tabla Sin La Linea De Arriba
+{%
+\begin{table}[#3]
+	\caption{#1}%
+	\label{#2}%
+	\centering%
+	\vspace{4mm}%
+}%
+{%
+	\rule{\textwidth}{.4mm}%
+\end{table}
+}%
+
+\newenvironment{tablaob}[3]% Tabla Sin La Linea De Abajo
+{%
+\begin{table}[#3]
+	\rule{\textwidth}{.4mm}%
+	\caption{#1}%
+	\label{#2}%
+	\centering%
+	\vspace{4mm}%
+}%
+{%
+\end{table}
+}%
+
+\newenvironment{tablaos}[3]% Tabla Con Lineas Gruesas
+{%
+\begin{table}[#3]
+	\rule{\textwidth}{1mm}%
+	\caption{#1}%
+	\label{#2}%
+	\centering%
+	\vspace{4mm}%
+}%
+{%
+	\rule{\textwidth}{1mm}%
+\end{table}
+}%
+
+\newenvironment{tablaol}[3]% Tabla Sin Lineas
+{%
+\begin{table}[#3]
+	\caption{#1}%
+	\label{#2}%
+	\centering%
+	\vspace{4mm}%
+}%
+{%
+\end{table}
+}%
+
+\newcommand{\figura}[3]{
+\begin{figure}[htbp]%
+	\rule{\textwidth}{.4mm}\\[5mm]%
+	\centering%
+	\includegraphics{#3}%
+	\caption{#1}%
+	\label{#2}%
+	\rule{\textwidth}{.4mm}%
+\end{figure}%
+}
+
+\newcommand{\figuraop}[4]{
+\begin{figure}[htb]%
+	\rule{\textwidth}{.4mm}\\[5mm]%
+	\centering%
+	\includegraphics[#3]{#4}%
+	\caption{#1}%
+	\label{#2}%
+	\rule{\textwidth}{.4mm}%
+\end{figure}%
+}
+
+\newcommand{\figuraoo}[5]{ %figura con dos lineas
+\begin{figure}[#5]%
+	\rule{\textwidth}{.4mm}\\[5mm]%
+	\centering%
+	\includegraphics[#3]{#4}%
+	\caption{#1}%
+	\label{#2}%
+	\rule{\textwidth}{.4mm}%
+\end{figure}%
+}
+
+
+\newcommand{\figuraot}[5]{ % Figura Sin La Linea De Arriba
+\begin{figure}[#5]%
+	\centering%
+	\includegraphics[#3]{#4}%
+	\caption{#1}%
+	\label{#2}%
+	\rule{\textwidth}{.4mm}%
+\end{figure}%
+}
+
+\newcommand{\figuraob}[5]{ % Figura Sin La Linea De Abajo
+\begin{figure}[#5]%
+	\rule{\textwidth}{.4mm}\\[5mm]%
+	\centering%
+	\includegraphics[#3]{#4}%
+	\caption{#1}%
+	\label{#2}%
+\end{figure}%
+}
+
+\newcommand{\figuraos}[5]{ % Figura Sin Lineas
+\begin{figure}[#5]%
+	\centering%
+	\includegraphics[#3]{#4}%
+	\caption{#1}%
+	\label{#2}%
+\end{figure}%
+}
+
+\newenvironment{mylisting}
+{\begin{list}{}{\setlength{\leftmargin}{1em}}\item\scriptsize\bfseries}
+{\end{list}}
+
+\newenvironment{mytinylisting}
+{\begin{list}{}{\setlength{\leftmargin}{1em}}\item\tiny\bfseries}
+{\end{list}}
+
+\newenvironment{codigofuente}[2]%
+{%
+\begin{tabla}{#1}{#2}%
+%	\begin{mylisting}%
+	\begin{flushleft}
+		\ttfamily%
+		\mdseries%
+		\scriptsize%
+\begin{sloppypar}
+}%
+{%
+\end{sloppypar}
+		\normalsize
+		\normalfont
+	\end{flushleft}
+%	\end{mylisting}%
+\end{tabla}%
+}%
+
+\definecolor{color-primitiva}{rgb}{.5,.1,.3}
+\definecolor{color-clase}{rgb}{0,0,0}
+\definecolor{color-numero}{rgb}{0,.5,0}
+\definecolor{color-string}{rgb}{.9,.8,0}
+\definecolor{color-preproc}{rgb}{.8,.9,0}
+
+%\newcommand{\cfpr}[1]{\textcolor{color-primitiva}{\texttt{\textbf{#1}}}}
+%\newcommand{\cfcl}[1]{\textcolor{color-clase}{\texttt{\textbf{#1}}}}
+%\newcommand{\cfnu}[1]{\textcolor{color-numero}{\texttt{\textbf{#1}}}}
+%\newcommand{\cfst}[1]{\textcolor{color-string}{\texttt{#1}}}
+%\newcommand{\cfpp}[1]{\textcolor{color-preproc}{\texttt{#1}}}
+
+
+\newcommand{\cfa}[1]{\guillemotleft\texttt{#1}\guillemotright} % Código Fuente: Archivo
+\newcommand{\cfc}[1]{\guilsinglleft\texttt{#1}\guilsinglright} % Código fuente: Código
+\newcommand{\cfcl}[1]{\texttt{#1}}
+\newcommand{\cf}[1]{\texttt{#1}}
+\newcommand{\cfm}[1]{\texttt{\textbf{#1}}}
+
+
+\newcommand{\etclass}[1]{\cfcl{#1}} % Estilo de texto para los nombres de las clases en C++
+\newcommand{\cfobj}[1]{\textsl{\texttt{#1}}} % Estilo de texto para los nombres de los objetos en C++
+%\newcommand{\etclass}[1]{\textbf{#1}} % Estilo de texto para los nombres de las clases en C++
+%\newcommand{\etobj}[1]{\textsl{#1}} % Estilo de texto para los nombres de los objetos en C++

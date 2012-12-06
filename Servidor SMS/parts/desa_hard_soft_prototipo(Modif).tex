@@ -1,0 +1,28 @@
+\chapter{Diseño hardware y configuración software del prototipo de la \acs{IH}}
+\label{sec:proto}
+Esta parte se centra en el diseño del hardware de la \ac{IH}. Esto involucra la configuración de los recursos de hardware que se encuentran incorporados en el \ac{uC} tanto así como el diseño esquemático de los componentes discretos externos.
+
+Desde un punto de vista global se observa en la figura \ref{fig:Host-IH}
+\figuraoo{Vínculo entre el \acs{HOST} y la IH}{fig:Host-IH}{width=\textwidth}{Gsm_network}{!h}
+la relación que existe entre el \acfn{HOST} y la \ac{IH}. Este vínculo es un puerto \ac{UART} a una velocidad de 115200\un{bps}. Es \textsl{full-duplex} y utiliza 2 líneas de datos (Rx y Tx) y una línea de referencia de masa. Los niveles que se manejan son \acsu{TTL} y no se hace uso de los niveles RS-232C debido a que la comunicación es entre dos placas muy próximas. En la figura \ref{fig:TTL-RS232C}
+\figuraot{Relación de tensiones \acsu{TTL} y RS-232C}{fig:TTL-RS232C}{width=0.7\textwidth}{TTL-RS232C}{!t}
+se observa la correspondencia entre las señales TTL y RS-232C.
+
+\section{Diagrama en bloques de la \acs{IH}}
+\label{sec:proto.digrama}
+
+A grandes rasgos se realiza un diagrama que tiene como núcleo al \ac{uC}. A éste se conectan los diferentes recursos de la \ac{IH} a controlar. En la figura \ref{fig:diag-block-IH}
+\figuraot{Diagrama en bloques de la \ac{IH}}{fig:diag-block-IH}{width=\textwidth}{diag-block-IH}{!t}
+se observa dicho diagrama en el cual figuran conexiones  entre cada recurso y el \ac{uC}. Un recurso se refiere a un periférico como ser el teclado, el \ac{LCD}, etc. Dichas líneas son en su mayoría digitales siendo sólo una de entrada analógica.
+
+
+\subsection{Descripción del puerto \acs{UART}}
+\label{sec:des.UART}
+En la figura \ref{fig:diag-block-IH} se observan dos líneas etiquetadas como \ac{UART}. Estas líneas transmiten bits a una tasa ideal de $V_{I}=115200\un{bps}$ totales, de los cuales sólo 8\un{bits} de 10\un{bits} son de datos útiles. Esto nos da una tasa ideal de datos útiles $V_{IU}=115200\un{bps}*8\un{bits}/10\un{bits}=92160\un{bps}$ como máximo, debido a que la configuración elegida para este puerto serie es 8N1:
+\begin{itemize}
+	\item 1\un{bit} de inicio
+	\item 8\un{bits} de datos
+	\item Sin bit de paridad
+	\item 1\un{bit} de parada
+\end{itemize}
+

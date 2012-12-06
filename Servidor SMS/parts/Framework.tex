@@ -1,0 +1,28 @@
+%\chapter{Descripción del Hardware a Utilizar}
+\chapter{Diseño de framework para el manejo de mensajes \acs{SMS}}
+%\sffamily
+
+Debido a la cantidad de mensajes SMS que el servidor debe procesar y para mejorar la modularidad y facilitar la expansión del servidor hacia diferentes terminales de trabajo, se pensó en la realización de un framework que permita separar las tareas de lectura y almacenamiento de los mensajes SMS del procesamiento y envío de los mismos.
+
+\section{Estructura del framework}
+\label{sec:def.Estructura}
+
+La estructura del framework (figura \ref{fig:Estruc.Frw}) se basa en varios threads que permiten el continuo funcionamiento del servidor y la permanente transferencia de los mensajes SMS a los distintos módulos para su posterior procesamiento. Su estructura consiste de los siguientes módulos:
+
+\figuraoo{Estructura del framework para el manejo de mensajes SMS}{fig:Estruc.Frw}{width=\textwidth}{Framework}{!h}
+
+El módulo ``Interfaz De Hardware'' consiste en un thread el cual dado un intervalo de tiempo fijado por el operador de la aplicación, se comunica con el dispositivo GSM y realiza una lectura de los distintos mensajes SMS ``entrantes'' en la memoria del dispositivo donde son almacenados. Luego de realizar la lectura, el módulo toma los mensajes leídos y los envía a una cola de entrada para su posterior almacenamiento. Esta cola de entrada contiene la implementación de semáforos para evitar la simultaneidad de acciones que darían lugar a inconsistencias en los datos almacenados en la cola.
+
+La memoria definida por defecto en el teléfono celular utilizado en este TFC es la memoria de estado sólido interna que contiene (64 KBytes de tamaño). Si el usuario desea, se puede modificar la memoria de almacenamiento de los mensajes SMS (pudiendo ser la Memory Stick o la memoria de la tarjeta SIM) utilizando un comando AT que permite hacerlo. 
+
+Luego de realizar la lectura, el módulo verifica si se encuentran mensajes SMS disponibles en una ``cola de salida'' de las mismas caracteristicas a la ``cola de entrada''. Si encuentra uno o mas mensajes, los quita de la cola y los envía a través del dispositivo GSM a los usuarios finales correspondientes.
+
+El módulo ``Consumidor'' esta compuesto de un thread que quita los mensajes almacenados en la cola de entrada en un período fijo de tiempo para luego identificarlos y enviarlos al módulo de procesamiento.
+
+El módulo ``ProcesoSMS'' contiene un interprete de texto que va tomando las palabras contenidas en los mensajes SMS para después almacenarlos en variables de la aplicación y poder así realizar las acciones necesarias de acuerdo a estos datos almacenados.
+
+El módulo ``Interfaz Grafica 1'' es el encargado de visualizar todas las operaciones que el servidor de SMS va realizando y de los distintos tipos de SMS que va recibiendo y enviando. A su vez, muestra información relevante a lo que tenga que ver con las reservas de vuelos.
+
+El módulo ``Productor'' es el encargado de generar un mensaje SMS de acuerdo a la estructura estándar que estos poseen. Una vez generado el mensaje se incorpora el texto dirigido al usuario final del mensaje para después enviarlo a la ``cola de salida'' donde son almacenados. Cuando el módulo ``Interfaz De Hardware'' realiza la lectura de los mensajes contenidos por la ``cola de ``salida'', se quitan de la cola y se envian los usuarios finales a travez del dispositivo GSM.
+
+La idea principal de este framework es modularizar todas las acciones referidas a la transferencia de los mensajes SMS en el servidor y permitir la posibilidad de que el servidor pueda ser administrado y visualizado en diferentes terminales de trabajo, pudiendo asi tener la posibilidad de generar distintas interfaces graficas a gusto del operador y permitiendo configurar la distribución de los mensajes SMS en las distintas terminales de acuerdo al tipo de mensaje SMS recibido.

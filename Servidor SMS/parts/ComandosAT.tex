@@ -1,0 +1,464 @@
+%\chapter{Descripción del Hardware a Utilizar}
+\chapter{Estudio exploratorio de investigación sobre el acceso a los servicios \acs{SMS} a través de un  dispositivo GSM}
+%\sffamily
+
+Para poder ofrecer el servicio de procesamiento de mensajes \ac{SMS} a través de un servidor de \ac{SMS} es necesario diseñar un software y armar el hardware para que esta pueda acceder a los servicios que brinda el \acf{SMS}. Esto se puede lograr por medio de varias maneras:
+
+\begin{enumerate}
+	\item Por medio de la conexión de un \ac{TC} a una \ac{PC}. El \ac{TC} debe permitir ser utilizado como una interfaz de acceso a los servicios \ac{SMS} mediante el cual sea manipulado por los denominados comandos AT (algunas marcas de telefonía celular llaman esto como la capacidad del \ac{TC} de funcionar como un módem). Esta es la solución empleada en este \ac{TFC}.
+	\item Mediante la utilización de un módem \ac{GSM} conectado a la \ac{PC}. Mediante un módem \ac{GSM} podemos conectar cualquier sistema digital a la red \ac{GSM}, no sólo para enviar mensajes \ac{SMS} sino también para transmitir datos.
+\end{enumerate}
+
+\section{Los módems \acs{GSM}}
+\label{sec:modems.gsm}
+
+Según la aplicación que se le desea dar, existen dos tipos de módems \ac{GSM}
+
+\begin{itemize}
+	\item MODEMS para circuito impreso: Son Modems de reducido tamaño y perfectamente apantallados que están preparados para ser incorporados dentro de un circuito impreso y que permiten desarrollar un hardware específico y que no depende de una \ac{PC} [González, 2002].
+	\item MODEMS para PC: Tienen un tamaño también bastante reducido, y disponen de un conector DB9 hembra para conectarse a la \ac{PC} a través de un cable serie estándar [González, 2002].
+\end{itemize}
+
+Los modems GSM no sólo se comportan de forma muy parecida a un módem normal, permitiendo el intercambio de datos con otro módem y utilizándose los
+comandos AT originales, sino que incluyen muchas más características. Son como pequeños \ac{TC}s, que incluyen su propia tarjeta \acs{SIM} para poder
+funcionar y por tanto permiten gestionar la \ac{BD} de teléfonos, la lista de los mensajes \ac{SMS} recibidos, enviar mensajes \ac{SMS}, configurar diversos parámetros, etc [González, 2002].
+
+\section{Interfaz con módems \acs{GSM} mediante el uso de comandos ``AT''}
+\label{sec:modems.gsm.at}
+
+La comunicación con los Modems se realiza a través de una línea serie, y dependiendo del módem, se pueden usar los niveles definidos por la norma RS232
+(Módems para PC) o niveles TTL (Modems para Circuito impreso) [Siemens, 2002].
+
+El estándar ``de facto'' para controlar los modems se basa en los comandos AT HAYES, o más comúnmente conocidos como comandos AT. El módem, antes de
+realizar una conexión con otro módem, se encuentra en modo comando. En este modo podemos configurar y controlar el módem utilizando los comandos AT. Una
+vez establecida la conexión con un módem remoto, se pasa del modo comando al modo conexión, por lo que la información que le llega al módem por la línea serial no es interpretada como comandos AT sino como información a transmitir. Una vez terminada la conexión el módem vuelve al modo comando [Siemens, 2002].
+
+Los comandos AT son cadenas ASCII que comienzan por los caracteres AT y terminan con un \ac{CR}. Cada vez que el módem recibe un comando,
+lo procesa y devuelve un resultado, que normalmente es una cadena ASCII salvo que hayamos indicado lo contrario [Siemens, 2002].
+
+Al estar la comunicación en ASCII, podremos utilizar un terminal de comunicaciones desde un ordenador para acceder al módem, sea para configurarlo, sea para hacer pruebas o bien para establecer una comunicación con otro módem [Siemens, 2002].
+
+A continuación se listan algunos comandos AT:
+
+\begin{itemize}
+	\item \textbf{ATA:} Responder a una llamada entrante.
+	\item \textbf{ATD:} Llamar a un número de teléfono.
+	\item \textbf{ATE:} Eco de comandos ON/OFF.
+	\item \textbf{ATF:} Seleccionar modo de conexión.
+	\item \textbf{ATH:} Colgar/Descolgar.
+	\item \textbf{ATI:} Obtener identificadores.
+	\item \textbf{ATL:} Volumen del altavoz.
+	\item \textbf{ATM:} Control del altavoz.
+	\item \textbf{ATS:} Lectura/escritura de registros.
+	\item \textbf{ATZ:} Reset del módem.
+\end{itemize}
+
+Los comandos AT se utilizan para:
+
+\begin{itemize}
+	\item Configurar el \ac{TC} para poder conectarlo a la \ac{PC} mediante un cable \ac{USB}, puerto infrarrojo, Bluetooth o por el bus del sistema.
+	\item Configurar el módem para poder conectarlo a la \ac{PC} mediante un cable \ac{USB}, puerto infrarrojo, Bluetooth o por el bus del sistema.
+	\item Pedir información acerca de la configuración presente o el estado operacional del \ac{TC} o del módem incorporado.
+	\item Testear la disponibilidad en el \ac{TC} o el módem y, cuando es aplicable, verificar el rango de los parámetros válidos para algún comando AT.
+\end{itemize}
+
+\section{Los comandos AT+}
+\label{sec:at+}
+
+Para tener acceso a todos esos servicios, y dado que los comandos AT estaban muy extendidos y muy estandarizados, se ha realizado una ampliación, añadiéndose nuevos comandos. Estos nuevos comandos comienzan por las letras AT+, y se denominal comandos AT+ [González, 2002].
+
+En este apartado se listan algunos de los comandos AT+ implementados en los modems GSM para tener una idea de lo que se puede controlar a través del
+módem, aunque existen muchos más comandos.
+
+\begin{enumerate}
+	\item Comandos generales 
+  \begin{itemize}
+		\item \textbf{AT+CGMI:} Identificación del fabricante.
+  	\item \textbf{AT+CGMI:} Identificación del fabricante.
+		\item \textbf{AT+CGSN:} Obtener número de serie.
+		\item \textbf{AT+CIMI:} Obtener el IMSI. 
+		\item \textbf{AT+CPAS:} Leer estado del modem.
+	\end{itemize}
+	\item Comandos del servicio de red 
+  \begin{itemize}
+		\item \textbf{AT+CSQ:} Obtener calidad de la señal
+  	\item \textbf{AT+COPS:} Selección de un operador
+		\item \textbf{AT+CREG:} Registrarse en una red
+		\item \textbf{AT+WOPN:} Leer nombre del operador 
+	\end{itemize}
+	\item Comandos de seguridad 
+  \begin{itemize}
+		\item \textbf{AT+CPIN:} Introducir el PIN
+  	\item \textbf{AT+CPINC:} Obtener el número de reintentos que quedan
+		\item \textbf{AT+CPWD:} Cambiar password
+	\end{itemize}
+	\item Comandos para la agenda de teléfonos 
+  \begin{itemize}
+		\item \textbf{AT+CPBR:} Leer todas las entradas
+  	\item \textbf{AT+CPBF:} Encontrar una entrada
+		\item \textbf{AT+CPBW:} Almacenar una entrada
+		\item \textbf{AT+CPBS:} Buscar una entrada 
+	\end{itemize}
+  \item Comandos para \ac{SMS}s 
+  \begin{itemize}
+		\item \textbf{AT+CPMS:} Seleccionar lugar de almacenamiento de los SMS
+  	\item \textbf{AT+CMGF:} Seleccionar formato de los mensajes SMS (modo texto o \acs{PDU})
+		\item \textbf{AT+CMGR:} Leer un mensaje SMS almacenado
+		\item \textbf{AT+CMGL:} Listar los mensajes almacenados 
+		\item \textbf{AT+CMGS:} Enviar mensaje SMS
+		\item \textbf{AT+CMGW:} Almacenar mensaje en memoria
+		\item \textbf{AT+CMSS:} Enviar mensaje almacenado
+		\item \textbf{AT+CSCA:} Establecer el Centro de mensajes a usar
+		\item \textbf{AT+WMSC:} Modificar el estado de un mensaje
+	\end{itemize}
+\end{enumerate}
+
+\subsection{Introducir comandos de seteo}
+\label{at.seteo}
+
+El formato estándar para introducir un comando de seteo es:
+
+\begin{center}
+	\textbf{AT<comando>}=<parámetros>\textbf{<CR>}
+\end{center}
+
+Donde:
+
+\begin{flushleft}
+	AT = Notifica al módem incorporado que un comando está siendo ingresado. \\
+	<comando> = El nombre del comando siendo ingresado. \\
+	<parámetros> = Los valores a ser utilizados por el comando. \\
+	<\acs{CR}> = Todas las lineas de comandos son finalizadas presionando la tecla de \ac{CR} (Tecla ``Retorno'' o ``Enter'') en el teclado de la \ac{PC}. \\
+\end{flushleft}
+
+Para setear la operación del módem en autobaudios por una conexión asíncrona, la línea de comando debería ser:
+
+\begin{center}
+\texttt{AT+CBST=0,0,1}
+\end{center}
+
+Sin embargo, muchos comandos pueden tomar valores por defecto, como lo muestra el siguiente ejemplo:
+
+\begin{center}
+\texttt{AT+CBST=,,1}
+\end{center}
+
+En el caso de que se quiera introducir un parámetro del tipo string, el mismo debe ir introducido entre comillas: por ejemplo ``Hola''.
+
+\subsection{Introduciendo comandos de ejecución}
+\label{sec:IntroduciendoComandosDeEjecución}
+
+Estos comandos son similares a los de seteos. Usualmente no requieren parámetros y son utilizados para obtener información acerca del \ac{TC}, del módem o para ejecutar un evento.
+
+Por ejemplo, para conocer información acerca del estado del nivel de baterias del \ac{TC}, se introduce el comando +CBC:
+
+\begin{center}
+\texttt{AT+CBC}
+\end{center}
+
+El módem responde:
+
+\begin{center}
+\texttt{CBC: 0,60}
+\end{center}
+
+Esto indica que la batería del \ac{TC} está conectado (0) y que la carga remanente es de un 60\un{\%}.
+
+\subsection{Usando comandos de lectura para ver sus propiedades}
+\label{sec:UsandoComandosDeLecturaParaVerSusPropiedades}
+
+Para verificar las propiedades de un comando, se utiliza la opción ``?''. Por ejemplo, para verificar las propiedades del comando +CBST, se introduce:
+
+\begin{center}
+\texttt{AT+CBST?}
+\end{center}
+
+Si el comando +CBST fue seteado de acuerdo al ejemplo de la sección \ref{at.seteo}, sus propiedades son visualizadas así:
+
+\begin{center}
+\texttt{+CBST: 0,0,1}
+\end{center}
+
+\subsection{Usando testeos de comandos para requerir ayuda}
+\label{sec:UsandoComandosDeTesteosParaRequerirAyuda}
+
+Para testear la disponibilidad de un comando y su rango de parámetros se utiliza la opción ``=?'' junto al comando. Por ejemplo, para chequear los parámetros disponibles del comando +CBST utilizado en el ejemplo anterior, se introduce:
+
+\begin{center}
+\texttt{AT+CBST=?}
+\end{center}
+
+La línea:
+
+\begin{center}
+\texttt{+CBST: (0,4,6,7,68,70,71),(0),(1)}
+\end{center}
+
+es visualizada indicando el rango válido de entradas que pueden ser seteadas por los parámetros <ratio de datos>, <servicio bearer>, y <elemento de conexión>.
+
+\subsection{Resultados finales de los comandos}
+\label{sec:ResultadosFinalesDeLosComandos}
+
+El módem al terminar de procesar cada comando AT de ejecución, devuelve como resultado de la operación el string \texttt{OK} indicando que el comando y sus respectivos parámetros fueron válidos y que el comando fue ejecutado con éxito. Si esto no ocurre, el resultado consiste en el string \texttt{ERROR} indicando que se produjo un error en la ejecución del comando AT.
+
+Cuando el comando no pudo ser ejecutado, un error es reportado en pantalla. Esto puede surgir debido a que:
+\begin{itemize}
+	\item Hay un error en la sintáxis del comando.
+	\item Hay parámetros que se encuentran fuera del rango permitido.
+	\item El comando no está implementado en el módelo del módem que el \ac{TC} posee.
+	\item El comando no es apropiado al servicio.
+\end{itemize}
+
+Cuando un error es reportado, el mensaje de error es precedido por una copia del texto correspondiente a la respuesta del último comando AT válido. Esto se muestra en el siguiente ejemplo:
+
+\begin{flushleft}
+Comando válido:\hspace{20pt}\texttt{AT+CBC=?} \\
+Respuesta:\hspace{48,2pt}\texttt{+CBC: (0,2),(0-100)} \\
+\hspace{96pt}\texttt{OK} \\
+Comando inválido:\hspace{12pt}\texttt{AT+CBC=?;+FCLASS=3} \\
+Respuesta:\hspace{48,2pt}\texttt{+CBC: (0,2),(0-100)} \\
+\hspace{96pt}\texttt{ERROR} \\
+\end{flushleft}
+
+\section{El \ac{TC} Sony Ericsson K750i}
+\label{sec:K750i}
+
+El Sony Ericsson K750i fue el \ac{TC} utilizado para este \ac{TFC}. Dado que era el \ac{TC} disponible que yo utilizaba durante la época en que desarrollé este \ac{TFC} y debido a las carácteristicas de su módem interno que representaban justamente lo que necesitaba para realizar la interfaz con las redes \ac{GSM}, lo dispuse como parte del hardware del servidor \ac{SMS}.
+
+%foto del telefono
+
+Este \ac{TC} es uno muy compacto, cuyas medidas son de 100.0 x 46.0 x 20.0\un{mm}. Su peso es de 99.0\un{gramos}. Posee una pantalla TFT de 262.144 colores y un sistema operativo con soporte de Java. El único punto negativo que encuentro de este \ac{TC} es su compatibilidad con tres de las cuatro bandas disponibles de las redes \ac{GSM}. La banda que no soporta es la \ac{GSM} 850, por lo cual, en áreas no muy pobladas ya sea en pueblos pequeños y sectores de campo, la señal de captación es muy débil.
+
+Este \ac{TC} posee compatibilidad con el \ac{USB} para poder conectarlo a una \ac{PC} y poder transferir datos entre estos. El cable utilizado para la conexión entre ambos es el cable \ac{USB} modelo ``DCU-60'' que viene como un accesorio al comprar el \ac{TC}.
+
+El módem incluido permite conectar una \ac{PC} a internet por medio de la tecnología \ac{GPRS}, además de permitir acceder a todos los servicios que ofrece la red \ac{GSM} mediante el uso de la \ac{PC} conectada a este dispositivo.
+
+\subsection{Modos de operación del módem incorporado}
+\label{sec:modos.modem}
+
+El módem incorporado del K750i puede ser seteado en uno de los 3 modos de operación:
+
+\begin{enumerate}
+	\item \textbf{Off-line command mode:} El módem es seteado en este modo cuando es encendido por primera vez. En ese momento el dispositivo se encuentra listo para la espera de algún comandos AT.
+	\item \textbf{On-line data mode:} Permite la operación normal del módem, intercambiando datos con un módem remoto.
+	\item \textbf{On-line command mode:} Es posible cambiar a este modo cuando se desea enviar comandos AT al módem incorporado cuando aún se encuentra conectado a un módem remoto.
+\end{enumerate}
+
+\section{Ejemplos de los comandos ``AT'' utilizando el K750i}
+\label{sec:ejemplos.at}
+
+En esta sección se explicarán los comandos que esten relacionados con los mensajes \ac{SMS}. Se utiliza el progama ``Hyperterminal'' de Windows para realizar todas las ejecuciones de comandos AT. Cuando iniciamos el programa, elegimos una nueva conexión y seleccionamos el módem interno del K750i para conectarnos. La velocidad de conexión la seteamos en 115200 y el puerto en ``COM4''.
+
+\subsection{Selección de memoria}
+\label{seleccion.memoria}
+
+El comando AT+CPMS selecciona la memoria de almacenamiento ha ser utilizada para almacenar y leer los mensajes \ac{SMS}. El \ac{TC} k750i permite almacenar los \ac{SMS} en la memoria interna del dispositivo como así también en la memoria de la tarjeta \ac{SIM}. Por defecto el dispositivo almacena todos sus datos correspondientes a la agenda telefónica, configuración y \ac{SMS}s en la memoria interna del dispositivo, pero al conectarse al dispositivo por medio del Hyperterminal, si no se setea la búsqueda de datos a través de la la memoria interna, los comandos AT por defecto buscarán los datos en la tarjeta \ac{SIM} del dispositivo, esto da como resultado el necesario seteo de la memoria previo a la búsqueda de mensajes en el \ac{TC}.
+
+El comando con sus parámetros es el siguiente:
+
+\begin{center}
+\textbf{AT+CPMS=}<mem1>,<mem2>,<mem3>
+\end{center}
+
+El parámetro mem1 hace referencia a la memoria en el cual los mensajes \ac{SMS} son leídos y borrados. Las opciones del parámetro son ``ME'' para referirse a la memoria interna del dispositivo, y ``SM'' para referirse a la memoria de la tarjeta \ac{SIM}. El siguiente parámetro mem2 indica la memoria en el cual las operaciones de escritura y envío quedan almacenadas. La memoria mem3 es la cual los \ac{SMS}s son almacenados por preferencia (a menos que sean enviados directamente al \ac{TC}).
+
+Verificamos a través del Hyperterminal cuales son los valores que se encuentran asignados:
+
+\begin{flushleft}
+\texttt{AT+CPMS?} \\
+\texttt{+CPMS: ``SM'',0,30,''SM'',0,30,''SM'',0,30}
+\end{flushleft}
+
+Como se puede apreciar, las tres memorias asignadas corresponden a la de la tarjeta \ac{SIM}, el número 0 indica que no se encuentra ningún \ac{SMS} almacenado en la memoria que tiene una capacidad para almacenar de 30 \ac{SMS}s. A continuación seteamos la búsqueda de \ac{SMS}s en la memoria interna:
+
+\begin{flushleft}
+\texttt{AT+CPMS=''ME'',''ME'',''ME''} \\
+\texttt{+CPMS: 82,200,82,200,82,200} \\
+\texttt{OK}
+\end{flushleft}
+
+El resultado indica que el cambio surgió con exito y que las memorias seteadas ahora corresponden a la interna del dispositivo, que tiene 82 \ac{SMS}s almacenados de una capacidad de 200.
+
+\subsection{Listado de mensajes \ac{SMS}}
+\label{listado.sms}
+
+La ejecución del comando AT+CMGL devuelve un listado de los mensajes \ac{SMS} con un valor de estado. Estos mensajes son los que se encuentran almacenados en la mem1 seteado con el comando AT+CPMS de la sección \ref{seleccion.memoria} anterior. Los \ac{PDU}s de cada mensaje son visualizados en la \ac{GUI} del software que ejecuta los comandos AT (Hyperterminal de Microsoft Windows).
+
+El estado del mensaje hace referencia a si son mensajes entrantes sin haber sido leídos, si fueron leídos, si no fueron enviados a destino o si fueron enviados a destino. El cuadro \ref{tab:estados.sms} resume los posibles valores de estados de un mensaje \ac{SMS}:
+
+\begin{tablao}{Estados de mensajes \ac{SMS}}{tab:estados.sms}{!h}
+	\begin{tabular}{|l|l|}
+	  \hline 	
+	  \bp{<estado>}& \bp{Descripción} \\
+	  \hline 	
+	  \bp{0}& \bp{Mensajes recibidos sin leer (valor por defecto)} \\
+	  \hline
+	  \bp{1}& \bp{Mensajes recibidos leídos} \\
+	  \hline 
+	  \bp{2}& \bp{Mensajes almacenados sin enviar} \\
+	  \hline 
+	  \bp{3}& \bp{Mensajes almacenados enviados} \\
+	  \hline 
+	  \bp{4}& \bp{Todos los mensajes} \\
+	  \hline 
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+El comando se ejecuta de la siguiente manera:
+
+\begin{center}
+\textbf{AT+CMGL=}<estado>
+\end{center}
+
+La ejecución devuelve una respuesta del tipo:
+
+\begin{center}
++CMGL:<index>,<estado>,<alpha>,<largo><CR><LF><pdu>[...]
+\end{center}
+
+El valor <index> indica el índice donde se encuentra almacenado el dato en la memoria de almacenamiento de mensajes \ac{SMS}. Este índice se incrementa de a uno para todos los tipos de mensajes \ac{SMS}, ya sean entrantes o salientes.
+
+El valor <alpha> es un valor especifico del productor del \ac{TC}. En el caso de el K750i este valor se encuentra en blanco.
+
+El <largo> indica en el modo \ac{PDU}, el largo del mensaje \ac{SMS} en octetos (sin contar con la dirección del \ac{SMSC}).
+
+El <pdu> es el valor que contiene la dirección del \ac{SMSC} además de los demás datos en formato hexadecimal.
+
+Ejecutamos el comando en el Hyperterminal, dando como resultado:
+
+\begin{flushleft}
+\texttt{at+CMGL=1} \\
+\texttt{+CMGL: 110,1,,115} \\
+\texttt{0791451115470015040C91457325863787000080205000100200-} \\
+\texttt{6DC82733082A4EA94550710A6A26} \\
+\texttt{41CE6AD1FA0439A54F9031284C069DA0E193D90C3A414526285A-} \\
+\texttt{2D828A536A50180455A74127F109} \\
+\texttt{723E41CC27C8FACC8282A0EA3428053583D31DC8596D16A54F90-} \\
+\texttt{B35AB43E41AB1A6D76ABC96CB519} \\
+\texttt{2E8703} \\
+\texttt{+CMGL: 112,1,,43} \\
+\texttt{0791451115470065040C91457325760816000080202051108000-} \\
+\texttt{1BB4596E06B381CA737A19549EBB} \\
+\texttt{40CD3268FC769BEB6E721A}
+\texttt{+CMGL: 114,1,,26} \\
+\texttt{0791451115470065040C91451186297891000080200161608500-} \\
+\texttt{08B5DB0D07C3E564} \\
+\texttt{OK} 
+\end{flushleft}
+
+Aqui la respuesta al comando lista 3 mensajes con el estado de valor 1, donde cada una se encuentra en su respectivo indice de memoria (110,112 y 114).
+
+\subsection{Lectura de un mensaje \ac{SMS}}
+\label{lectura.sms}
+
+El comando \texttt{AT+CMGR} permite visualizar un mensaje \ac{SMS} almacenado en la posición de memoria indicado por el valor del índice que se pasa por parámetro. El comando completo es:
+
+\begin{center}
+\texttt{\textbf{AT+CMGR=}<indice>}
+\end{center}
+
+Una vez ejecutado este comando, el resultado a mostrar en pantalla es:
+
+\begin{center}
+\texttt{+CMGR:<estado>,<alpha>,<largo>,<CR><LF><pdu>}
+\end{center}
+
+Al ejecutar el comando para visualizar el \ac{SMS} del índice de valor 1 se obtiene como resultado la \ac{PDU} de ese mensaje:
+
+\begin{flushleft}
+\texttt{at+CMGR=1} \\
+\texttt{+CMGR: 1,,69} \\
+\texttt{0791451115470005040C914511468804270000803072719041003-} \\
+\texttt{951103A3C2ECF41ED705D9E068D} \\
+\texttt{DFEE79F95C4FCFE96550987DAEBB41EAFA394C7ECB41F93768FC7-} \\
+\texttt{6CFDFE77A1A1403E5C33F} \\
+\texttt{OK} 
+\end{flushleft}
+
+\subsection{Borrado de un mensaje \ac{SMS}}
+\label{borrado.sms}
+
+Para borrar mensajes de la memoria indicada en el parámetro mem1, se utiliza el comando \texttt{AT+CMGD} indicando el índice donde se encuentra el mensaje a borrar. El comando completo es:
+
+\begin{center}
+\texttt{\textbf{AT+CMGD=}<indice>}
+\end{center}
+
+Verificamos que exista un \ac{SMS} en la posición de memoria 76 y luego ejecutamos el comando para borrarlo:
+
+\begin{flushleft}
+\texttt{at+CMGR=76} \\
+\texttt{+CMGR: 1,,40} \\
+\texttt{06914543990084040C914511047890170000803082013315000FD-} \\
+\texttt{2F2211391455} \\
+\texttt{OK} \\
+\texttt{} \\
+\texttt{at+CMGD=76} \\
+\texttt{OK} \\
+\end{flushleft}
+
+\subsection{Envío de un mensaje \ac{SMS} en modo texto}
+\label{enviotexto.sms}
+
+Para el envío de un mensaje en el modo texto, solamente hay que indicar el número de teléfono y el contenido del mensaje. Es el módem el que luego se encarga de generar la trama ENVÍO-SMS correspondiente para poder enviar el mensaje.
+
+La configuración del módem para funcionar en este modo o en el modo \ac{PDU} se realiza mediante el comando \texttt{AT+CMGF=<modo>}, donde <modo> puede tener los siguientes valores:
+
+\begin{itemize}
+	\item <modo>=1: Modo texto
+	\item <modo>=0: Modo PDU (Modo por defecto)
+\end{itemize}
+
+Se utiliza el comando \texttt{AT+CMGS} para enviar un mensaje \ac{SMS} en modo texto o en modo \ac{PDU}. Para el modo texto, primeramente se especifíca el número de telefono, seguido de un carácter de \acf{CR}. El módem responde enviando el carácter \texttt{>} que indica que se puede escribir el mensaje que se quiere enviar. Para indicar el fin del mensaje se presiona la combinación de teclas <CTRL+Z> o la tecla de escape.
+
+Si el mensaje se ha enviado correctamente, devuelve la cadena \texttt{+CMGS:} seguida de un número de referencia. El valor de referencia del mensaje se
+va incrementando, tomando los valores comprendidos entre 0 y 255, cada vez que se envía un \ac{SMS}. Este valor puede ser utilizado para identificar el mensaje si este no pudo ser entregado correctamente.
+
+En el caso del \ac{TC} K750i, el modo texto no es compatible con este modelo, y por lo tanto, no puede ser utilizado.
+
+\subsection{Envío de un mensaje \ac{SMS} en modo \ac{PDU}}
+\label{enviopdu.sms}
+
+Es posible enviar directamente una trama ENVÍO-SMS. Para ello configuramos el módem para funcionar en el modo \ac{PDU}, con el comando \texttt{AT+CMGF=0} y después se utiliza el comando \texttt{AT+CMGS}, indicando la longitud de la trama excluyendo el primer byte. El comando completo queda de esta manera:
+
+\begin{center}
+\texttt{\textbf{AT+CMGS=}<largo><CR><pdu><ctrl-Z/ESC>}
+\end{center}
+
+Para dar un ejemplo, se ejecuta \texttt{AT+CMGS=69} indicandole que se desea enviar un \ac{SMS} de 51 bytes de tamaño. Inmediatamente después, aparece el símbolo ``>'' para poder ingresar la \ac{PDU} completa y una vez finalizado, se presiona la combinación de teclas <ctrl-Z>. Una vez hecho esto, el sistema envía el \ac{SMS} y genera un acuse de envío que consiste en un número decimal visualizado en la pantalla del Hyperterminal.
+
+\begin{flushleft}
+\texttt{at+CMGS=69} \\
+\texttt{>0791451115470005040C91451146880427000080307271904100-} \\
+\texttt{3951103A3C2ECF41ED705D9E068D} \\
+\texttt{DFEE79F95C4FCFE96550987DAEBB41EAFA394C7ECB41F93768FC7-} \\
+\texttt{6CFDFE77A1A1403E5C33F} \\
+\texttt{+CMGS=193} \\
+\texttt{OK}
+\end{flushleft}
+
+\section{Formatos admitidos para la transmisión de \ac{SMS}s}
+\label{sec:formatos.sms}
+
+Para el envío de mensajes \ac{SMS} se encuentran disponibles dos modos en los cuales se puede crear un mensaje \ac{SMS} para ser enviado hacia el destino. Estos son:
+
+\begin{enumerate}
+	\item \textbf{Modo Texto:} Se encuentra disponible solo en algunos modelos de \ac{TC}s, normalmente de gama media o alta y su codificación es relativamente sencilla. Esta definido dentro de las redes de telefonía móvil \ac{GSM} 900, 1800 y 1900\un{MHz}. Los mensajes pueden estar conformados por caracteres de texto, números y símbolos especiales. La forma como un \ac{SMS} es codificado utilizando el modo texto es relativamente sencilla y no requiere de mayor proceso de algoritmia o complejidad de su estructura~\cite{serviciosms}.
+	
+  \item \textbf{Modo \acs{PDU}:} Estructura estándar para transmitir un mensaje \ac{SMS} (ver sección \ref{sec:pdu.sms}).
+\end{enumerate}
+
+El envío de mensajes a través del uso del modo texto corresponde al simple envío de caracteres sin ningún tipo de codificación. Unicamente se necesitan introducir el número de teléfono y el contenido del mensaje.
+
+% (modif)
+
+Es el módem el que se encarga de generar la trama SMS-SUBMIT correspondiente y enviarla. Este es el modo que normalmente se emplea si sólo queremos transmitir un mensaje.
+
+Una forma de realizar un envío mediante este modo es por medio de la utilización de los comandos AT. En la sección \ref{enviotexto.sms} se profundiza más sobre el tema.
+
+%\subsection{El modo \ac{PDU}}
+%\label{sec:modo.pdu}
+%
+El modo texto (no disponible en algunos teléfonos) es solamente una codificación del grupo de bits representado por el modo \ac{PDU}. El alfabeto difiere y hay varias alternativas de codificación cuando se visualiza un mensaje \ac{SMS}. Las más comunes opciones son ``UTF-8'', ``UCS2'', ``8859-1'', ``IRA'' y ``GSM''. Si se lee el mensaje en el teléfono, el buscará una codificación apropiada. Una aplicación capáz de leer mensajes \ac{SMS} entrantes puede utilizar el modo texto o el modo \ac{PDU}. Si el modo texto es utilizado, la aplicación se limita de acuerdo al conjunto de opciones de codificación configuradas. En algunos casos, no es lo suficientemente bueno. Si el modo \ac{PDU} es utilizado, cualquier codificación puede ser implementada.
+
+%Estructura del SMS

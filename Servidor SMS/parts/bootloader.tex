@@ -1,0 +1,214 @@
+\chapter{Diseño del un \textsl{bootloader} para la \acs{IH}}
+\label{sec:boot}
+La necesidad principal de utilizar un \textsl{bootloader} es la de reprogramar el microcontrolador \acsu{uC} por la misma vía de comunicación de la \ac{IH}. Esta vía es su puerto \ac{UART}. Esto, al mismo tiempo permite no tener el inconveniente que conlleva modificar el código de un programa mientras se está ejecutando. Es decir, se debe tener en cuenta que existen dos programas independientes alojados en el \ac{uC}. Uno es el \textsl{bootloader} y el otro es el programa que es iniciado o reprogramado por el \textsl{bootloader}, llamado \textsl{sistema}.
+
+El \textsl{bootloader}, al que se nombró \textit{ProgInsideSup}, es un programa que permite decidir entre dos modos de inicio. El modo por defecto es el de \textsl{booteo}, el cual antes de intentar iniciar el sistema realiza una verificación de integridad del código de programa del sistema. En el caso de una verificación correcta se pasa el control de la ejecución directamente al sistema, de lo contrario se ingresa al modo \textsl{programación} del \textsl{bootloader}. El modo programación, al cual también se puede ingresar como una opción en el momento del inicio del \textsl{bootloader}, permite la reprogramación del sistema con un nuevo código de programa.
+
+\section{El formato HEX de Intel}
+\label{sec:boot.hex}
+% INHX32
+Esta descripción esta basada en la ayuda de la aplicación MPLAB IDE v6.6 de Microchip Technology Inc. Para mayor información ver \cite{wikipedia.intelhex}.
+
+Este formato produce un archivo de texto con códigos hexadecimales. Cada byte se encuentra representado por 2 caracteres hexadecimales. El orden de los bytes es primero el bytes menos significativo y luego el más significativo.
+
+Cada estructura de datos se compone de un prefijo de 9 caracteres --donde el primer carácter es `:'-- y termina con una suma de verificación de 2 caracteres. El formato de la estructura de datos es la siguiente:
+\begin{verbatim}
+:BBAAAATTHHHH....HHHCC
+\end{verbatim}
+Donde:
+\begin{description}
+	\item[\texttt{BB}] Es un contador de byte, de dos dígitos hexadecimales, que representa la cantidad de bytes de datos \texttt{HH} que contiene la estructura.
+	\item[\texttt{AAAA}] Es una dirección, de cuatro dígitos hexadecimales, que representa la dirección de inicio para los datos.
+	\item[\texttt{TT}] Es un identificador de tipo de estructura, de dos dígitos hexadecimales, que siempre vale \texttt{0x00}, excepto cuando identifica el final de archivo con un valor de \texttt{0x01}.
+	\item[\texttt{HH}] Es un byte de datos, de dos dígitos hexadecimales, el cual se encuentra ordenando en una secuencia donde primero aparece el byte menos significativo y luego el byte más significativo.
+	\item[\texttt{CC}] Es la suma de verificación, de dos dígitos hexadecimales, la cual se construye como el complemento a dos de la suma de todos los bytes precedentes de la estructura de datos.
+\end{description}
+
+Para calcular la suma de verificación se debe sumar los siguientes bytes de la estructura:
+\[ CC = -(\texttt{BB}+\texttt{AA}+\texttt{AA}+\texttt{TT}+\texttt{HH}+\cdots +\texttt{HH}) \]
+Esto resulta en un valor \texttt{CC}, tal que la suma de todo los bytes de la estructura --incluyendo \texttt{CC}-- es cero. Esta es la manera de verificar la integridad de los datos.
+
+A continuación podemos ver un ejemplo de una línea cualquiera de un archivo \cfa{.hex} de salida del MPLAB IDE v6.6:
+\begin{verbatim}
+:100010000A08A2008A0183130408A3008C3084001C
+\end{verbatim}
+Separando sus campos para una mejor visualización quedaría:
+\begin{verbatim}
+: 10 0010 00
+0A 08 A2 00 8A 01 83 13 04 08 A3 00 8C 30 84 00
+1C
+\end{verbatim}
+Esto indica que se trata de 16 (\texttt{0x10}) bytes de datos que se escriben a partir de la dirección de memoria \texttt{0x0010}. A continuación vemos que se trata de una estructura tipo \texttt{0x00}, lo que implica que contiene datos. Luego se encuentran los 16 bytes de datos y por último vemos el valor \texttt{0x1C} que representa la suma de verificación.
+
+Otro ejemplo es la estructura de fin de archivo:
+\begin{verbatim}
+:00000001FF
+\end{verbatim}
+Separando sus campos para una mejor visualización quedaría:
+\begin{verbatim}
+: 00 0000 01 FF
+\end{verbatim}
+Esto indica que se trata de una trama tipo \texttt{0x01} --indicando el final del archivo-- con cero byte de datos. Aquí podemos ver claramente que la suma de todos los bytes resulta en un valor de ocho bits igual a cero:
+\[ \texttt{0x00}+\texttt{0x00}+\texttt{0x00}+\texttt{0x01}+\texttt{0xFF}=\texttt{0x00} \]
+
+
+\section{Desarrollo del programa ProgInsideSup}
+\label{sec:boot.PIS}
+
+Su nombre está compuesto por tres ideas. ``Prog'' se refiere a la programación; ``Inside'' es porque se encuentra en la misma memoria de programa, la cual programa (claro que no en el mismo área de memoria); y ``Sup'' porque se encuentra alojado en las últimas posiciones de memoria de la memoria de programa del \ac{uC}.
+
+Este \textsl{bootloader} permite, mediante el puerto \ac{UART}, instalar una nueva aplicación en la memoria de programa del \ac{uC}. También es el encargado de verificar e iniciar la aplicación ya instalada, en el caso que no se desee entrar al modo programación.
+
+En la tabla \ref{cod:ih-proginsidesup-inc} podemos ver el archivo de declaraciones que se debe incluir en el programa de aplicación (sistema) para soportar la funcionalidad de ProgInsideSup.
+\begin{tablaos}{IH: Archivo \cfa{ProgInsideSup.inc}}{cod:ih-proginsidesup-inc}{!p}
+\includegraphics{ih-proginsidesup-inc}
+\end{tablaos}
+En las líneas se encuentran las definiciones de las constantes necesarias para el caso del \ac{uC} utilizado (PIC16F876).
+
+Para ver un ejemplo de la utilización de la funcionalidad de ProgInsideSup ver líneas 18 a 22 del archivo \cfa{main.asm} (tablas \ref{cod:soft.ih-main-asm-1} y \ref{cod:soft.ih-main-asm-2}, sección \ref{sec:soft.ih.main}).
+
+La constante \cf{inicio\_reset} indica la dirección de memoria de programa a la que salta este \ac{uC} en el momento en que se inicializa. Para mayor información ver \cite{pic16f87x.pmo}. Esta dirección, hasta la indicada por \cf{fin\_reset}, se encuentran reservadas por el \textsl{bootloader} ProgInsideSup. Lo general es utilizar estas direcciones para la aplicación, pero ahora, para esto están las direcciones \cf{inicio\_reset\_usuario} a \cf{fin\_reset\_usuario} disponibles para el mismo uso.
+
+Las direcciones de memoria de programa libres para la aplicación se encuentran entre \cf{0x0004} a \cf{0x1CC5} inclusive, totalizando 7362 líneas de código libres. En estas direcciones irá instalada la aplicación de la \ac{IH} (es decir el sistema), la cual se desarrollará en la sección \ref{sec:soft.ih}.
+
+Las direcciones de memoria de programa \cf{inicio\_reset} a \cf{fin\_reset} inclusive e \cf{inicio\_codigo} a \cf{fin\_codigo} inclusive, son de solo lectura en el modo programación (Modo Prog). Esto es para evitar la escritura accidental sobre el área de memoria donde se encuentra el código de programa de ProgInsideSup.
+
+En la figura \ref{fig:boot.pis-estados} podemos ver el diagrama de estados de los diferentes modos de ejecución del \textsl{bootloader} ProgInsideSup.
+\figuraot{Diagrama de estados de los diferentes modos de ProgInsideSup}{fig:boot.pis-estados}{}{pis-estados}{!t}
+Cualquiera sea el estado actual, si ocurre el \textsl{reset} del \ac{uC} se pasa al estado ``Init''.
+
+El estado inicial es ``Init'' y se da tras la inicialización del \ac{uC} (dirección de memoria \cf{inicio\_reset}). Entonces, si no se hace nada por más de un segundo, se pasa directamente al estado ``Verificando''. Sino, si se ha enviado el carácter `\texttt{b}' se pasa inmediatamente al estado ``Verificando''; sino, si se ha enviado el carácter `\texttt{p}' se pasa inmediatamente al estado ``Modo Prog'' (dirección de memoria \cf{inicio\_vec\_prog\_mode}).
+
+En el estado ``Verificando'' se realiza la suma de verificación del código de programa de la aplicación. Recién si ésta es correcta se pasa al estado ``Modo Boot'' (dirección de memoria \cf{inicio\_reset\_usuario}). Pero, de no ser correcta se pasa inmediatamente al estado ``Modo Prog''.
+
+En el estado ``Modo Boot'' es en el cual se inicia y ejecuta la aplicación de la \ac{IH}.
+
+Para pasar directamente al modo programación desde la aplicación, solo hace falta saltar correctamente a la dirección \cf{inicio\_vec\_prog\_mode}. Un ejemplo del uso de esto veremos en las líneas 469 y 470 del archivo \cfa{comm.inc} (tabla \ref{cod:soft.ih-comm-inc-9}, sección \ref{sec:soft.ih.pc}).
+
+\subsection{Modo de programación (Modo Prog)}
+\label{sec:boot.PIS.prog}
+En este modo, para grabar datos en la memoria de programa del \ac{uC}, estos datos deben ser transmitidos por el puerto \ac{UART} directamente en el formato Hex de Intel --visto en la sección \ref{sec:boot.hex}--. Es decir, si estamos en modo programación y transmitimos al puerto \ac{UART} del \ac{uC} un archivo \cfa{.hex} que compilamos, se grabará el nuevo programa en el \ac{uC}. Lo que ocurre es lo siguiente: Cada vez que se transmite una línea del archivo \cfa{.hex}, como ser por ejemplo
+\begin{verbatim}
+:100010000A08A2008A0183130408A3008C3084001C
+\end{verbatim}
+en el \ac{uC} se realiza la comprobación del la suma de verificación de ésta. Si es correcta se graban los datos.
+\begin{quote}
+	\textbf{IMPORTANTE}: No se pueden transmitir todas las líneas (secuencias hexadecimales) del archivo \cfa{.hex} aprovechando la tasa máxima de transferencia del puerto \ac{UART}. En vez de esto, la forma de control de flujo --para que la grabación se realice correctamente-- es transmitir una línea por vez a la espera de una secuencia de respuesta, vía el puerto \ac{UART}, que veremos más adelante.
+\end{quote}
+Hay que tener en cuenta que el \ac{uC} PIC16F876 --con el que se está trabajando-- tiene una palabra de código de programa de 14\un{bits}, por lo tanto, cada instrucción se encuentra representada por cuatro dígitos hexadecimales. Debido a esto, la dirección de memoria indicada tiene un valor del doble respecto a la dirección física. Veámoslo con un ejemplo. Tomamos la misma línea anterior y separamos la parte de datos cada cuatro dígitos hexadecimales:
+\begin{verbatim}
+: 10 0010 00
+0A08 A200 8A01 8313 0408 A300 8C30 8400
+1C
+\end{verbatim}
+El carácter `:' indica que se trata de una escritura (más adelante veremos otros indicadores). Luego, \texttt{0x10} indica que se trata de 16 byte de datos, es decir, de 8 palabras de 16\un{bit} de donde se utilizan sólo los 14\un{LSb}. También hay que tener en cuenta que los datos se encuentran ordenados, primero el byte menos significativo y luego el más significativo. Entonces, esta secuencia grabaría los datos en las direcciones físicas de memoria como se ve en la tabla \ref{tab:boot.PIS.prog.ej}.
+\begin{tablao}{Direcciones de la grabación del ejemplo}{tab:boot.PIS.prog.ej}{!h}
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{Dirección}&\textbf{Código}\\
+		\hline\hline
+		\texttt{0x08} & \texttt{0x080A}\\\hline
+		\texttt{0x09} & \texttt{0x00A2}\\\hline
+		\texttt{0x0A} & \texttt{0x018A}\\\hline
+		\texttt{0x0B} & \texttt{0x1383}\\\hline
+		\texttt{0x0C} & \texttt{0x0804}\\\hline
+		\texttt{0x0D} & \texttt{0x00A3}\\\hline
+		\texttt{0x0E} & \texttt{0x308C}\\\hline
+		\texttt{0x0F} & \texttt{0x0084}\\\hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+\begin{quote}
+	\textbf{NOTA}: Se recomienda trabajar con no más de 16\un{bytes} de datos por secuencia hexadecimal.
+\end{quote}
+
+En caso de estar todo correcto, la escritura realizada anteriormente produce como respuesta por el puerto \ac{UART}:
+\begin{verbatim}
+:10001000OKOKOKOKOKOKOKOKOKOKOKOKOKOKOKOKCS
+\end{verbatim}
+Pero si por ejemplo falla la grabación de alguno de los datos podríamos obtener esto:
+\begin{verbatim}
+:10001000OKOKEREROKOKOKOKOKOKOKOKOKOKOKOKCS
+\end{verbatim}
+Donde, en el lugar de los datos puede aparecer:
+\begin{description}
+	\item[\texttt{OKOK}] cuando esa palabra fue escrita correctamente;
+	\item[\texttt{ERER}] cuando esa palabra NO fue escrita correctamente (tuvo problemas tras la verificación).
+\end{description}
+También puede ocurrir que esté mal calculada la suma de verificación, o algo más real, haberse transmitido mal parte o todos los datos. Si la suma de verificación da errónea, obtendremos como respuesta:
+\begin{verbatim}
+:10001000Checksum Error
+\end{verbatim}
+
+Otra forma de verificar el código de programa es mediante la lectura de las direcciones de memoria de programa para luego compararlas con lo que se había escrito.
+
+La lectura de la memoria de programa se realiza de forma muy similar a la escritura. Solo vasta con utilizar el carácter `?' en vez de `:' y a continuación escribir la cantidad de bytes (siempre un valor múltiplo de 2), la dirección de memoria origen y el tipo \texttt{0x00}, con el mismo formato Hex de Intel que venimos utilizando. Como respuesta se obtendrá una secuencia Hex de Intel completa. Por ejemplo, si luego de la satisfactoria escritura anterior transmitimos:
+\begin{verbatim}
+?10001000
+\end{verbatim}
+obtendremos
+\begin{verbatim}
+:100010000A08A2008A0183130408A3008C3084001C
+\end{verbatim}
+
+No todo termina aquí. Para que la nueva aplicación recientemente grabada en la memoria de programa del \ac{uC} pueda ejecutarse, hace falta validarla. Para esto, luego que estemos seguros que todos los datos fueron grabados correctamente, vasta con transmitir la secuencia
+\begin{verbatim}
+:00000001FF
+\end{verbatim}
+para que el programa instalado sea validado. Esta secuencia coincide con la secuencia que indica el final del archivo en el formato Hex de Intel. La elección de esto no fue sin querer, sino a propósito teniendo en cuenta que: la validación debe realizarse al final de la grabación, y la secuencia de fin de archivo se encuentra --como su nombre lo indica-- al final del archivo.
+
+Por último, falta definir que si en cualquier momento transmitimos el carácter `*' se pasa al estado ``Init''.
+
+\begin{quote}
+	\textbf{NOTA}: Los caracteres de control `:', `?' y `*' pueden ser escritos en cualquier momento, interrumpiendo o no a una secuencia hexadecimal parcial.
+\end{quote}
+
+
+
+
+
+
+\section{Aplicación de usuario para la reprogramación práctica de la \ac{IH}}
+\label{sec:boot.apli}
+Para la rápida y práctica reprogramación del \ac{uC}, se desarrolló un software para Microsoft\Si{\textregistered} Windows\Si{\textregistered} para realizar las tareas de grabar un nuevo archivo \cfa{.hex} en la memoria del \ac{uC} y para poder validar la grabación. Además permite hacer otras cosas como ser:
+\begin{itemize}
+	\item Verificar los datos grabados;
+	\item Leer parte o todo el contenido de la memoria de programa;
+	\item Grabar lo leído en un archivo \cfa{.hex};
+	\item Leer o modificar una sola palabra de código;
+	\item Cambiar entre los modos de programación y \textsl{booteo};
+	\item No solo realizar la validación ``Inside'' sino también la validación que implica leer todo el código ya escrito para luego validarlo.
+	\item Recalcular el \textsl{CheckSum} para una archivo \cfa{.hex} el cual tenga secuencias sin \textsl{checksum} o con un \textsl{checksum} erróneo.
+	\item Seleccionar en la \acs{PC} el puerto serie que se va a usar.
+\end{itemize}
+Pero, en la práctica lo más utilizado es:
+\begin{enumerate}
+	\item Abrir el puerto serie;
+	\item Pasar a modo programación;
+	\item Abrir el archivo \cfa{.hex} que se desea grabar;
+	\item Iniciar la grabación.
+\end{enumerate}
+Un ejemplo de esto podemos ver en la figura \ref{fig:pi-cargado}.
+\figuraot{Antes de comenzar a grabar}{fig:pi-cargado}{width=0.8\textwidth}{pi-cargado}{!p}
+En esta figura también podemos ver que se informa que ``Se ha ingresado al modo programación''. Luego vemos el mensaje:
+\begin{quote}
+	Abrir: Se intenta almacenar datos en una dirección de memoria de programa no permitida.\\
+	02400E00323F3F
+\end{quote}
+Esto ocurre porque la dirección de memoria a la que se pretende acceder es donde se encuentran las banderas de configuración del \ac{uC}. Esto se encuentra fuera del área de memoria de programa accesible en tiempo de ejecución (dirección física \texttt{0x2007}). Para mayor información ver sección \ref{sec:def.confbits}.
+
+Luego de la grabación, pero antes de la validación, en la figura \ref{fig:pi-cargado} vemos el estado de la aplicación.
+\figuraos{Antes de la validación}{fig:pi-grabado}{width=0.8\textwidth}{pi-grabado}{!p}
+Ahora vemos el mensaje ``Grabar: Se ha grabado satisfactoriamente''. Esto ocurre solo si todas las secuencias de respuesta de la grabación son correctas. Parte de esto es que ahora, en cada secuencia hexadecimal aparece \texttt{OKOK} en vez del datos y que al final de ésta aparece \texttt{CS}.
+
+Por último, luego de la validación, podemos ver los resultados en la figura \ref{fig:pi-validado}.
+\figuraot{Luego de la validación}{fig:pi-validado}{width=0.8\textwidth}{pi-validado}{!t}
+En esta figura vemos primero el mensaje ``Validar Inside: Validando Inside'' y luego la respuesta del \ac{uC} que confirma la validación:
+\begin{verbatim}
+:00000001FF
+Código validado
+\end{verbatim}
+
+Ahora todo está listo para reiniciar el \ac{uC} y esperar a que se ejecute la aplicación instalada.
+
+

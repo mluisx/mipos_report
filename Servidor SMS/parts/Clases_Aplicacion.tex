@@ -1,0 +1,209 @@
+%\chapter{Descripción del Hardware a Utilizar}
+\chapter{Desarrollo completo del software}
+%\sffamily
+
+El servidor de SMS consta de un software realizado enteramente en el lenguaje Java por medio del entorno Eclipse. En la figura se pueden apreciar todas las clases que son utilizadas por la aplicación del servidor.
+
+\section{\textquestiondown Porqué Java?}
+\label{sec:Porque.Java}
+
+Dado que es un lenguaje desarrollado ampliamente y gracias a la licencia open-source con las que trabajan sus IDEs, se consideró el uso de este lenguaje para realizar la programación de esta aplicación.
+
+\section{Interfaz de hardware}
+\label{sec:def.IntHard}
+
+La interfaz con el hardware se realizó a través de la clase \cfa{CInterfazHard} el cual ejecuta un thread que llama a los métodos que utilizan la \ac{API} JSMSEngine para poder comunicarse con el teléfono celular a través de los comandos AT. Esta clase permite transferir los datos de los mensajes SMS que se encuentran almacenados en la memoria interna del teléfono celular a la aplicación, para luego ser procesados.
+
+\section{Tipos de mensajes}
+\label{sec:def.Mensajes}
+
+Los mensajes de texto son catalogados como mensajes entrantes o salientes, para lo cual se creó una clase ``CIncomingMessage'' para que al leer un mensaje de texto, se cree un objeto de dicha clase y los datos del mensaje sean almacenados ahí. Para los mensajes salientes del servidor, se genera un objeto de la clase ``COutgoingMessage'' y se almacena los datos del mensaje a ser enviado a la red GSM. Todos estos tipos de mensajes son heredados de la clase ``CMessage'' que contiene los métodos generales para los 3 tipos de mensajes.
+
+El thread luego de hacer una lectura de mensajes de texto entrantes en el teléfono celular,  genera un mensaje del tipo ``CProtocolMessage'' que es utilizado para poder enviar información del estado de la interfaz de hardware al resto de los threads del software y para poder dejar así establecido un protocolo de comunicación entre threads.
+
+Los distintos objetos de mensajes son enviados a una cola de entrada del tipo LinkedList el cual consiste en una cola de objetos del tipo ``CMessage'' que manejan semáforos de forma automática para evitar colisiones durante el ingreso y el egreso de objetos en la cola. La clase que maneja la cola de entrada es denominada ``CColaEntrada'' y contiene distintos métodos para poder insertar, eliminar y obtener un objeto del tipo ``CMessage''
+
+Existe una clase llamada ``Consumidor'' que contiene un thread el cual al ser activado, chequea la cola de entrada por objetos de la clase ``CMessage'' para ser procesados. A medida que hayan mensajes en la cola de entrada, este thread va tomando de a uno y chequea por medio de un ``parsing'' (análisis sintáctico) que tipo de SMS se esta recibiendo. De acuerdo al tipo de SMS el consumidor ejecuta el método correspondiente para su proceso. En la siguiente lista se explican los distintos tipos de SMS que el servidor puede reconocer.
+
+\begin{tablao}{Tipos de mensajes \ac{SMS} recibidos al servidor}{tab:tipos.SMS}{!t}
+	\begin{tabular}{|c|c|}
+	  \hline \bp{Tipo}& \bp{Descripción} \\ \hline
+		\bp{1}& \bp {SMS con datos de pedido de vuelo de ida} \\ \hline
+    \bp{2}& \bp{SMS con datos de pedido de vuelo de ida y vuelta} \\ \hline
+    \bp{3}& \bp{SMS no reconocido} \\ \hline
+    \bp{4}& \bp{Pedido de ayuda para la adquisición de vuelos (IguazuAir)} \\ \hline
+    \bp{5}& \bp{Confirmación para la reserva de vuelo} \\ \hline
+    \bp{6}& \bp{Pedido de mas vuelos disponibles} \\ \hline
+    \bp{7}& \bp{Pedido de estado de un vuelo próximo a partir} \\ \hline
+    \bp{8}& \bp{Datos Incompletos de pedido de vuelos} \\ \hline
+    \bp{9}& \bp{Datos Incompletos de Confirmación de vuelos o pedido de ayuda} \\ \hline
+    \bp{10}& \bp{Pedido de ayuda de estado de vuelos (InfoVuelos)} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+Luego de que los mensajes son recibidos, analizados sintácticamente e identificados, se realizan las búsquedas correspondientes en la base de datos para obtener los resultados necesarios que son enviados al objeto de la clase ``CProductor'' donde se crea el objeto ``COutgoingMessage'' y es enviado a una cola de salida del tipo ``LinkedList'' para su posterior extracción por parte de la interfaz de hardware para luego ser enviado a la red GSM.
+
+\begin{tablao}{Tipos de mensajes \ac{SMS} enviados por el servidor}{tab:tipos.SMS}{!t}
+	\begin{tabular}{|c|c|c|}
+	  \hline \bp{Tipo}& \bp{Descripción}& \bp{Origen} \\ \hline
+		\bp{0}& \bp{No se envió ningún mensaje al usuario}& \bp{-} \\ \hline
+    \bp{10}& \bp{Se envió un \ac{SMS} en respuesta a la búsqueda de vuelos}& \bp{1 o 2} \\ \hline
+    \bp{11}& \bp{Se envió más vuelos disponibles}& \bp{6} \\ \hline
+    \bp{12}& \bp{\ac{SMS} de estado de vuelo}& \bp{7} \\ \hline
+    \bp{13}& \bp{\ac{SMS} de ayuda}& \bp{4} \\ \hline
+    \bp{14}& \bp{\ac{SMS} de confirmación de reserva}& \bp{5} \\ \hline
+    \bp{15}& \bp{Envío de ayuda por búsqueda de vuelo con errores}& \bp{8} \\ \hline
+    \bp{16}& \bp{Envío de ayuda por pedido de ayuda o por error en confirmación de reserva}& \bp{4 o 9} \\ \hline
+    \bp{17}& \bp{Envío de ayuda por pedido de ayuda para estados de vuelos}& \bp{10} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+\section{La cola de entrada}
+\label{sec:def.colaentrada}
+
+La clase \cfa{CColaEntrada} representa a el módulo de la cola de entrada del framework analizado anteriormente. Consiste en una lista encadenada del tipo ``LinkedList'' que contiene objetos de la clase \cfa{CMessage}. Estos objetos representan cada uno de ellos a un mensaje SMS entrante en el sistema.
+
+Esta clase contiene funciones típicas de colas (agregar, eliminar, obtener, etc.) para poder hacer manejo de la cola a medida que los mensajes SMS se transfieran de una clase a otra en la aplicación.
+
+Este tipo de colas ``LinkedList'' contiene un manejo interno y automático de semáforos que consiste en el manejo secuencial de acciones en la cola, evitando que se produzcan simultaneidades de acciones y se generen redundancias en los datos que son almacenados en ésta.
+
+\section{El consumidor}
+\label{sec:def.consumidor}
+
+La clase \cfa{CConsumidor} es la encargada de activar un hilo de ejecución (thread) que contiene un ciclo continuo que verifica la existencia de objetos del tipo \cfa{CMessage} existentes en el objeto de la clase \cfa{CColaEntrada}. Esta verificación lo realiza en un intervalo predefinido de 5 segundos, siendo posible la modificación de este tiempo a través de una de las opciones de configuración de la aplicación en la \ac{IG} implementada.
+
+Si efectivamente se encuentra un objeto del tipo \cfa{CMessage}, luego, se llama a la clase \cfa{CParseo} que es la encargada de realizar la interpretación de las distintas palabras que contiene el texto del mensaje SMS.
+
+A medida que se van detectando las palabras correspondientes a algun tipo de mensaje SMS que la aplicación pueda procesar, las palabras que sirvan como datos para su posterior uso en la aplicación son almacenados en un objeto de la clase \cfa{CDatos}. Este objeto con sus respectivas variables cargadas con los datos del mensaje SMS luego es utilizado durante toda la fase de procesamiento y de generación del SMS final que se enviará al usuario origen del mensaje SMS.
+
+Una vez cargados los datos, se procede al almacenamiento del mensaje SMS en la tabla ``smsinbox'' de la base de datos del servidor. Esta tabla contiene almacenadas todos los mensajes SMS entrantes que son leídos por el módulo del consumidor.
+
+El siguiente paso del consumidor es la de verificar que tipo de mensaje es (ver página \pageref{tab:tipos.SMS}) para después indicar al módulo de proceso del SMS que tipo de acciones realizar.
+
+Si el mensaje que se tomo de la cola de entrada no corresponde a ninguno recibido por algun usuario, entonces el mensaje leído es uno correspondiente al objeto de la clase \cfa{CProtocolMessage} que contiene datos acerca del estado de la interfaz de hardware. Este tipo de mensajes son generados por el módulo de la interfaz de hardware para informar a los demás módulos su estado y si se encuentra efectivamente funcionando sin problemas. Lo que carácteriza a este tipo de mensajes para que el consumidor lo pueda detectar, es que su ``memoryindex'' contiene el valor cero con el cual ninguno de los mensajes recibidos al \ac{TC} tendran asignados este valor por el sistema operativo del mismo, ya que solamente los indices de memoria son numeros positivos mayores a cero.
+
+Una vez realizada todos estos pasos, el thread se duerme por el intervalo de tiempo correspondiente y vuelve a realizar la verificación de objetos en la cola de entrada nuevamente.
+
+\section{El proceso del mensaje SMS}
+\label{sec:def.proceso.sms}
+
+La clase \cfa{CInicio} es la encargada de dar inicio a la interfaz de hardware y al consumidor de mensajes.
+
+Se dispone de un método que permite enviar mensajes SMS a un grupo de contactos que se encuentren cargados en la lista de contactos que figura en la \ac{IG}. Lo que permite hacer es tomar los datos de cada fila de esa lista y envía los datos del número de teléfono celular y el texto escrito en el cuadro correspondiente en la \ac{IG} a la clase que representa al módulo productor para que se encargue de generar un objeto de la clase \cfa{COutgoingMessage} y que esa misma clase la envíe a la cola de salida para su posterior salida a la red \acs{GSM}.
+
+Se puede encontrar en esta clase varios métodos llamados ``ProcesarSMSTipoX'' donde X representa al numero del tipo de mensaje que pudo ser comprendido por el intérprete que contiene el módulo del consumidor.
+
+En el método ``ProcesarSMSTipo1'' se envían los datos del mensaje de texto a la clase \cfa{CBaseDatos} para que esta se encargue de realizar un query de acuerdo al pedido de vuelo que contienen los datos del mensaje SMS que fue recibido al servidor.
+
+Una vez finalizado el query, se realizan dos inserts\footnote{Término utilizado en bases de datos indicando la inserción de datos en un tabla} a través de una llamada a la clase \cfa{CBaseDatos}. Un insert es el correspondiente al pedido y se almacena en la tabla ``pedidos'' mientras que el otro insert que se almacenará en la tabla ``smsoutbox'' corresponde al texto del mensaje SMS que será enviado al usuario que realizo que en un principio realizó el pedido.
+
+El siguiente método, ``ProcesarSMSTipo2'', se realizan las mismas acciones que en el método anterior, a diferencia que en el query la búsqueda no es de un solo vuelo sino de dos vuelos, uno para la ida, y otro para el retorno.
+
+En el método ``ProcesarSMSTipo3'' se sabe de antemano que se trata de un mensaje SMS erróneo, pero lo que no se sabe es la categoría del error del mensaje (ver página x). Por esto mismo, se llama a la clase \cfa{CBaseDatos} para que realize una búsqueda en la tabla de ``pedidos'' de cual fue el último mensaje SMS recibido de el número celular que figura en el mensaje actual. Si en el resultado del query no se encuentra ningun dato, entonces, se deduce que el mensaje que se recibio es uno que no corresponde con ninguno de los servicios ofrecidos por la empresa de vuelos. Ahora, en el caso que el resultado encuentre una fila que tenga el número celular del SMS actual, entonces se puede determinar cual fue el ultimo SMS recibido por esa persona, y como resultado, saber si hubo un error tanto en un mensaje de pedidos de vuelos, uno de confirmación o en uno de verificación de estado de algún vuelo. 
+
+Una vez determinado el tipo de error, se procede a generar un mensaje de ayuda si el error se produjo en un mensaje que este relacionado con algunos de los servicios brindados por la empresa. Luego se almacena el mensaje saliente en la base de datos y por último se lo envía al usuario final. En el caso de que se detecte un mensaje SMS sin ninguna relación, no se lo tiene en cuenta para el procesamiento del mismo y queda descartado.
+
+En el caso del método ``ProcesarSMSTipo4'', se sabe de antemano que el mensaje SMS es un mensaje de pedido de ayuda, por lo tanto, se genera un texto de ayuda para realizar las búsquedas de vuelos, se almacena el mensaje saliente en la base de datos y se lo envía al usuario.
+
+En el método ``ProcesarSMSTipo5'', se esta procesando un mensaje referido a la confirmación de la reserva de un vuelo previamente solicitado. Por lo tanto, lo primero que se realiza es la generación del texto que será enviado al usuario, diciendo que el vuelo requerido ha sido reservado. Luego, se almacena el mensaje saliente en la base de datos y finalmente se agrega en la lista de reservas que figura en la \ac{IG} el numero de reserva correspondiente para que el operario luego pueda acceder a esta reserva y verificar todos los datos correspondientes al mismo (número de vuelo, horario, \ac{TC} de la persona que realizo la reserva, etc.). Una vez más, se llama a la clase \cfa{CBaseDatos} para que se almacenen los datos correspondientes a la reserva en la tabla ``reservas''.
+
+Cuando se llama al método ``ProcesarSMSTipo7'', sabiendo que se trata de un mensaje de pedido de estado de algún vuelo próximo a partir, se busca en la base de datos el estado correspondiente al vuelo en cuestión, se genera el texto que va a figurar en el mensaje SMS, se almacena el pedido en la tabla correspondiente a los pedidos y el mensaje SMS final que luego se enviará a la red GSM para dirijirse al \ac{TC} del usuario que utilizó el servicio.
+
+Cuando se recibe un mensaje del tipo 8 (ver figura \ref{tab:tipos.SMS}), sabiendo que es un mensaje de búsqueda de vuelos pero que contiene errores en la escritura del texto, se genera un texto con la ayuda respecto a la búsqueda de vuelos y se lo envía al usuario previamente almacenando el mensaje SMS saliente en la base de datos.
+
+Para el método ``ProcesarSMSTipo9'' que esta relacionado con un mensaje del tipo 9 (ver figura \ref{tab:tipos.SMS}) se crea un texto explicando como se debe realizar la confirmación de vuelos y como verificar el estado de los vuelos, ya que el error pudo haber ocurrido en un mensaje donde el usuario buscaba confirmar un vuelo o quería verificar el estado de un vuelo. Se lo almacena en la base de datos y se envía esta respuesta al usuario de origen.
+
+Para procesar un mensaje del tipo 10 (ver figura \ref{tab:tipos.SMS}) se llama al método ``ProcesarSMSTipo10'' que se encarga de crear un texto con la ayuda respecto a la verificación de estados de vuelos y se lo envía al usuario de origen.
+
+Esta clase permite agregar y eliminar contactos que se encuentran en la lista de contactos que figura en la \ac{IG}. Al querer agregar un contacto, se crea un objeto del tipo \cfa{CContacto} donde en este se almacenan el nombre del cliente y su número de celular. Luego, se almacena este objeto en una linkedlist de objetos del tipo \cfa{CContacto}. Para poder visualizar el contacto en la \ac{IG} se crea un string con el nombre y el número de telefono y se agrega este string a una variable del tipo ``DefaultListModel'' que indica el modelo de lista que se utiliza para ser visualizado en pantalla.
+
+Para borrar un contacto de la lista, se verifican cuales fueron los contactos seleccionados para ser borrados y se eliminan tanto de la lista enlazada de objetos del tipo \cfa{CContacto} y de la variable del modelo de lista que los tiene incluidos.
+
+El método ``makeObj'' se creó con el fin de pasar un string a un objeto del tipo \cfa{Object} para que pueda ser grabado en una cola de objetos que representa a los grupos de contactos que se graban en la \ac{IG}. En vez de grabar los strings directamente, se hace el paso a este tipo de objeto porque es lo que la documentación de Java recomienda a fin de que no se produzcan problemas de bajo nivel al grabar los strings en la lista.
+
+Para guardar un grupo de contactos seleccionados, se utiliza el método ``GuardarContactos'' que toma los indices de los contactos seleccionados, los transforma a objetos del tipo \cfa{Object} y los guarda en la lista enlazada que los contiene.
+
+Para cargar un grupo de contactos, se toma el objeto que contiene el nombre del grupo que fue seleccionado en la \ac{IG}, se lo transforma este objeto a un string y se hace un query a través de la clase \cfa{CBaseDatos} para obtener los nombres de los contactos pertenecientes a ese grupo y para que se pueda luego cargar cada contacto en la lista de contactos por medio del método ``IngresoContacto'' de esta misma clase.
+
+Los métodos de ``ImprimirConsola'' toman un texto pasado por parámetro y lo visualizan en la consola correspondiente (consumidor, productor o reservas) de la \ac{IG}.
+
+Finalmente, el último método, ``ImprimirReserva'' toma por parámetro el índice de la lista de reservas para luego buscar el número de reserva correspondiente a ese índice y poder realizar un query en la base de datos de todos los datos relacionados con la reserva. Estos datos son visualizados en la \ac{IG} en la consola de reservas. Esta función fue creada para permitir al operador del servidor tener visualizado todos los datos respectos de las reservas que se van realizando para así poder luego llamar a los usuarios y realizar las ventas de los pasajes aéreos.
+
+\section{La \acf{IG}}
+\label{sec:def.ig}
+
+La \ac{IG} de la aplicación está formado por componentes de la biblioteca Swing los cuales estan ubicados por medio del paquete de clases \cfa{GroupLayout}. Este mismo paquete que ubica los distintos objetos en la \ac{IG} es el utilizado por el creador de \ac{IG}s que posee el \ac{IDE} del conocido``NetBeans''. 
+
+En este \ac{TFC} se utilizó el graficador del ``NetBeans'' para poder saber como el \cfa{GroupLayout} ubica los distintos elementos en los paneles que contiene la ventana de la \ac{IG}. Una vez que el Layout fue investigado, se procedió a cargar los elementos gráficos (widgets) directamente en el código java de la clase \cfa{CInterfazGrafica}.
+
+En la figura () se puede apreciar la ventana principal de la aplicación.
+
+En primera instancia, la \ac{IG} esta dividida en tres paneles pertenecientes a clases del tipo \cfa{JPanel} del paquete Swing.
+
+El primer panel es el que se encuentra delimitado por el rectangulo que se encuentra en la posición superior izquierda de la ventana principal. Aquí podemos ver 3 botones los cuales nos permiten realizar algunas acciones. El cuadro de texto que se encuentra debajo de los botones es el cuadro el cual nos permite escribir el texto que será enviado a un grupo selecto de usuarios que estarán seleccionados de una lista de contactos que se encuentra en el panel siguiente. Podemos ver un contador descendente de caracteres el cual nos permite saber cual es el límite de caracteres que podemes colocar en el texto de los mensajes SMS a distribuir.
+
+Siguiendo hacia la derecha, tenemos unos indicadores del estado del servidor.
+
+A la derecha de los indicadores, tenemos un cuadro que representa la lista de las reservas que se van efectivizando a medida que los usuarios van confirmando sus reservas respecto a los vuelos ofrecidos por el servidor. Mediante el boton ``Mostrar'' se pueden ver todos los datos relacionados con el numero de reserva visualizado en la lista de reservas para que el operario del servidor o el vendedor de pasajes lo pueda utilizar. Con el botón ``Abrir'' la \ac{IG} abre una ventana para poder visualizar todas las opciones referidas a la venta del pasaje respecto a esa reserva confirmada. De esta manera, el operador o vendedor puede introducir los datos de la venta a realizar y grabar los mismos en la base de datos de la aplicación.
+
+El siguiente panel es el que se encuentra en la posición superior derecha de la ventana principal. Este contiene la lista de contactos que hace referencia a clientes de la empresa los cuales se quieran enviar mensajes SMS para informar sobre algun tipo de novedades respecto a vuelos aéreos.
+
+Debajo de estos dos paneles se encuentra un tercer panel que contiene tres cuadros de texto.
+
+El primer cuadro es el denominado ``Consola del Consumidor'' que es donde se visualizan todos los mensajes que el módulo del consumidor del framework va leyendo desde la cola de entrada.
+
+El siguiente cuadro es la ``Consola del Productor'', aquí se visualizan los mensajes SMS que se van generando y que se van enviando a la cola de salida para su envío a la red \acs{GSM}.
+
+El ultimo cuadro es la ``Consola de Reservas'' donde se visualizan los datos relacionados con las reservas seleccionadas en la lista de reservas. Al presionar el botón ``mostrar'' que se encuentra debajo de la lista de reservas, se toman los los indices de las reservas seleccionadas y se las envían por parámetro a un método de la clase \cfa{CBaseDatos} llamado ``BuscoReserva'' para que busque el número de reserva en la tabla ``reservas'' y una vez encontrado los datos correspondientes se procede a almacenarlos en un objeto de la clase \cfa{CReserva} previamente creado que sirve para contener los datos de una reserva que se va a visualizar en pantalla.
+
+\section{La clase \cfa{CVentanas}}
+\label{sec:def.cventanas}
+
+Esta clase se agregó al paquete de clases de la aplicación como una herencia de la clase \cfa{CInterfazGrafica}. La finalidad de esta clase es la de poder manejar todas las operaciones de visualización de las ventanas emergentes que se abren durante el manejo de la aplicación. No se escribieron estas operaciones en la clase padre para no generar un clase con demasiadas líneas de código Java y de esta manera, al separar las funciones de las ventanas emergentes en otra clase, se evitan las demoras en la búsqueda de una porción de código y también se reducen los errores durante la programación de las clases.
+
+\section{El productor}
+\label{sec:def.productor}
+
+El módulo del productor esta representada por la clase \cfa{CProductor}. Esta clase contiene solamente una unica función que es la de generar un mensaje de texto de acuerdo a su estructura estandarizada para después colocarlo en la cola de salida de mensajes SMS.
+
+Primeramente, la función crea un objeto de la clase \cfa{COutgoingMessage}. En este objeto se cargan tres datos. El primero es el respectivo número de celular de la persona que recibirá el mensaje. Este número de celular está definido en el formato internacional de numeración telefónica (``+'' + ``código del país'' + ``código del área'' + ``número del celular sin 15''). Además de este dato, se carga en el objeto el texto que contiene la información para el usuario y también un \ac{ID} que representa un número único para poder distinguirlo entre todos los mensajes que se encuentren transfiriendo entre los módulos.
+
+Una vez creado el objeto \cfa{COutgoingMessage} se procede a setear el tipo de codificación que tendrá el mensaje SMS. Para lograr que el mensaje tenga un tamaño máximo de 160 caracteres, se utilizará la codificación de 7 bits (ver página). %ref.
+
+Luego de seteada la codificación del mensaje SMS, se procede a guardar el objeto que contiene el mensaje SMS en la cola de salida mediante una función ``Agregar'' perteneciente a la clase \cfa{CColaSalida}.
+
+\section{La cola de salida}
+\label{sec:def.colasalida}
+
+La cola de salida, representada por la clase \cfa{CColaSalida}, es la encargada de almacenar los mensajes SMS que luego se enviarán a los usuarios correspondientes a través de la interfaz de hardware. Esta cola contiene las mismas características que la clase \cfa{CColaEntrada} teniendo también los mismos métodos disponibles para utilizar.
+
+\section{La clase \cfa{CProtocolMessage}}
+\label{sec:def.cprotocolmessage}
+
+Aparte de las clases \cfa{CIncomingMessage} y \cfa{COutgoingMessage} pertenecientes a la \ac{API} y que son heredadas por la clase padre \cfa{CMessage}, se creó esta clase \cfa{CProtocolMessage} con la idea de poder transferir información respecto al estado de la interfaz de hardware al módulo del consumidor y que ésta se encargue de distribuir esa información a los demás módulos.
+
+A través de la instancia de esta clase se informa el número de lectura que se realiza, comenzando con el número 1 positivo e incrementando de a uno por cada nueva lectura realizada al \ac{TC}. Se agrega como información las actividades que realizó la interfaz de hardware, esto es, la cantidad de mensajes SMS entrantes que se leyeron y la cantidad de mensajes SMS que se enviaron al dispositivo.
+
+Después de cargar estos datos en las variables correspondientes a través del constructor de la clase, se procede a verificar el estado de la interfaz de hardware, esto quiere decir que, se verifica si la interfaz esta funcionando correctamente o si tuvo alguna falla al enviar algun mensaje SMS o al establecer la conexión inicial con el dispositivo GSM. Si alguna de estas fallas sucede, esto quedara reflejado en una variable que se almacenará en el objeto del tipo \cfa{CProtocolMessage} para que los demás módulos puedan conocer su estado y resolver las fallas si es que la interfaz presenta alguna de ellas.
+
+Con respecto a los datos referidos a los mensajes entrantes y salientes, estos se utilizan para poder establecer una estadística de como va funcionando el servidor a medida que transcurre el tiempo. Estos datos estadísticos pueden ser visualizados en pantalla mediante una opción de la barra de menú en la \ac{IG} del sistema.
+
+El constructor de esta clase toma como datos a la fecha de creación del objeto, un string indicando que es un mensaje del tipo ``protocolo'', un texto que contiene una palabra que también hace de identificador del tipo de mensaje, un valor entero igual a cero para distinguirse de los mensajes entrantes y salientes que tienen valores positivos respecto al índice de la memoria del \ac{TC}, un valor entero que representa el índice interno que es utilizado en los módulos del framework para poder conocer el orden de los mensajes que se lo asignan a medida que se van leyendo los mismos, el numero de lectura, la cantidad de mensajes SMS leídos, la cantidad de mensajes SMS enviados, y el estado de la interfaz.
+
+\section{El intérprete de mensajes}
+\label{sec:def.cparseo}
+
+\section{Almacenamiento de datos}
+\label{sec:def.cdatos}
+
+\section{El manejo de la base de datos}
+\label{sec:def.cbasedatos}
+
+\section{Los contactos}
+\label{sec:def.ccontacto}
+
+\section{Las reservas}
+\label{sec:def.creserva}
+
+
+

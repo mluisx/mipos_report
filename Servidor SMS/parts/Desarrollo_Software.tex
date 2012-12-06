@@ -1,0 +1,394 @@
+%\chapter{Descripción del Hardware a Utilizar}
+\chapter{Desarrollo de la aplicación}
+%\sffamily
+
+El servidor de SMS consta de un software realizado enteramente en el lenguaje Java por medio del entorno Eclipse. En la figura se pueden apreciar todas las clases que son utilizadas por la aplicación del servidor.
+
+\section{\textquestiondown Porqué Java?}
+\label{sec:Porque.Java}
+
+Dado que es un lenguaje desarrollado ampliamente y gracias a la licencia open-source con las que trabajan sus IDEs, se consideró el uso de este lenguaje para realizar la programación de esta aplicación. Se puede apreciar un diagrama de las clases que componen la aplicación y las instancias de otras clases que ellos generan o utilizan (figura \ref{fig:DiagramaClases}).
+
+\figuraoo{Diagrama de clases de la aplicación}{fig:DiagramaClases}{width=\textwidth}{DiagramaClases}{!h}
+
+\section{Tipos de mensajes procesados por la aplicación}
+\label{sec:def.Mensajes}
+
+Los mensajes de texto son catalogados como mensajes entrantes o salientes, para lo cual se creó una clase ``CIncomingMessage'' para que al leer un mensaje de texto, se cree un objeto de dicha clase y los datos del mensaje sean almacenados ahí. Para los mensajes salientes del servidor, se genera un objeto de la clase ``COutgoingMessage'' y se almacena los datos del mensaje a ser enviado a la red GSM. Todos estos tipos de mensajes son heredados de la clase ``CMessage'' que contiene los métodos generales para los 3 tipos de mensajes.
+
+El thread luego de hacer una lectura de mensajes de texto entrantes en el teléfono celular,  genera un mensaje del tipo ``CProtocolMessage'' que es utilizado para poder enviar información del estado de la interfaz de hardware al resto de los threads del software y para poder dejar así establecido un protocolo de comunicación entre threads.
+
+Los distintos objetos de mensajes son enviados a una cola de entrada del tipo LinkedList el cual consiste en una cola de objetos del tipo ``CMessage'' que manejan semáforos de forma automática para evitar colisiones durante el ingreso y el egreso de objetos en la cola. La clase que maneja la cola de entrada es denominada ``CColaEntrada'' y contiene distintos métodos para poder insertar, eliminar y obtener un objeto del tipo ``CMessage''
+
+Existe una clase llamada ``Consumidor'' que contiene un thread el cual al ser activado, chequea la cola de entrada por objetos de la clase ``CMessage'' para ser procesados. A medida que hayan mensajes en la cola de entrada, este thread va tomando de a uno y chequea por medio de un ``parsing'' (análisis sintáctico) que tipo de SMS se esta recibiendo. De acuerdo al tipo de SMS el consumidor ejecuta el método correspondiente para su proceso. En la siguiente lista se explican los distintos tipos de SMS que el servidor puede reconocer.
+
+\begin{tablao}{Tipos de mensajes \ac{SMS} recibidos al servidor}{tab:tipos.sms.recibidos}{!t}
+	\begin{tabular}{|c|c|}
+	  \hline \bp{Tipo}& \bp{Descripción} \\ \hline
+		\bp{1}& \bp {SMS con datos de pedido de vuelo de ida} \\ \hline
+    \bp{2}& \bp{SMS con datos de pedido de vuelo de ida y vuelta} \\ \hline
+    \bp{3}& \bp{SMS no reconocido} \\ \hline
+    \bp{4}& \bp{Pedido de ayuda para la adquisición de vuelos (IguazuAir)} \\ \hline
+    \bp{5}& \bp{Reserva de vuelo/s} \\ \hline
+    \bp{6}& \bp{Pedido de mas vuelos disponibles} \\ \hline
+    \bp{7}& \bp{Pedido de estado de un vuelo próximo a partir} \\ \hline
+    \bp{8}& \bp{Datos Incompletos de pedido de vuelos} \\ \hline
+    \bp{9}& \bp{Datos Incompletos de Confirmación de vuelos o pedido de ayuda} \\ \hline
+    \bp{10}& \bp{Pedido de ayuda de estado de vuelos (InfoVuelos)} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+Luego de que los mensajes son recibidos, analizados sintácticamente e identificados, se realizan las búsquedas correspondientes en la base de datos para obtener los resultados necesarios que son enviados al objeto de la clase ``CProductor'' donde se crea el objeto ``COutgoingMessage'' y es enviado a una cola de salida del tipo ``LinkedList'' para su posterior extracción por parte de la interfaz de hardware para luego ser enviado a la red GSM.
+
+\begin{tablao}{Tipos de mensajes \ac{SMS} enviados por el servidor}{tab:tipos.sms.respuestas}{!t}
+	\begin{tabular}{|c|c|c|}
+	  \hline \mrx{Tipo}& \mrx{Descripción}& \mrx{\ac{SMS} Origen} \\ \hline
+		\mrx{0}& \mrx{No se envió ningún mensaje al usuario}& \mrx{3} \\ \hline
+    \mrx{10}& \mrx{Se envió un \ac{SMS} en respuesta a la búsqueda de vuelos}& \mrx{1 o 2} \\ \hline
+    \mrx{11}& \mrx{Se envió más vuelos disponibles}& \mrx{6} \\ \hline
+    \mrx{12}& \mrx{\ac{SMS} de estado de vuelo}& \mrx{7} \\ \hline
+    \mrx{13}& \mrx{\ac{SMS} de ayuda}& \mrx{4} \\ \hline
+    \mrx{14}& \mrx{\ac{SMS} de confirmación de reserva}& \mrx{5} \\ \hline
+    \mrx{15}& \mrx{Envío de ayuda por búsqueda de vuelo con errores}& \mrx{8} \\ \hline
+    \mrx{16}& \mrx{Envío de ayuda por pedido de ayuda o por error en confirmación de reserva}& \mrx{4 o 9} \\ \hline
+    \mrx{17}& \mrx{Envío de ayuda por pedido de ayuda para estados de vuelos}& \mrx{10} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+\subsection{Análisis del manejo de peticiones al servidor}
+\label{sec:peticiones}
+
+De acuerdo a el \ac{SMS} que la aplicación reciba, este debe comprender que tipo de mensaje recibio y actuar en consecuencia enviandole un \ac{SMS} de respuesta al usuario. En la figura \ref{fig:peticiones} se puede observar de un lado (izquierdo) las acciones del cliente, enviando y recibiendo mensajes, y del otro lado (derecho) las lecturas y respuestas del servidor.
+
+\figuraoo{Peticiones al Servidor de \ac{SMS}}{fig:peticiones}{width=\textwidth}{MovSMS1}{!p}
+
+El cliente puede enviar 3 tipos de \ac{SMS}. Estos pueden ser mensajes de ayuda, de pedidos de estados de vuelo o de pedidos de búsqueda de vuelos para reservar. El servidor recibe los mensajes, los procesa para poder conocer que tipo de mensajes son y luego genera una respueta que es devuelta al usuario si es necesaria. La respuesta puede ser un mensaje con los vuelos disponibles para reservar, de acuerdo a una búsqueda previa en la base de datos. Otra respuesta puede ser la del estado de algun vuelo que se encuentra próximo a partir, o también puede ser un \ac{SMS} de ayuda para realizar una búsqueda de vuelos o para pedir el estado de algún vuelo disponible.
+
+Si el usuario recibió un \ac{SMS} con vuelos disponibles, el puede optar por reservar 1 o 2 vuelos de un máximo de 3 que el servidor puede enviar. Aquí, una vez que el usuario envía un \ac{SMS} con la confirmación de los vuelos deseados, se procesa el mensaje generando las actualizaciones debidas en la \ac{BD} para después generar un \ac{SMS} final con la confirmación de la reserva.
+
+Si el \ac{SMS} que envía el usuario para confirmar la reserva no está correctamente generado, el servidor interpreta esa situación y envía un mensaje de ayuda al usuario para poder generar el \ac{SMS} de confirmación de manera adecuada.
+
+En la figura \ref{fig:procesosms} se encuentra en más detalle cuales son las acciónes que ejecuta el ``proceso SMS'' descripto en la figura \ref{fig:peticiones}. Aquí, primeramente se identifica que tipo de mensaje se recibio, derivando la acción en cuatro posibles caminos. El primero consiste en un \ac{SMS} de ayuda que el servidor debe generar y luego enviar al usuario. El segundo es un \ac{SMS} de pedidos de vuelos, donde se realiza la búsqueda de vuelos, se genera el \ac{SMS} y se envía. El tercero, puede consistir en un \ac{SMS} que contiene un texto que no concuerda con ninguna de las posibles peticiones que se pueden realizar al servidor, probablemente podría ser un \ac{SMS} enviado al servidor por error. Debido a esto, por lo tanto, se descarta el \ac{SMS} y no se realiza ninguna acción al respecto. El cuarto \ac{SMS} es el de confirmación de vuelos, que actualiza la \ac{BD} y genera el \ac{SMS} final.
+
+\figuraoo{El proceso de mensajes \ac{SMS}}{fig:procesosms}{width=\textwidth}{MovSMS2}{!p}
+
+\section{Interfaz de hardware}
+\label{sec:def.IntHard}
+
+La interfaz con el hardware se realizó a través de la clase \cfa{CInterfazHard} el cual ejecuta un thread que llama a los métodos que utilizan la \ac{API} \textsl{JSMSEngine} para poder comunicarse con el \ac{TC} a través de los comandos AT. Esta clase permite transferir los datos de los mensajes \ac{SMS} que se encuentran almacenados en la memoria interna del \ac{TC} a la aplicación, para luego ser procesados por otras clases.
+
+\section{La cola de entrada}
+\label{sec:def.colaentrada}
+
+La clase \cfa{CColaEntrada} representa a el módulo de la cola de entrada del framework analizado anteriormente. Consiste en una lista encadenada del tipo ``LinkedList'' que contiene objetos de la clase \cfa{CMessage}. Estos objetos representan cada uno de ellos a un mensaje SMS entrante en el sistema.
+
+Esta clase contiene funciones típicas de colas (agregar, eliminar, obtener, etc.) para poder hacer manejo de la cola a medida que los mensajes SMS se transfieran de una clase a otra en la aplicación.
+
+Este tipo de colas ``LinkedList'' contiene un manejo interno y automático de semáforos que consiste en el manejo secuencial de acciones en la cola, evitando que se produzcan simultaneidades de acciones y se generen redundancias en los datos que son almacenados en ésta.
+
+\section{El consumidor}
+\label{sec:def.consumidor}
+
+La clase \cfa{CConsumidor} es la encargada de activar un hilo de ejecución (thread) que contiene un ciclo continuo que verifica la existencia de objetos del tipo \cfa{CMessage} existentes en el objeto de la clase \cfa{CColaEntrada}. Esta verificación lo realiza en un intervalo predefinido de 5 segundos, siendo posible la modificación de este tiempo a través de una de las opciones de configuración de la aplicación en la \ac{IG} implementada.
+
+Si efectivamente se encuentra un objeto del tipo \cfa{CMessage}, luego, se llama a la clase \cfa{CParseo} que es la encargada de realizar la interpretación de las distintas palabras que contiene el texto del mensaje SMS.
+
+A medida que se van detectando las palabras correspondientes a algun tipo de mensaje SMS que la aplicación pueda procesar, las palabras que sirvan como datos para su posterior uso en la aplicación son almacenados en un objeto de la clase \cfa{CDatos}. Este objeto con sus respectivas variables cargadas con los datos del mensaje SMS luego es utilizado durante toda la fase de procesamiento y de generación del SMS final que se enviará al usuario origen del mensaje SMS.
+
+Una vez cargados los datos, se procede al almacenamiento del mensaje SMS en la tabla ``smsinbox'' de la base de datos del servidor. Esta tabla contiene almacenadas todos los mensajes SMS entrantes que son leídos por el módulo del consumidor.
+
+El siguiente paso del consumidor es la de verificar que tipo de mensaje es (ver página \pageref{tab:tipos.sms.recibidos}) para después indicar al módulo de proceso del SMS que tipo de acciones realizar.
+
+Si el mensaje que se tomo de la cola de entrada no corresponde a ninguno recibido por algun usuario, entonces el mensaje leído es uno correspondiente al objeto de la clase \cfa{CProtocolMessage} que contiene datos acerca del estado de la interfaz de hardware. Este tipo de mensajes son generados por el módulo de la interfaz de hardware para informar a los demás módulos su estado y si se encuentra efectivamente funcionando sin problemas. Lo que carácteriza a este tipo de mensajes para que el consumidor lo pueda detectar, es que su ``memoryindex'' contiene el valor cero con el cual ninguno de los mensajes recibidos al \ac{TC} tendran asignados este valor por el sistema operativo del mismo, ya que solamente los indices de memoria son numeros positivos mayores a cero.
+
+Una vez realizada todos estos pasos, el thread se duerme por el intervalo de tiempo correspondiente y vuelve a realizar la verificación de objetos en la cola de entrada nuevamente.
+
+\section{El proceso del mensaje SMS}
+\label{sec:def.proceso.sms}
+
+La clase \cfa{CInicio} es la encargada de dar inicio a la interfaz de hardware y al consumidor de mensajes.
+
+Se dispone de un método que permite enviar mensajes SMS a un grupo de contactos que se encuentren cargados en la lista de contactos que figura en la \ac{IG}. Lo que permite hacer es tomar los datos de cada fila de esa lista y envía los datos del número de teléfono celular y el texto escrito en el cuadro correspondiente en la \ac{IG} a la clase que representa al módulo productor para que se encargue de generar un objeto de la clase \cfa{COutgoingMessage} y que esa misma clase la envíe a la cola de salida para su posterior salida a la red \acs{GSM}.
+
+Se puede encontrar en esta clase varios métodos llamados ``ProcesarSMSTipoX'' donde X representa al numero del tipo de mensaje que pudo ser comprendido por el intérprete que contiene el módulo del consumidor.
+
+En el método ``ProcesarSMSTipo1'' se envían los datos del mensaje de texto a la clase \cfa{CBaseDatos} para que esta se encargue de realizar un query de acuerdo al pedido de vuelo que contienen los datos del mensaje SMS que fue recibido al servidor.
+
+Una vez finalizado el query, se realizan dos inserts\footnote{Término utilizado en bases de datos indicando la inserción de datos en un tabla} a través de una llamada a la clase \cfa{CBaseDatos}. Un insert es el correspondiente al pedido y se almacena en la tabla ``pedidos'' mientras que el otro insert que se almacenará en la tabla ``smsoutbox'' corresponde al texto del mensaje SMS que será enviado al usuario que realizo que en un principio realizó el pedido.
+
+El siguiente método, ``ProcesarSMSTipo2'', se realizan las mismas acciones que en el método anterior, a diferencia que en el query la búsqueda no es de un solo vuelo sino de dos vuelos, uno para la ida, y otro para el retorno.
+
+En el método ``ProcesarSMSTipo3'' se sabe de antemano que se trata de un mensaje SMS erróneo, pero lo que no se sabe es la categoría del error del mensaje (ver página x). Por esto mismo, se llama a la clase \cfa{CBaseDatos} para que realize una búsqueda en la tabla de ``pedidos'' de cual fue el último mensaje SMS recibido de el número celular que figura en el mensaje actual. Si en el resultado del query no se encuentra ningun dato, entonces, se deduce que el mensaje que se recibio es uno que no corresponde con ninguno de los servicios ofrecidos por la empresa de vuelos. Ahora, en el caso que el resultado encuentre una fila que tenga el número celular del SMS actual, entonces se puede determinar cual fue el ultimo SMS recibido por esa persona, y como resultado, saber si hubo un error tanto en un mensaje de pedidos de vuelos, uno de confirmación o en uno de verificación de estado de algún vuelo. 
+
+Una vez determinado el tipo de error, se procede a generar un mensaje de ayuda si el error se produjo en un mensaje que este relacionado con algunos de los servicios brindados por la empresa. Luego se almacena el mensaje saliente en la base de datos y por último se lo envía al usuario final. En el caso de que se detecte un mensaje SMS sin ninguna relación, no se lo tiene en cuenta para el procesamiento del mismo y queda descartado.
+
+En el caso del método ``ProcesarSMSTipo4'', se sabe de antemano que el mensaje SMS es un mensaje de pedido de ayuda, por lo tanto, se genera un texto de ayuda para realizar las búsquedas de vuelos, se almacena el mensaje saliente en la base de datos y se lo envía al usuario.
+
+En el método ``ProcesarSMSTipo5'', se esta procesando un mensaje referido a la confirmación de la reserva de un vuelo previamente solicitado. Por lo tanto, lo primero que se realiza es la generación del texto que será enviado al usuario, diciendo que el vuelo requerido ha sido reservado. Luego, se almacena el mensaje saliente en la base de datos y finalmente se agrega en la lista de reservas que figura en la \ac{IG} el numero de reserva correspondiente para que el operario luego pueda acceder a esta reserva y verificar todos los datos correspondientes al mismo (número de vuelo, horario, \ac{TC} de la persona que realizo la reserva, etc.). Una vez más, se llama a la clase \cfa{CBaseDatos} para que se almacenen los datos correspondientes a la reserva en la tabla ``reservas''.
+
+Cuando se llama al método ``ProcesarSMSTipo7'', sabiendo que se trata de un mensaje de pedido de estado de algún vuelo próximo a partir, se busca en la base de datos el estado correspondiente al vuelo en cuestión, se genera el texto que va a figurar en el mensaje SMS, se almacena el pedido en la tabla correspondiente a los pedidos y el mensaje SMS final que luego se enviará a la red GSM para dirijirse al \ac{TC} del usuario que utilizó el servicio.
+
+Cuando se recibe un mensaje del tipo 8 (ver figura \ref{tab:tipos.sms.recibidos}), sabiendo que es un mensaje de búsqueda de vuelos pero que contiene errores en la escritura del texto, se genera un texto con la ayuda respecto a la búsqueda de vuelos y se lo envía al usuario previamente almacenando el mensaje SMS saliente en la base de datos.
+
+Para el método ``ProcesarSMSTipo9'' que esta relacionado con un mensaje del tipo 9 (ver figura \ref{tab:tipos.sms.recibidos}) se crea un texto explicando como se debe realizar la confirmación de vuelos y como verificar el estado de los vuelos, ya que el error pudo haber ocurrido en un mensaje donde el usuario buscaba confirmar un vuelo o quería verificar el estado de un vuelo. Se lo almacena en la base de datos y se envía esta respuesta al usuario de origen.
+
+Para procesar un mensaje del tipo 10 (ver figura \ref{tab:tipos.sms.recibidos}) se llama al método ``ProcesarSMSTipo10'' que se encarga de crear un texto con la ayuda respecto a la verificación de estados de vuelos y se lo envía al usuario de origen.
+
+Esta clase permite agregar y eliminar contactos que se encuentran en la lista de contactos que figura en la \ac{IG}. Al querer agregar un contacto, se crea un objeto del tipo \cfa{CContacto} donde en este se almacenan el nombre del cliente y su número de celular. Luego, se almacena este objeto en una linkedlist de objetos del tipo \cfa{CContacto}. Para poder visualizar el contacto en la \ac{IG} se crea un string con el nombre y el número de telefono y se agrega este string a una variable del tipo ``DefaultListModel'' que indica el modelo de lista que se utiliza para ser visualizado en pantalla.
+
+Para borrar un contacto de la lista, se verifican cuales fueron los contactos seleccionados para ser borrados y se eliminan tanto de la lista enlazada de objetos del tipo \cfa{CContacto} y de la variable del modelo de lista que los tiene incluidos.
+
+El método ``makeObj'' se creó con el fin de pasar un string a un objeto del tipo \cfa{Object} para que pueda ser grabado en una cola de objetos que representa a los grupos de contactos que se graban en la \ac{IG}. En vez de grabar los strings directamente, se hace el paso a este tipo de objeto porque es lo que la documentación de Java recomienda a fin de que no se produzcan problemas de bajo nivel al grabar los strings en la lista.
+
+Para guardar un grupo de contactos seleccionados, se utiliza el método ``GuardarContactos'' que toma los indices de los contactos seleccionados, los transforma a objetos del tipo \cfa{Object} y los guarda en la lista enlazada que los contiene.
+
+Para cargar un grupo de contactos, se toma el objeto que contiene el nombre del grupo que fue seleccionado en la \ac{IG}, se lo transforma este objeto a un string y se hace un query a través de la clase \cfa{CBaseDatos} para obtener los nombres de los contactos pertenecientes a ese grupo y para que se pueda luego cargar cada contacto en la lista de contactos por medio del método ``IngresoContacto'' de esta misma clase.
+
+Los métodos de ``ImprimirConsola'' toman un texto pasado por parámetro y lo visualizan en la consola correspondiente (consumidor, productor o reservas) de la \ac{GUI}.
+
+Finalmente, el último método, ``ImprimirReserva'' toma por parámetro el índice de la lista de reservas para luego buscar el número de reserva correspondiente a ese índice y poder realizar un query en la base de datos de todos los datos relacionados con la reserva. Estos datos son visualizados en la \ac{IG} en la consola de reservas. Esta función fue creada para permitir al operador del servidor tener visualizado todos los datos respectos de las reservas que se van realizando para así poder luego llamar a los usuarios y realizar las ventas de los pasajes aéreos.
+
+\section{La \acf{GUI}}
+\label{sec:def.ig}
+
+La \ac{IG} de la aplicación está formado por componentes de la biblioteca Swing los cuales estan ubicados por medio del paquete de clases \cfa{GroupLayout}. Este mismo paquete que ubica los distintos objetos en la \ac{IG} es el utilizado por el creador de \ac{IG}s que posee el \ac{IDE} del conocido``NetBeans''. 
+
+En este \ac{TFC} se utilizó el graficador del ``NetBeans'' para poder saber como el \cfa{GroupLayout} ubica los distintos elementos en los paneles que contiene la ventana de la \ac{GUI}. Una vez que el Layout fue investigado, se procedió a cargar los elementos gráficos (widgets) directamente en el código java de la clase \cfa{CInterfazGrafica}.
+
+En la figura () se puede apreciar la ventana principal de la aplicación.
+
+En primera instancia, la \ac{GUI} esta dividida en tres paneles pertenecientes a clases del tipo \cfa{JPanel} del paquete Swing.
+
+El primer panel es el que se encuentra delimitado por el rectangulo que se encuentra en la posición superior izquierda de la ventana principal. Aquí podemos ver 3 botones los cuales nos permiten realizar algunas acciones. El cuadro de texto que se encuentra debajo de los botones es el cuadro el cual nos permite escribir el texto que será enviado a un grupo selecto de usuarios que estarán seleccionados de una lista de contactos que se encuentra en el panel siguiente. Podemos ver un contador descendente de caracteres el cual nos permite saber cual es el límite de caracteres que podemes colocar en el texto de los mensajes SMS a distribuir.
+
+Siguiendo hacia la derecha, tenemos unos indicadores del estado del servidor.
+
+A la derecha de los indicadores, tenemos un cuadro que representa la lista de las reservas que se van efectivizando a medida que los usuarios van confirmando sus reservas respecto a los vuelos ofrecidos por el servidor. Mediante el boton ``Mostrar'' se pueden ver todos los datos relacionados con el numero de reserva visualizado en la lista de reservas para que el operario del servidor o el vendedor de pasajes lo pueda utilizar. Con el botón ``Abrir'' la \ac{IG} abre una ventana para poder visualizar todas las opciones referidas a la venta del pasaje respecto a esa reserva confirmada. De esta manera, el operador o vendedor puede introducir los datos de la venta a realizar y grabar los mismos en la base de datos de la aplicación.
+
+El siguiente panel es el que se encuentra en la posición superior derecha de la ventana principal. Este contiene la lista de contactos que hace referencia a clientes de la empresa los cuales se quieran enviar mensajes SMS para informar sobre algun tipo de novedades respecto a vuelos aéreos.
+
+Debajo de estos dos paneles se encuentra un tercer panel que contiene tres cuadros de texto.
+
+El primer cuadro es el denominado ``Consola del Consumidor'' que es donde se visualizan todos los mensajes que el módulo del consumidor del framework va leyendo desde la cola de entrada.
+
+El siguiente cuadro es la ``Consola del Productor'', aquí se visualizan los mensajes SMS que se van generando y que se van enviando a la cola de salida para su envío a la red \acs{GSM}.
+
+El ultimo cuadro es la ``Consola de Reservas'' donde se visualizan los datos relacionados con las reservas seleccionadas en la lista de reservas. Al presionar el botón ``mostrar'' que se encuentra debajo de la lista de reservas, se toman los los indices de las reservas seleccionadas y se las envían por parámetro a un método de la clase \cfa{CBaseDatos} llamado ``BuscoReserva'' para que busque el número de reserva en la tabla ``reservas'' y una vez encontrado los datos correspondientes se procede a almacenarlos en un objeto de la clase \cfa{CReserva} previamente creado que sirve para contener los datos de una reserva que se va a visualizar en pantalla.
+
+\section{La clase \cfa{CVentanas}}
+\label{sec:def.cventanas}
+
+Esta clase se agregó al paquete de clases de la aplicación como una herencia de la clase \cfa{CInterfazGrafica}. La finalidad de esta clase es la de poder manejar todas las operaciones de visualización de las ventanas emergentes que se abren durante el manejo de la aplicación. No se escribieron estas operaciones en la clase padre para no generar un clase con demasiadas líneas de código Java y de esta manera, al separar las funciones de las ventanas emergentes en otra clase, se evitan las demoras en la búsqueda de una porción de código y también se reducen los errores durante la programación de las clases.
+
+\section{El productor}
+\label{sec:def.productor}
+
+El módulo del productor esta representada por la clase \cfa{CProductor}. Esta clase contiene solamente una unica función que es la de generar un mensaje de texto de acuerdo a su estructura estandarizada para después colocarlo en la cola de salida de mensajes SMS.
+
+Primeramente, la función crea un objeto de la clase \cfa{COutgoingMessage}. En este objeto se cargan tres datos. El primero es el respectivo número de celular de la persona que recibirá el mensaje. Este número de celular está definido en el formato internacional de numeración telefónica (``+'' + ``código del país'' + ``código del área'' + ``número del celular sin 15''). Además de este dato, se carga en el objeto el texto que contiene la información para el usuario y también un \ac{ID} que representa un número único para poder distinguirlo entre todos los mensajes que se encuentren transfiriendo entre los módulos.
+
+Una vez creado el objeto \cfa{COutgoingMessage} se procede a setear el tipo de codificación que tendrá el mensaje SMS. Para lograr que el mensaje tenga un tamaño máximo de 160 caracteres, se utilizará la codificación de 7 bits (ver página). %ref.
+
+Luego de seteada la codificación del mensaje SMS, se procede a guardar el objeto que contiene el mensaje SMS en la cola de salida mediante una función ``Agregar'' perteneciente a la clase \cfa{CColaSalida}.
+
+\section{La cola de salida}
+\label{sec:def.colasalida}
+
+La cola de salida, representada por la clase \cfa{CColaSalida}, es la encargada de almacenar los mensajes SMS que luego se enviarán a los usuarios correspondientes a través de la interfaz de hardware. Esta cola contiene las mismas características que la clase \cfa{CColaEntrada} teniendo también los mismos métodos disponibles para utilizar.
+
+\section{La clase \cfa{CProtocolMessage}}
+\label{sec:def.cprotocolmessage}
+
+Aparte de las clases \cfa{CIncomingMessage} y \cfa{COutgoingMessage} pertenecientes a la \ac{API} y que son heredadas por la clase padre \cfa{CMessage}, se creó esta clase \cfa{CProtocolMessage} con la idea de poder transferir información respecto al estado de la interfaz de hardware al módulo del consumidor y que ésta se encargue de distribuir esa información a los demás módulos.
+
+A través de la instancia de esta clase se informa el número de lectura que se realiza, comenzando con el número 1 positivo e incrementando de a uno por cada nueva lectura realizada al \ac{TC}. Se agrega como información las actividades que realizó la interfaz de hardware, esto es, la cantidad de mensajes SMS entrantes que se leyeron y la cantidad de mensajes SMS que se enviaron al dispositivo.
+
+Después de cargar estos datos en las variables correspondientes a través del constructor de la clase, se procede a verificar el estado de la interfaz de hardware, esto quiere decir que, se verifica si la interfaz esta funcionando correctamente o si tuvo alguna falla al enviar algun mensaje SMS o al establecer la conexión inicial con el dispositivo GSM. Si alguna de estas fallas sucede, esto quedara reflejado en una variable que se almacenará en el objeto del tipo \cfa{CProtocolMessage} para que los demás módulos puedan conocer su estado y resolver las fallas si es que la interfaz presenta alguna de ellas.
+
+Con respecto a los datos referidos a los mensajes entrantes y salientes, estos se utilizan para poder establecer una estadística de como va funcionando el servidor a medida que transcurre el tiempo. Estos datos estadísticos pueden ser visualizados en pantalla mediante una opción de la barra de menú en la \ac{IG} del sistema.
+
+El constructor de esta clase toma como datos a la fecha de creación del objeto, un string indicando que es un mensaje del tipo ``protocolo'', un texto que contiene una palabra que también hace de identificador del tipo de mensaje, un valor entero igual a cero para distinguirse de los mensajes entrantes y salientes que tienen valores positivos respecto al índice de la memoria del \ac{TC}, un valor entero que representa el índice interno que es utilizado en los módulos del framework para poder conocer el orden de los mensajes que se lo asignan a medida que se van leyendo los mismos, el numero de lectura, la cantidad de mensajes SMS leídos, la cantidad de mensajes SMS enviados, y el estado de la interfaz.
+
+\section{El intérprete de mensajes}
+\label{sec:def.cparseo}
+
+El archivo \textbf{\cfa{CParseo.java}} contiene la clase que actua como intérprete de mensajes \ac{SMS}. Cada mensaje recibido contiene un texto que debe ser analizado en su totalidad carácter por carácter. Esta clase divide el texto completo en palabras que están separadas por caracteres de espacio. Cada palabra se almacena en una variable para poder ser analizada. Existen distintas palabras claves (ver la tabla \ref{tab:palabras.claves}) que el intérprete puede comprender y, de acuerdo a cada uno de ellos, puede determinar el tipo de mensaje recibido en el servidor.
+
+\begin{tablao}{Palabras claves que definen el tipo de mensaje \ac{SMS}}{tab:palabras.claves}{!h}
+	\begin{tabular}{|l|l|}
+	  \hline \bp{Palabra}& \bp{Descripción} \\ \hline
+		\bp{Vuelo/s}& \bp {\ac{SMS} de búsqueda de vuelos (ida y retorno o solamente de ida)} \\ \hline
+		\bp{AeroIguazu}& \bp {\ac{SMS} de ayuda para realizar una búsqueda de vuelos } \\ \hline
+		\bp{InfoVuelos}& \bp {\ac{SMS} de ayuda para verificar el estado de un vuelo} \\ \hline
+		\bp{Reservar}& \bp {\ac{SMS} de reserva de vuelo} \\ \hline
+		\bp{Ayuda}& \bp {\ac{SMS} de ayuda para realizar la confirmación de algun vuelo} \\ \hline
+		\bp{Estado}& \bp {\ac{SMS} de pedido de estado de vuelo} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+\subsection{Interpretando mensajes de búsqueda de vuelos}
+\label{sec:mensajes.vuelos}
+
+Los mensajes de búsqueda de vuelos pueden ser de dos tipos. Los que se envían para buscar vuelos hacia una ciudad (viaje de ida) o para buscar vuelos hacia una ciudad y poder retornar a la ciudad desde donde uno partió (viaje de ida y retorno).
+
+Existen distintas variantes que puede tener el armado del texto de un mensaje \ac{SMS} en el cual el intérprete lo pueda comprender correctamente. 
+Se definieron estas variantes para poder brindar flexibilidad al usuario del servidor y poder comprender distintas palabras que se puedan escribir en el texto del mensaje sin tener que respetar una única sintaxis definida.
+
+\begin{quote}
+	Se debe tener en cuenta que las minúsculas o mayúsculas en los mensajes de texto carecen de importancia, ya que el intérprete al recibir el texto, convierte cada uno de los caracteres en su correspondiente carácter en mayúscula.
+\end{quote}
+
+Suponiendo que se quiera realizar la búsqueda de un vuelo únicamente de ida, desde la ciudad de Buenos Aires hacia la ciudad de Cordoba, se puede enviar un \ac{SMS} que contenga uno de los tres textos que figuran en la tabla \ref{tab:sms.vuelo.ida}.
+
+\begin{tablao}{Mensajes de búsqueda de vuelos de ida}{tab:sms.vuelo.ida}{!h}
+	\begin{tabular}{|c|}
+	  \hline \bp{Vuelo desde Buenos Aires hacia Cordoba Fecha 15/10/08} \\ \hline
+	  \hline \bp{Vuelos de Buenos Aires a Cordoba el 15/10/08} \\ \hline
+	  \hline \bp{Vuelo origen Buenos Aires destino Cordoba Fecha 15/10/2008} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+A partir del ejemplo se puede deducir que existen distintas combinaciones de palabras para formar el texto que permitirá realizar la búsqueda de un vuelo en la \ac{BD} del servidor. La palabra ``Vuelo'' es considerada una palabra clave debido a que debe figurar en el mensaje obligatoriamente, luego, para indicar la ciudad de origen se puede utilizar cualquiera de las palabras ``desde'', ``de'' u ``origen''. Se coloca el nombre de la ciudad y despúes se debe escribir una palabra que indique la ciudad de destino. Esta palabra puede ser ``hacia'', ``a'' o ``destino''. Se agrega el nombre de la ciudad destino y por ultimo una palabra que indique la fecha que se desearía viajar. Esta palabra puede ser ``fecha'' o ``el''. La fecha se debe escribir con dos dígitos para el día, luego una barra para separar el día del mes, el número que corresponde al mes, otra barra de separación, y por último, el año, que puede ser ingresado en dos o cuatro dígitos.
+
+Cada una de estas palabras se pueden combinar de diferentes maneras para formar el texto final. En la tabla \ref{tab:sms.vuelo.ida} figuran solamente tres ejemplos, pero las combinaciones de palabras pueden generar otros textos que el intérprete los puede comprender de igual manera.
+
+Por otro lado, si el usuario quisiera buscar dos vuelos (uno de ida y otro de retorno), el mensaje puede contener uno de los textos que figuran en la tabla \ref{tab:sms.vuelo.idayretorno}. El mensaje además de tener los datos de la ciudad de origen, la ciudad destino y la fecha del viaje, debe tener la fecha de retorno a la ciudad origen donde el usuario partió.
+
+\begin{tablao}{Mensajes de búsqueda de vuelos de ida y vuelta}{tab:sms.vuelo.idayretorno}{!h}
+	\begin{tabular}{|c|}
+	  \hline \bp{Vuelo desde Buenos Aires hacia Cordoba Fecha de ida 15/10/08 y fecha de retorno 4/11/08} \\ \hline
+	  \hline \bp{Vuelos de Buenos Aires a Cordoba ida 15/10/08 retorno 4/11/08} \\ \hline
+	  \hline \bp{Vuelo origen Buenos Aires destino Cordoba el 15/10/2008 y el retorno 04/11/08} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+Podemos observar que el mensaje tiene la misma sintaxis que un mensaje para buscar un vuelo de ida, solamente que luego de colocar la fecha de ida, se agregan unas palabras que indican la fecha de retorno. Estas palabras pueden ser ``y'', ``fecha'', ``de'' o ``el''. Antes de colocar la fecha, obligatoriamente se debe agregar la palabra ``retorno'' para que el intérprete sepa que la palabra que le sigue contiene la fecha para el vuelo de retorno.
+
+Las respuestas que el servidor pueda generar dependeran de los vuelos disponibles que existan para la fecha determinada del trayecto que el usuario quiera realizar. Siguiendo el ejemplo del trayecto de Buenos Aires hacia Cordoba, considerando solamente el vuelo de ida, el servidor puede generar una respuesta de las que figuran en la tabla \ref{tab:sms.rta.vuelo.ida}.
+
+\begin{tablao}{Respuesta a las búsquedas de vuelos de ida}{tab:sms.rta.vuelo.ida}{!h}
+	\begin{tabular}{|c|}
+	  \hline \bp{AeroIguazu - Buenos Aires a Cordoba - 15/10/08 - Vuelo 30, 3:00 PM, \$100 -} \\
+	  \bp{Vuelo 15, 8:00 PM, \$120 - Vuelo 2, 4:00 PM, \$170} \\ \hline
+	  \hline \bp{AeroIguazu - Buenos Aires a Cordoba - 15/10/08 - Vuelo 45, 10:00 PM, \$120} \\ \hline
+	  \hline \bp{AeroIguazu Le Informa Que No Hay Vuelos Disponibles} \\
+	  \bp{Para El Destino y La Fecha Deseados} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+En la primer respuesta, se puede apreciar que aparece el nombre de fantasía de la compañia, la ciudad desde donde partirá el vuelo y la ciudad hacia donde arribará, la fecha del viaje y a continuación los vuelos que están disponibles para poder ser reservados. En este mensaje figuran tres vuelos, que es la cantidad máxima de vuelos que el mensaje puede contener debido al tamaño reducido y limitado de 160 caracteres que posee. Si el sistema encuentra disponible más de tres vuelos, se envían a los usuarios los tres vuelos más baratos del total de vuelos disponibles.
+
+En el segundo mensaje solamente hay un solo vuelo disponible para esa fecha y trayecto buscado. Podemos ver que para describir el vuelo se coloca en el texto la palabra ``vuelo'' seguido del número de vuelo, se coloca una coma ``,'' para separar y se agrega la hora de salida del vuelo en el formato de 12 horas, y por último el signo monetario de pesos ``\$'' junto al costo del vuelo.
+
+En el tercer mensaje el servidor informa que no hay vuelos disponibles para la fecha y destino requerido, esto puede ser porque la compañia no tiene vuelos para el trayecto pedido en la fecha solicitada o porque el vuelo que se pidió se encuentra sin lugares disponibles para vender.
+
+Teniendo en cuenta el mismo trayecto, pero siendo la solicitud del usuario un vuelo de ida y otro de retorno, el servidor puede responder de la manera que figura en la tabla \ref{tab:sms.rta.vuelo.ida.vuelta}.
+
+\begin{tablao}{Respuesta a las búsquedas de vuelos de ida y vuelta}{tab:sms.rta.vuelo.ida.vuelta}{!h}
+	\begin{tabular}{|c|}
+	  \hline \bp{AeroIguazu - Ida, Vuelo 45, Buenos Aires a Cordoba, 15/10/08, 10:00 PM, \$120 -} \\
+	  \bp{Para el Retorno No Hay Vuelos Disponibles} \\ \hline
+	  \hline \bp{AeroIguazu - Ida, Vuelo 45, Buenos Aires a Cordoba, 15/10/08, 10:00 PM, \$120 -} \\
+	  \bp{Retorno, Vuelo 4, Cordoba a Buenos Aires, 04/11/08, 12:00 PM, \$ 100} \\ \hline
+	  \hline \bp{AeroIguazu - No hay Vuelo Disponible Para La Fecha De Ida - } \\
+	  \bp{Retorno, Vuelo 4, Cordoba a Buenos Aires, 04/11/08, 12:00 PM, \$ 100} \\ \hline
+	  \hline \bp{AeroIguazu - No hay Vuelo Disponible Para La Fecha De Ida - } \\
+	  \bp{Para el Retorno No Hay Vuelos Disponibles} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+En el caso de una respuesta de una búsqueda de un vuelo de ida y vuelta, si se encuentran varios vuelos disponibles, el sistema elige el vuelo de menor precio para el vuelo de ida y de vuelta, dando a conocer al usuario los dos vuelos que posteriormente los puede reservar.
+
+En el primer \ac{SMS} de respuesta de la tabla \ref{tab:sms.rta.vuelo.ida.vuelta} se puede apreciar que para la ida se encuentra disponible el vuelo número 45 y para la vuelta no se encontraron vuelos disponibles para la fecha y trayecto dado. En el segundo texto figuran el vuelo 45 para la ida y el vuelo 4 para el retorno. En el tercer texto no se encontró vuelo para la ida pero si para el retorno, y en el cuarto texto no hubo éxito alguno ni para la ida ni tampoco para el retorno.
+
+\subsection{Interpretando mensajes de reservas de vuelos}
+\label{sec:mensajes.reservas}
+
+Una vez recibido un \ac{SMS} con los vuelos disponibles, el usuario tiene la posibilidad de reservar uno o dos vuelos de los que recibió en el \ac{SMS} de respuesta a la búsqueda de vuelos. Para poder realizar la reserva, se debe enviar un mensaje con uno de los textos que figuran en la tabla \ref{tab:sms.reserva}, dependiendo de si se quiere reservar uno o dos vuelos.
+
+\begin{tablao}{Mensaje para reserva de vuelos}{tab:sms.reserva}{!h}
+	\begin{tabular}{|c|}
+	  \hline \bp{Reservar Vuelo 45} \\ \hline
+	  \hline \bp{Reservar Vuelo 30 y 4} \\ \hline
+	  \hline \bp{Reservar 15 y 18} \\ \hline
+	  \hline \bp{Reservar 4} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+El servidor permite reservar como máximo dos vuelos, dando así la posibilidad de reservar uno de ida y otro de retorno si el usuario lo requiere.
+
+Para poder reservar, el mensaje que se debe enviar debe contener la palabra clave ``reservar'' obligatoriamente. La palabra ``vuelo'' puede figurar pero no es una palabra clave para este tipo de mensajes, por lo tanto el usuario puede obviarlo si desea. Luego, se debe escribir el número de vuelo que quiera confirmar, siempre y cuando el número sea uno de los números de vuelos que estén en el mensaje enviado por el servidor como respuesta a la búsqueda de vuelos. Si el usuario se equivoca y manda un número que no corresponde, el servidor interpreta la situación y envía un mensaje al usuario indicando que el número es incorrecto. Si el o los números son correctos, el servidor responderá indicando que la reserva ha sido efectuada y que un representante de ventas se comunicará en las próximas horas para efectuar el pago de los pasajes y para seleccionar la ubicación del asientodonde quiera viajar. El mensaje tendrá un código de reserva que será de utilidad para realizar el pago del pasaje. Las respuestas del servidor se detallan en la tabla \ref{tab:sms.confirmacion}.
+
+\begin{tablao}{Confirmación de la reserva de uno o dos vuelos}{tab:sms.confirmacion}{!h}
+	\begin{tabular}{|c|}
+	  \hline \bp{Su vuelo Nro 15 Ha Sido Confirmado - Su Código De Reserva Es 478 - Un Agente } \\
+	  \bp{Se Comunicará Con Usted En Las Próximas Horas - Muchas Gracias} \\ \hline
+	  \hline \bp{Sus vuelos Nro 15 y 45 Han Sido Confirmados - Su Código De Reserva Es 478 - Un Agente} \\ 
+	  \bp{Se Comunicará Con Usted En Las Próximas Horas - Muchas Gracias} \\ \hline
+	  \hline \bp{Su Número de Vuelo Es Incorrecto, Por Favor, Envíe ``Reservar'' + ``Vuelo'' + ``NroVuelo''} \\ 
+	  \bp{Para Confirmar La Reserva} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+Los primeros dos textos son confirmaciones de reservas a vuelos, mientras que el último indica que el número de vuelo recibido no es correcto, y por lo tanto explica como generar el mensaje para realizar la reserva de un vuelo.
+
+\subsection{Interpretando mensajes de estados de vuelos}
+\label{sec:mensajes.estados}
+
+Para verificar el estado de un vuelo se debe generar un mensaje con un texto como uno de los que figuran en la tabla \ref{tab:sms.estado.vuelo}.
+
+\begin{tablao}{Mensaje para verificar el estado de un vuelo}{tab:sms.estado.vuelo}{!h}
+	\begin{tabular}{|c|}
+	  \hline \bp{Estado Vuelo 5} \\ \hline
+	  \hline \bp{Estado 5} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+La palabra clave ``Estado'' permite identificar al mensaje como uno que contiene un pedido de información de si un vuelo próximo a partir esta en horario o se encuentra demorado y si es así cuanto tiempo de demora hay. El número identifica al vuelo en cuestión. El servidor luego de recibir este mensaje, genera un \ac{SMS} de respuesta con uno de los textos de la tabla \ref{tab:sms.rta.estado}.
+
+\begin{tablao}{Respuesta al pedido de información de partida de un vuelo}{tab:sms.rta.estado}{!h}
+	\begin{tabular}{|c|}
+	  \hline \bp{AeroIguazu - Vuelo 15 - 07/08/08 - 6:00 PM - Estado Del Vuelo: Demorado 1 Hora} \\ \hline
+	  \hline \bp{AeroIguazu - Vuelo 20 - 24/12/08 - 8:00 PM - Estado Del Vuelo: En Horario} \\ \hline
+	  \hline \bp{AeroIguazu - Vuelo 50 - No Está Programado En El Calendario De Vuelos} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+La respuesta puede variar dependiendo del estado que tenga el vuelo en el momento de la recepción del \ac{SMS} en el servidor. Si el vuelo no existe o no está programado por la compañia, la respuesta consiste en el tercer texto de la tabla \ref{tab:sms.rta.estado}.
+
+\subsection{Interpretando mensajes de ayuda}
+\label{sec:mensajes.ayuda}
+
+Los mensajes de ayuda se pensaron para poder brindar al usuario una ayuda en la sintaxis de algun tipo de \ac{SMS} que quiera enviar al servidor. Como se detallo en la sección \ref{sec:mensajes.reservas}, un usuario puede enviar un número erróneo al momento de reservar un vuelo. Es ahí cuando el servidor responde al usuario indicando que hubo un error y también enviandole una ayuda que contiene la sintaxis para poder generar correctamente un \ac{SMS} de reserva. Quizás el usuario no se equivocó en el número, pero posiblemente pueda equivocarse al escribir el mensaje de texto en el \ac{TC}, es por eso que se pensó manejar ciertos errores que el usuario pueda cometer y que el servidor pueda interpretarlos para poder ayudar al usuario.
+
+Puede ocurrir el caso en que el usuario no conozca el servicio ofrecido por la compañia, y solamente sepa el número de telefono al cual enviar los mensajes para ser procesados. En este caso, el usuario con tan solo enviar el nombre de la compañía ``AeroIguazu'' recibirá una ayuda acerca de la sintaxis para poder generar un mensaje de búsqueda de vuelos. Si la ayuda que desea tiene que ver con la búsqueda de información del estado de un vuelo, la palabra a enviar es ``InfoVuelos''. La tabla \ref{tab:sms.ayuda} resume todas las ayudas que el servidor puede enviar.
+
+\begin{tablao}{Ayudas disponibles para el usuario del servidor de \ac{SMS}}{tab:sms.ayuda}{!h}
+	\begin{tabular}{|c|}
+	  \hline \bp{Bienvenido a AeroIguazu - Para Ver Vuelos Disponibles, Envíe ``Vuelo'' + ``Desde''} \\
+	  \bp{+ ``Ciudad Origen'' + ``Ciudad Destino'' + ``Fecha Ida'' + ``Fecha Retorno (opcional)''} \\ \hline
+	  \hline \bp{Para Ver Vuelos Disponibles, Envíe ``Vuelo'' + ``Desde'' + ``Ciudad Origen''} \\
+	  \bp{+ ``Ciudad Destino'' + ``Fecha Ida'' + ``Fecha Retorno'' (El Retorno Es Opcional)} \\ \hline
+    \hline \bp{Envíe ``Reservar'' + ``Vuelo'' + ``Nro'' Para Confirmar Reserva /} \\
+    \bp{Para Estados De Vuelos, Envie ``Estado'' + ``Vuelo'' + ``Nro''} \\ \hline
+    \hline \bp{Bienvenido a AeroIguazu - Para Conocer El Estado De Su Vuelo, Envíe Las Palabras} \\
+    \bp{``Estado'' + ``Vuelo'' + ``Nro De Vuelo''} \\ \hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+El primer texto corresponde a la respuesta a la palabra ``AeroIguazu'' el cual nos brinda una ayuda sobre como generar un \ac{SMS} para buscar vuelos en el sistema. El siguiente texto corresponde a la ayuda que se recibe después de escribir erróneamente un \ac{SMS} de pedido de vuelo. En el tercero se genera una ayuda en respuesta al envío de la palabra ``Ayuda'', luego de haber recibido un \ac{SMS} con vuelos disponibles para reservar y siendo el caso de que el usuario no sepa como continuar, el enviar la palabra ``Ayuda'' le facilitará el proceso de reserva. El cuarto texto es en respuesta a la palabra ``InfoVuelos'' donde se ayuda al usuario para poder escribir un \ac{SMS} para poder conocer el estado de un vuelo.
+
+\section{Almacenamiento de datos}
+\label{sec:def.cdatos}
+
+\section{El manejo de la base de datos}
+\label{sec:def.cbasedatos}
+
+\section{Los contactos}
+\label{sec:def.ccontacto}
+
+\section{Las reservas}
+\label{sec:def.creserva}
+
+
+

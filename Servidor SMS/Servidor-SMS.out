@@ -1,0 +1,57 @@
+\BOOKMARK [-1][-]{part.1}{Introducci\363n}{}% 1
+\BOOKMARK [-1][-]{part.2}{Metodolog\355a}{}% 2
+\BOOKMARK [-1][-]{part.3}{Resultados y Discusi\363n}{}% 3
+\BOOKMARK [0][-]{chapter.1}{El Sistema Operativo \(OS\) Android}{part.3}% 4
+\BOOKMARK [1][-]{section.1.1}{Inicios y evoluci\363n}{chapter.1}% 5
+\BOOKMARK [1][-]{section.1.2}{Versiones}{chapter.1}% 6
+\BOOKMARK [1][-]{section.1.3}{\277Qu\351 se necesita tener en cuenta para poder comenzar a crear una aplicaci\363n en Android?}{chapter.1}% 7
+\BOOKMARK [1][-]{section.1.4}{Las herramientas para trabajar con la plataforma}{chapter.1}% 8
+\BOOKMARK [2][-]{subsection.1.4.1}{Ejemplos de algunas herramientas para el desarrollo de aplicaciones}{section.1.4}% 9
+\BOOKMARK [0][-]{chapter.2}{El desarrollo en Android}{part.3}% 10
+\BOOKMARK [1][-]{section.2.1}{La DVM}{chapter.2}% 11
+\BOOKMARK [1][-]{section.2.2}{La arquitectura Android}{chapter.2}% 12
+\BOOKMARK [1][-]{section.2.3}{Partes que componen un proyecto de desarrollo Android}{chapter.2}% 13
+\BOOKMARK [2][-]{subsection.2.3.1}{Las Activities}{section.2.3}% 14
+\BOOKMARK [2][-]{subsection.2.3.2}{El Manifest}{section.2.3}% 15
+\BOOKMARK [2][-]{subsection.2.3.3}{El ciclo de vida de una Activitiy}{section.2.3}% 16
+\BOOKMARK [2][-]{subsection.2.3.4}{El Stack de Activities}{section.2.3}% 17
+\BOOKMARK [2][-]{subsection.2.3.5}{Los Intents}{section.2.3}% 18
+\BOOKMARK [2][-]{subsection.2.3.6}{Los Layouts}{section.2.3}% 19
+\BOOKMARK [2][-]{subsection.2.3.7}{Los eventos de UI}{section.2.3}% 20
+\BOOKMARK [2][-]{subsection.2.3.8}{El Style}{section.2.3}% 21
+\BOOKMARK [2][-]{subsection.2.3.9}{El Theme}{section.2.3}% 22
+\BOOKMARK [2][-]{subsection.2.3.10}{El AdapterView}{section.2.3}% 23
+\BOOKMARK [2][-]{subsection.2.3.11}{Los men\372es}{section.2.3}% 24
+\BOOKMARK [2][-]{subsection.2.3.12}{Los Dialogs}{section.2.3}% 25
+\BOOKMARK [2][-]{subsection.2.3.13}{Los Resources}{section.2.3}% 26
+\BOOKMARK [2][-]{subsection.2.3.14}{El ASyncTask}{section.2.3}% 27
+\BOOKMARK [2][-]{subsection.2.3.15}{El Content Provider}{section.2.3}% 28
+\BOOKMARK [1][-]{section.2.4}{Los Servicios}{chapter.2}% 29
+\BOOKMARK [1][-]{section.2.5}{Los secretos de performance}{chapter.2}% 30
+\BOOKMARK [2][-]{subsection.2.5.1}{Mitos de performance}{section.2.5}% 31
+\BOOKMARK [2][-]{subsection.2.5.2}{Siempre medir}{section.2.5}% 32
+\BOOKMARK [1][-]{section.2.6}{La interacciÃ³n con servicios remotos}{chapter.2}% 33
+\BOOKMARK [1][-]{section.2.7}{El DDMS}{chapter.2}% 34
+\BOOKMARK [1][-]{section.2.8}{El LogCat}{chapter.2}% 35
+\BOOKMARK [0][-]{chapter.3}{El Terminal de Punto de Venta \(TPV\)}{part.3}% 36
+\BOOKMARK [1][-]{section.3.1}{Los paquetes que contienen la aplicaci\363n:}{chapter.3}% 37
+\BOOKMARK [1][-]{section.3.2}{La User Interface \(Interfaz de Usuario\) \(UI\)}{chapter.3}% 38
+\BOOKMARK [1][-]{section.3.3}{Las librer\355as utilizadas}{chapter.3}% 39
+\BOOKMARK [1][-]{section.3.4}{El QR}{chapter.3}% 40
+\BOOKMARK [1][-]{section.3.5}{El uso de la c\341mara \363ptica}{chapter.3}% 41
+\BOOKMARK [1][-]{section.3.6}{La BD SQLite}{chapter.3}% 42
+\BOOKMARK [1][-]{section.3.7}{El LTM}{chapter.3}% 43
+\BOOKMARK [1][-]{section.3.8}{Los gr\341ficos estad\355sticos}{chapter.3}% 44
+\BOOKMARK [0][-]{chapter.4}{La Terminal de Ingreso de Datos \(TID\)}{part.3}% 45
+\BOOKMARK [1][-]{section.4.1}{Lectura de un codigo unidimensional utilizando el foco automatico de la camara}{chapter.4}% 46
+\BOOKMARK [1][-]{section.4.2}{Firma Digital}{chapter.4}% 47
+\BOOKMARK [1][-]{section.4.3}{Comunicacion Bluetooth}{chapter.4}% 48
+\BOOKMARK [0][-]{chapter.5}{Diseï¿½o del un bootloader para la IH!}{part.3}% 49
+\BOOKMARK [1][-]{section.5.1}{El formato HEX de Intel}{chapter.5}% 50
+\BOOKMARK [0][-]{chapter.6}{Diseï¿½o del un bootloader para la IH!}{part.3}% 51
+\BOOKMARK [1][-]{section.6.1}{El formato HEX de Intel}{chapter.6}% 52
+\BOOKMARK [-1][-]{part.4}{Conclusi\363n}{}% 53
+\BOOKMARK [-1][-]{part.5}{Ap\351ndice}{}% 54
+\BOOKMARK [0][-]{appendix.Alph1}{Siglas y acr\363nimos}{part.5}% 55
+\BOOKMARK [0][-]{appendix.Alph2}{Glosario}{part.5}% 56
+\BOOKMARK [-1][-]{part.6}{Bibliografía}{}% 57

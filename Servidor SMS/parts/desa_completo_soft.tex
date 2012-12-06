@@ -1,0 +1,841 @@
+\chapter{Desarrollo completo del software y pruebas del prototipo}
+\label{sec:soft}
+Esta sección abarca el desarrollo completo del software, tanto de la \ac{IH} como del \ac{HOST}. Comenzando por el lado de la \ac{IH}, primero se realiza el desarrollo del software de configuración del \ac{uC}, implementando lo descripto en la sección \ref{sec:confuc}. Luego se implementan los algoritmos del protocolo (ver sección \ref{sec:pc}) para la comunicación entre la \ac{IH} y el \ac{HOST}, realizando las adaptaciones específicas para el \ac{uC}. Concluyendo con la parte de la \ac{IH} se pasa al desarrollo del software del lado del \ac{HOST}. Esto se refiere a la construcción de una \ac{API}. Ésta se encarga de resolver la multiplexación y demultiplexación del protocolo de comunicación, lo que a su vez involucra una implementación específica de los algoritmos de la sección \ref{sec:pc}. Además, esta \ac{API}, brinda las interfaces de sofware para la fácil implementación de una aplicación. Es decir que es el medio entre alguna aplicación --que podría ser un Agente \acs{SIP}-- y la transmisión por el puerto \ac{UART}. En este caso se ha desarrollado un conjunto de funciones, en una estructura orientada a objeto en C++, que hacen las veces de ``Métodos'' y ``Eventos'' relativos a la \ac{IH}.
+
+
+
+\section{Desarrollo del software del lado de la \acs{IH}}
+\label{sec:soft.ih}
+El software en la \ac{IH} es el que está programado en el \ac{uC}, el cual es de arquitectura \acs{RISC} y posee un conjunto reducido de sólo 35 instrucciones. Este software fue implementado, en su totalidad, en ensamblador y con facilidades de ``macros''.
+
+Una macro es una porción de código de programa que se puede reutilizar con la opción de variar algún o algunos parámetros. Esto facilita un poco más el desarrollo del programa. También se puede decir que una macro es parecida a una función, la cual es escrita una sola vez y es llamada desde uno o varios puntos del programa. Pero la diferencia está en que las macros, al compilar el programa, aportan su porción de código de programa en cada llamada. Esto ofrece una mayor versatilidad de programación y un mayor rendimiento, pero ocupa más memoria de programa. Entonces, en el desarrollo de este software se hace uso tanto de las macros como de las funciones.
+
+En esta sección se realiza una descripción del código fuente de la aplicación que corre en el \ac{uC}. Debido a lo extenso que es el listado del código fuente, se verá la parte principal y sólo las partes más relevantes con mayor detalle.
+
+El programa se compone de varios archivos, donde uno es el principal y los demás son incluidos. El archivo \cfa{main.asm} es el que contiene el inicio del programa y las llamadas a macros o funciones que se encuentran definidas en los otros archivos. Estos últimos archivos tienen extensión \cfa{.inc}.
+
+Entre los archivos incluidos existen lo que contienen definiciones y macros, que al incluirlos no ocupan posiciones de memoria de programa; y los que contienen funciones que si las ocupan. Estos últimos se ensamblan directamente a partir de la posición de memoria que corresponde al punto en donde es incluido el archivo. Además, para diferenciar estos archivos con funciones, de lo que tienen solamente declaraciones, a los primeros se les agregó el prefijo \cfa{f\_}.
+
+Si bien la separación del programa en varios archivos no implicó una independencia real, ayudó a clasificar y facilitar la programación.
+
+\subsection{Rutina principal}
+\label{sec:soft.ih.main}
+En primer lugar podemos ver el código de programa del archivo \cfa{main.asm} en las tablas \ref{cod:soft.ih-main-asm-1} (pág. \pageref{cod:soft.ih-main-asm-1}) y \ref{cod:soft.ih-main-asm-2} (pág. \pageref{cod:soft.ih-main-asm-2}).
+
+\begin{tablaos}{IH: Archivo \cfa{main.asm} (1/2)}{cod:soft.ih-main-asm-1}{!p}
+\includegraphics{ih-main-asm-1}
+\end{tablaos}
+
+En la línea 4 se realiza la selección del \ac{uC} para el cual se va a compilar. Luego, en la línea 5, se realiza la inclusión del archivo que define los registros de propósito específico y los bits para este \ac{uC}.
+
+De la línea 10 a la 16 se definen siete constantes, las cuales se encuentran explicadas en el mismo código, y que luego son tomadas como parámetros de inicialización de variables.
+
+En la línea 18 se incluye el archivo \cfa{ProgInsideSup.inc} el cual define las áreas de memoria de programa para la aplicación. Este archivo fue descripto en la sección \ref{sec:boot} en la cual se desarrolló un sistema tipo bootloader capaz de inicializar o reprogramar una aplicación cualquiera en el \un{uC} a través de su puerto \ac{UART}. En este caso, la aplicación es propiamente el software de la \ac{IH}. Entonces, en la línea 20 podemos ver el uso del identificador \cf{inicio\_reset\_usuario}, definido en \cfa{ProgInsideSup.inc}, para posicionar el código de la aplicación en la dirección de memoria de programa de inicio.
+
+En la línea 25 se incluye el archivo \cfa{Variable.inc} que define la ocupación de la memoria de datos por parte de las variables. Estas pueden ser desde registros de ocho bits hasta arreglos de varios bytes. Un ejemplo de un arreglo de varios bytes es el de las colas FIFOs utilizadas en el protocolo de comunicación. Otro ejemplo, pero ahora de un solo registro de ocho bits es el de una variable de banderas (flags), para la cual se define el uso de sus bits en el archivo \cfa{Bits.inc}.
+
+De la línea 31 a la 42 se incluye la mayor parte del código de programa de la aplicación de la \ac{IH}. La inclusión de cualquiera de estos archivos no produce líneas de código de programa de forma directa. Esto es hasta que no se realice una llamada a una macro. La mayoría de estos archivos define macros con nombres, los cuales tienen sufijos, como ser \cf{\_Init}, \cf{\_Interrupt}, \cf{\_Run}, \cf{\_Stop} y \cf{\_Rutina}. Por ejemplo, las macros terminadas en \cf{\_Init} son las invocadas en la primer inicialización de la aplicación, las cuales se ven en las líneas 76 a 89.
+
+El archivo \cfa{Timer0.inc} contiene una macro que es ejecutada por una interrupción producida por el Timer0 del \ac{uC}, cada cierto intervalo de tiempo fijo. En este proceso, el cual se encuentra representado en la figura \ref{fig:soft.ih-Timer0},
+\figuraoo{IH: Rutina de interrupción por Timer0}{fig:soft.ih-Timer0}{}{ih-Timer0}{!h}
+de forma secuencial se ejecutan las rutinas de:
+\begin{tablaos}{IH: Archivo \cfa{main.asm} (2/2)}{cod:soft.ih-main-asm-2}{!p}
+\includegraphics{ih-main-asm-2}
+\end{tablaos}
+\begin{itemize}
+	\item Generación del IIS cada cierto intervalo de tiempo mínimo, definido en el archivo \cfa{IIS.inc};
+	\item Lectura del estado del teclado multiplexado y del estado de la orquilla, definido en \cfa{Teclado.inc} y \cfa{Orquilla.inc} respectivamente;
+	\item Generación del PWM por software para el control de la intensidad del \textsl{backlight}, definidos genéricamente en \cfa{SoftPWM.inc};
+	\item Generación del PWM por software para el control de la intensidad del \ac{LED} indicador, definido de forma general en el archivo \cfa{SoftPWM.inc}.
+\end{itemize}
+El archivo \cfa{Teclado.inc} también define las rutinas de inicialización, habilitación o inhabilitación del teclado multiplexado. Así también, \cfa{Orquilla.inc} define lo mismo pero para la orquilla. Aclarando la idea, \cfa{SoftPWM.inc} es utilizado para producir dos \acsp{PWM}, por software, de baja frecuencia. Uno para manejar la intensidad del backlight y el otro para manejar la intensidad del \ac{LED} indicador. Esto se implementa con una sola macro común a los dos, a la cual se le pasa, como parámetro, las variables utilizadas en cada uno de los casos.
+
+En la línea 36 se incluye el archivo \cfa{Colas.inc}. Éste contiene la implementación de los algoritmos de colas (ver sección \ref{sec:pc.alg.cola}) para las diferentes FIFOs utilizadas en el protocolo de comunicación. Esto se verá con más detalle en la sección \ref{sec:soft.ih.colas}.
+
+En la línea 37 se incluye \cfa{Protocolo.inc}, el cual contiene las macros necesarias para el envío de los mensajes (ver tabla \ref{tab:pc.ME}) y el cálculo de la longitud de cada trama. Luego, como complemento se incluye --en la línea 98-- el archivo \cfa{f\_Protocolo.inc} que contiene la interpretación de los mensaje de retorno (ver tabla \ref{tab:pc.MR}).
+
+En la línea 38 se incluye \cfa{Comm.inc}, el cual define las macros de interrupción, tanto para la recepción como para la transmisión por el puerto \ac{UART}. En estas rutinas se encuentran implementados los algoritmos del protocolo de comunicación, vistos en la sección \ref{sec:pc.alg.proto}, pero en forma específica para esta plataforma. Más adelante, en la sección \ref{sec:soft.ih.pc} se verá esto con más detalle.
+
+En la línea 39 se incluye \cfa{AudioIn.inc}. Éste, define las macros para las rutinas de: interrupción por conversión del \acs{ADC} completada, inicialización, habilitación e inhabilitación. La rutina de interrupción es disparada por el módulo \acs{ADC} en combinación con CCP2 y Timer1, como se ha visto en la figura \ref{fig:Timer1-CCP2-ADC} de la sección \ref{sec:conf.ADC}. Esto se produce a una tasa de 8\un{KHz}. Esta rutina es la encargada de tomar la muestra recién adquirida, ajustarla para una codificación en ocho bits con signo y ubicarla en el FIFO\si{01TX} para que luego sea transmitida.
+
+En la línea 40 se incluye \cfa{AudioOut.inc}, el cual define las macros para las rutinas de: interrupción para la actualización del \ac{PWM}, inicialización, habilitación e inhabilitación. Esta interrupción es disparada por el módulo que forman el Timer2 junto con el CCP1. Esto ocurre a una tasa de 8\un{KHz} aunque la frecuencia del \ac{PWM} es de 40\un{KHz}. Para clarificar la idea se puede observar la figura \ref{fig:diag.PWM} en la sección \ref{sec:proto.conf.PWM}. La principal tarea de la rutina de esta interrupción es, actualizar el valor del registro de propósito específico \reg{CCPR1L} junto con los bits \reg{CCP1CON<5:6>} con el valor de una muestra de audio tomada del FIFO\si{01RX}. En este proceso se convierten los ocho bits con signo de la muestra de audio a diez bits sin signo, más un \textsl{offset} para un valor de 50\% de ciclo de trabajo del \ac{PWM}.
+
+En la línea 41 se incluye \cfa{Pines.inc} para la inicialización de los pines sin un módulo especial de hardware dedicado. Entre éstos están el control de habilitación e inhabilitación del altavoz, el control del \ac{LED} indicador y del \textsl{backlight}.
+
+Por último, en esta primera lista de archivos incluidos, se incluye en la línea 42 a \cfa{LCDSPI.inc}. Es éste se definen las macros de inicialización --tanto de los pines como del módulo SPI (ver sección \ref{sec:conf.MSSP})--, las macros de habilitación, de inhabilitación y de envío de datos hacia el \ac{LCD}.
+
+Ahora, entre las líneas 45 a 71 se encuentra la rutina general de interrupción del \ac{uC}. Más específicamente en la línea 45, la instrucción \cfc{\cfp{org} 4} define el origen de memoria de programa, a partir del cual se ensamblarán las siguientes instrucciones. La dirección \cf{0x0004} es, precisamente, a donde la ejecución del procesador del \ac{uC} salta cuando se produce cualquier tipo de interrupción. Este procesador no cuenta con un vector de interrupción para cada tipo de evento de interrupción que se produzca. Sino que tiene un solo vector y es por cuenta del software, mediante banderas, determinar cual o cuales interrupciones se encuentran pendientes.
+
+Como cuerpo principal de la rutina de interrupción, entre las líneas 58 a 63 se realizan las invocaciones a las macros de cada tipo de interrupción utilizada. Cada una de esta macros, en el orden en que se encuentran, realiza la comprobación de si se encuentra pendiente su propio tipo de interrupción. De ser cierto, borra la bandera que lo indica --como reconocimiento-- y ejecuta su propia rutina. Terminando esta rutina o de ser falsa la condición, se pasa a la comprobación del siguiente tipo de interrupción.
+
+Entre las líneas 47 a 56 se realiza la salvación del contexto. Este contexto son las variables que pueden llegar a estar siendo usadas en el ámbito previo a la llamada de la interrupción. Luego, entre las líneas 65 a 70 se realiza el proceso inverso. Esto es, la restauración del contexto previo.
+
+Finalizando la rutina de interrupción, en la línea 71 nos encontramos con la instrucción \cfp{retfie} que realiza dos tareas, retornar de la interrupción e habilitarla nuevamente a la espera de una nueva llamada. Cabe destacar que cuando se produce una llamada por interrupción, se inhabilita automáticamente la posibilidad de generación de una nueva interrupción, para que esto no produzca una llamada de iteración infinita.
+
+La rutina inicial del archivo \cfa{main.asm} se desarrolla a partir de la línea 74, a donde salta la instrucción \cfc{\cfp{goto} inicio} de la línea 22. Lo primero que se realiza --en la línea 75-- es inhabilitar todas las interrupciones, aunque ya se encuentren inhabilitadas por el estado inicial de RESET.
+
+Entre las líneas 76 a 89 se invocan a las macros de inicialización de las diferentes partes de la aplicación. Particularmente, en las líneas 83 y 88, además se habilita el funcionamiento de la recepción e interpretación de los datos que llegan por el puerto \ac{UART} y el funcionamiento del Timer0, respectivamente. Además, en las líneas 78 y 79 se invoca a la macro \cf{SoftPWM\_Reset}, con diferentes variables como parámetros, las que corresponden en la línea 78 al \textsl{backlight} y en la 79 al \ac{LED} indicador.
+
+Luego de la inicialización, en las líneas 91 y 92 se habilita la interrupción por periféricos y la interrupción global.
+
+Continuando, lo único que realiza la rutina principal, es repetir indefinidamente un bucle, el cual se observa en las líneas 95 y 96. En principio podría parecer que ya no ocurre nada más, pero en realidad toda la ejecución de esta aplicación corre, de forma sincrónica, en las interrupciones que fueron anteriormente habilitadas.
+
+Terminando de describir el archivo \cfa{main.asm}, en las líneas 98 a 99 se incluyen los archivos que contienen funciones, la cuales sí ocupan posiciones de memoria de programa.
+
+
+
+\subsection{Implementación de algoritmos de cola}
+\label{sec:soft.ih.colas}
+
+En las tablas \ref{cod:soft.ih-colas-inc-1} a \ref{cod:soft.ih-colas-inc-8} se encuentra el listado del código fuente del archivo \cfa{Colas.inc}. Éste corresponde a la implementación de los algoritmos de cola vistos en la sección \ref{sec:pc.alg.cola}, para los cuales se tienen características diferentes en función de las particularidades de cada FIFO y del \ac{uC} utilizado. La descripción de los FIFOs es la que se ha visto en la sección \ref{sec:pc.diag.ih}, pero la nomenclatura utilizada en el listado del código fuente difiere en que en éste se utiliza \cf{Colaxxxx} en vez de \cf{FIFOxxxx}. Entonces, las colas son:
+\begin{itemize}
+	\item \cf{Cola00rx} para los mensajes de retorno de alta prioridad;
+	\item \cf{Cola11rx} para los mensajes de retorno de baja prioridad;
+	\item \cf{Cola01rx} para el audio de retorno;
+	\item \cf{Cola00tx} para los mensajes de envío de alta prioridad;
+	\item \cf{Cola11tx} para los mensajes de envío de baja prioridad;
+	\item \cf{Cola01tx} para el audio de envío.
+\end{itemize}
+
+En la tabla \ref{cod:soft.ih-colas-inc-1} podemos observar la definición de las macros para reinicializar el estado de cada una de las colas.
+\begin{tablaos}{IH: Archivo \cfa{Colas.inc} (1/8)}{cod:soft.ih-colas-inc-1}{!p}
+\includegraphics{ih-colas-inc-1}
+\end{tablaos}
+Estas macros son las que en su nombre contienen el sufijo \cf{\_Reset}. La acción que realizan corresponde a la que se observó en la figura \ref{fig:pc.fifo.init}. Luego en las líneas 53 a 60, las cuales se encuentran en las tablas \ref{cod:soft.ih-colas-inc-1} y \ref{cod:soft.ih-colas-inc-2}, se define la macro \cf{Colas\_Init} la cual realiza las llamadas a todas las macros de reinicialización antes mencionadas.
+\begin{tablaos}{IH: Archivo \cfa{Colas.inc} (2/8)}{cod:soft.ih-colas-inc-2}{!p}
+\includegraphics{ih-colas-inc-2}
+\end{tablaos}
+La macro \cf{Colas\_Init} es utilizada en el momento en que la \ac{IH} se inicia por primera vez y es llamada desde la línea 81 del archivo \cfa{main.asm}, lo cual se ha visto en la tabla \ref{cod:soft.ih-main-asm-2}.
+
+En la tabla \ref{cod:soft.ih-colas-inc-2} podemos observar la definición de la macro \cf{Colas\_Put}. Ésta implementa el algoritmo genérico para insertar un nuevo elemento en un cola. Decimos genérico debido a que se implementa el algoritmo de la figura \ref{fig:pc.fifo.put} sin tener en cuenta la característica particular de cada cola. Esto también sirve para comprender más fácilmente la implementación de este algoritmo. Más adelante, en la línea 245, se verá como se hace uso de esta macro.
+
+Basándonos en el algoritmo de la figura \ref{fig:pc.fifo.put}, en la tabla \ref{cod:soft.ih-colas-inc-2} en las líneas 71 a 73 se realiza la comparación entre los índices \cf{i\_put} e \cf{i\_get}. Si los índices no son iguales, se salta directamente a la línea 79. Sino, previamente se verifica si la bandera \cf{HayDatos} se encuentra activada. De ser verdad, se activa la bandera \cf{OverFlow} por sobrecarga de datos y termina la macro al saltar de la línea 78 a \cf{fin} en la línea 94. Sino, significa que no existen datos en la cola, para lo cual se pasa a la línea 79. Continuando, en las líneas 80 y 81 se carga el registro de acceso indirecto a memoria \cf{FSR} con el valor del índice \cf{i\_put}. Luego, en las líneas 82 y 83, se graba el valor contenido en la variable \cf{elemento} en la posición de memoria apuntada por \cf{FSR} a través del registro \cf{INDF}. Luego, en la línea 84 se activa la bandera \cf{HayDatos}. Finalizando el algoritmo, antes de incrementar el índice \cf{i\_put}, en las líneas 85 a 87, se verifica si éste se encuentra en la última posición de memoria del \textsl{buffer} de la cola. Si es cierto, se saltea la línea 88 y en las líneas 89 y 90 se asigna a \cf{i\_put} el valor de la primera posición de memoria del \textsl{buffer} de la cola. Sino, se salta a la línea 92 para simplemente incrementar \cf{i\_put} y finalizar esta macro.
+
+Para el caso de \cf{Cola00rx} no se usa el método \cf{\_Get} debido a que se la utiliza para cargar una sola trama de mensaje a la vez. Pero se utiliza el método \cf{\_Put}, en forma simplificada, para reconstruir la trama de mensaje de retorno. Este método se encuentra implementado en la macro \cf{Cola00rx\_Put}, que se encuentra en las líneas 97 a 133, en las tablas \ref{cod:soft.ih-colas-inc-2} y \ref{cod:soft.ih-colas-inc-3}.
+\begin{tablaos}{IH: Archivo \cfa{Colas.inc} (3/8)}{cod:soft.ih-colas-inc-3}{!p}
+\includegraphics{ih-colas-inc-3}
+\end{tablaos}
+En la misma podemos notar que no se utiliza el índice de extracción \cf{i\_get}, ni siquiera para su comparación con \cf{i\_put}. Sino que en este caso se lo compara con el valor inicial del \textsl{buffer} de memoria de esta cola, como se observa en las líneas 106 a 108. En esta cola tampoco se utiliza la bandera \cf{UnderFlow} debido a que no se extraen datos de esta cola. Pero, cada vez que ingresa una nueva trama de mensaje se llama a la macro \cf{Cola00rx\_Reset} para descargar esta cola completamente. Luego, en las líneas 130 a 132, se activa la bandera \cf{OverFlow\_fijo}, de forma permanente, sólo si ha ocurrido una sobrecarga de datos.
+
+El caso de \cf{Cola11rx} es el mismo caso que el de \cf{Cola00rx} y su macro para la inserción de datos es \cf{Cola11rx\_Put} y se encuentra en las líneas 135 a 171.
+
+La \cf{Cola01rx} utiliza el \textsl{buffer} de mayor capacidad manejado en la \ac{IH}. Esto es porque su función es la de compensar el \textsl{jitter} de las tramas de audio de retorno. Su implementación es muy particular, porque en realidad trabaja con dos \textsl{buffers} no contiguos y también porque maneja el disparador que inicia la conversión D/A de las muestras digitales de audio. Para que veamos como se implementa esto, podemos observar en la tabla \ref{cod:soft.ih-colas-inc-4} la macro \cf{Cola01rx\_Put} que define el método de inserción de una nueva muestra.
+\begin{tablaos}{IH: Archivo \cfa{Colas.inc} (4/8)}{cod:soft.ih-colas-inc-4}{!p}
+\includegraphics{ih-colas-inc-4}
+\end{tablaos}
+Si observamos las líneas 178 y 179 podemos ver la definición local de los identificadores \cf{ini}, \cf{ult}, \cf{ini2} y \cf{ult2} que definen los extremos del primer \textsl{buffer} y del segundo \textsl{buffer} respectivamente. El algoritmo es similar a lo que ya hemos visto. La diferencia está en que en este caso, al llegar a la última posición del primer \textsl{buffer} \cf{ult}, se pasa a la primera posición del segundo \textsl{buffer} \cf{ini2} en vez del primero. Esto podemos verlo en las líneas 201 a 207. Sino, al alcanzar la última posición del segundo \textsl{buffer} \cf{ult2}, se pasa a la primera posición del primer \textsl{buffer} \cf{ini}. Esto podemos verlo en las líneas 209 a 215. Continuando, el algoritmo sigue con el mismo criterio que ya hemos visto. Luego de dejar almacenado el estado actual de \cf{OverFlow} en \cf{OverFlow\_fijo}, entre las líneas 225 y 229 (ver también tabla \ref{cod:soft.ih-colas-inc-5}) se encuentran las instrucciones de control del disparador de inicio de conversión.
+\begin{tablaos}{IH: Archivo \cfa{Colas.inc} (5/8)}{cod:soft.ih-colas-inc-5}{!p}
+\includegraphics{ih-colas-inc-5}
+\end{tablaos}
+Este disparador es importante, ya que permite el almacenamiento inicial de una determinada cantidad de muestras antes de comenzar la conversión D/A que conlleva extraer muestras de esta cola. La cantidad de muestras mínimas está determinada por la constante \cf{AudioOut\_UD} y se encuentra definida en la línea 16 del archivo \cfa{main.asm} visto en la sección \ref{sec:soft.ih.main}.
+
+
+Analizando la rutina del disparador, en las líneas 226 a 228 vemos la comparación entre \cf{AudioOut\_UD} y la cantidad actual de muestras \cf{Cola01rx\_len} almacenadas en esta cola. Entonces, si el valor de \cf{Cola01rx\_len} es mayor o igual al de \cf{AudioOut\_UD} se ejecuta la instrucción de la línea 229 que habilita la extracción de las muestras.
+
+Ahora, analizando las colas de transmisión, es decir las colas de datos de envío, comenzamos por la macro \cf{Cola00tx\_Put} que se describe en las líneas 233 a 238. Ésta es el claro ejemplo de la reutilización del código de la macro general \cf{Cola\_Put} sumado al almacenamiento fijo del estado de \cf{OverFlow} de esta cola.
+
+Continuando con la cola de muestras de audio de envío \cf{Cola01tx}, la macro \cf{Cola01tx\_Put} implementa el algoritmo de inserción de muestras de audio; las cuales provienen de la conversión A/D, y en una instancia previa del micrófono. Esta cola también es algo particular, aunque no utiliza dos \textsl{buffers} tiene la característica de descartar la muestra más vieja en caso de una sobrecarga del \textsl{buffer}. Para ello, podemos ver en la líneas 246 a 255 (tabla \ref{cod:soft.ih-colas-inc-5}) como se lleva a cabo esto. Primero, en la línea 246 se verifica el estado de sobrecarga de este \textsl{buffer}. Si no ocurrió sobrecarga, se activa la interrupción para la transmisión por el puerto \ac{UART}. Esto es necesario para que se compruebe si existen muestras suficientes para la transmisión de una trama de audio de envío. Pero si ha ocurrido una sobrecarga se intenta incrementar el índice \cf{i\_get} para dar lugar a una nueva muestra. Este intento es llevado a cabo por la macro \cf{Cola01tx\_incremetar\_i\_get}. El lector se podría preguntar \textquestiondown Por qué no sólo se incrementa la variable \cf{i\_get} en vez de realizar todo lo definido en la macro \cf{Cola01tx\_incremetar\_i\_get}? La respuesta es --porque por un lado, es necesario tener en cuenta la característica circular del \textsl{buffer} de la cola; y porque, en caso de estar vacía, no se debe incrementar \cf{i\_get} para no sobrepasar a \cf{i\_put}--.
+
+La \cf{Cola11tx} tiene las mismas características que \cf{Cola00tx} y la implementación del método de inserción \cf{Cola11tx\_Put} se encuentra en las líneas 279 a 286 (ver también tabla \ref{cod:soft.ih-colas-inc-6}).
+\begin{tablaos}{IH: Archivo \cfa{Colas.inc} (6/8)}{cod:soft.ih-colas-inc-6}{!p}
+\includegraphics{ih-colas-inc-6}
+\end{tablaos}
+
+Pasando a los métodos de extracción de datos desde las colas, podemos ver la macro general \cf{Cola\_Get} en las líneas 281 a 321 (tabla \ref{cod:soft.ih-colas-inc-6}). Ésta se relaciona directamente con el algoritmo antes visto de la figura \ref{fig:pc.fifo.get} (ver sección \ref{sec:pc.alg.cola}). Comenzando por las líneas 298 a 301, se verifica si esta cola está vacía, para lo cual se activa la bandera \cf{UnderFlow} y luego finaliza la macro. Sino, se pasa a la línea 302. A partir de aquí, se copia el valor apuntado por \cf{i\_get} a la variable de parámetro \cf{resultado}. Luego, entre 306 y 315, se incrementa \cf{i\_get} o se lo fija al inicio del \textsl{buffer} según si se encontraba en la última posición del \textsl{buffer} o no. Finalizando, en las líneas 316 a 319, si \cf{i\_get} ha alcanzado a \cf{i\_put} se desactiva la bandera \cf{HayDatos}.
+
+La implementación del método de extracción de un dato, de cualquiera de las tres colas de datos de envío, se realiza simplemente haciendo uso de la macro general \cf{Colas\_Get}. Esto lo podemos ver en las líneas 323 a 333.
+
+Ahora, en las líneas 335 a 379, que se encuentran mayoritariamente en la tabla \ref{cod:soft.ih-colas-inc-7}, vemos la implementación del método de extracción de un dato de la \cf{Cola01rx}.
+\begin{tablaos}{IH: Archivo \cfa{Colas.inc} (7/8)}{cod:soft.ih-colas-inc-7}{!p}
+\includegraphics{ih-colas-inc-7}
+\end{tablaos}
+Como hemos visto, esta cola tiene la característica de manejar dos \textsl{buffers}, lo que conlleva una mayor complejidad. Pero podemos comprender la macro \cf{Cola01rx\_Get} fácilmente, pensando que es similar a la macro general \cf{Cola\_Get} sólo con la diferencia de usar dos \textsl{buffers}, lo que vimos en la macro \cf{Cola01rx\_Put}, pero aplicado a la variable \cf{i\_get} en vez de \cf{i\_put}.
+
+Pasamos al siguiente algoritmo, el cual permite que se ``observe'' el dato pendiente a extraer, sin necesidad de extraerlo. \cf{Cola\_View} es la macro que implementa este algoritmo y la podemos ver en las líneas 381 a 398 (ver tabla \ref{cod:soft.ih-colas-inc-8}).
+\begin{tablaos}{IH: Archivo \cfa{Colas.inc} (8/8)}{cod:soft.ih-colas-inc-8}{!p}
+\includegraphics{ih-colas-inc-8}
+\end{tablaos}
+Esta macro, primero verifica si existen datos en la cola. Si no existen, se activa la bandera \cf{UnderFlow} y finaliza la macro. En cambio si existe al menos un dato, éste es leído de la posición apuntada por \cf{i\_get}, a través de \cf{FSR} e \cf{INDF}, y devuelto en la variable de parámetro \cf{resultado}. Las macros \cf{Cola00tx\_View} y \cf{Cola11tx\_View} hacen uso de la macro \cf{Cola\_View}.
+
+El último algoritmo de cola implementado es el que permite obtener la longitud de carga actual de una cola. En la sección \ref{sec:pc.alg.cola} hemos visto dos criterios diferentes para obtener el resultado. Uno era a través de la diferencia entre los índices \cf{i\_put} e \cf{i\_get}, como hemos visto en el algoritmo de la figura \ref{fig:pc.fifo.len}. El otro criterio era el de mantener actualizado un contador con la longitud actual de la cola. Este último criterio fue implementado sólo en la \cf{Cola01rx}, sobre la macro \cf{Cola01rx\_Len}, por la complejidad de tener dos \textsl{buffers}. En las líneas 441 a 444 podemos ver que lo único que se realiza es devolver el valor de la variable \cf{Cola01rx\_len} en la variable de parámetro \cf{resultado}. En cambio, para las colas \cf{Cola00tx}, \cf{Cola01tx} y \cf{Cola11tx} se utiliza la macro general \cf{Colas\_Len}, la cual es la implementación del algoritmo de la figura \ref{fig:pc.fifo.len} antes mencionado y se encuentra en las líneas 420 a 427.
+
+
+
+
+
+
+\subsection{Implementación del protocolo de comunicación}
+\label{sec:soft.ih.pc}
+
+La implementación del protocolo de comunicación, en código de programa para este \ac{uC}, se realizó en el archivo \cfa{Comm.inc}. Podemos ver el contenido de éste en las tablas \ref{cod:soft.ih-comm-inc-1} a \ref{cod:soft.ih-comm-inc-9}.
+\begin{tablaos}{IH: Archivo \cfa{Comm.inc} (1/9)}{cod:soft.ih-comm-inc-1}{!p}
+\includegraphics{ih-comm-inc-1}
+\end{tablaos}
+En la línea 4 de \cfa{Comm.inc} (tabla \ref{cod:soft.ih-comm-inc-1}) podemos ver la definición de la macro \cf{Comm\_Init}. Ésta es llamada desde la línea 82 del archivo \cfa{main.asm} al momento de la inicialización de la \ac{IH}. Continuando con \cfa{Comm.inc}, en las líneas 5 a 19 podemos ver la secuencia de configuración del puerto \ac{UART} de este \ac{uC}. Esto es la implementación en código de programa de lo que se ha visto en la sección \ref{sec:conf.UART}, en donde se resolvió la configuración de los valores de los registros de control del puerto \ac{UART}.
+
+En las líneas 21 a 40 se fijan los valores de las variables utilizadas por los algoritmos para la transmisión y recepción de datos por el puerto \ac{UART}.
+
+Las macros \cf{Comm\_Rx\_Run} y \cf{Comm\_Rx\_Stop} (líneas 44 y 50 respectivamente) realizan la habilitación y la inhabilitación de la interrupción producida por nuevos datos recibidos. De igual manera, en las líneas 56 y 62 (ver tabla \ref{cod:soft.ih-comm-inc-2}), se encuentran las macros \cf{Comm\_Tx\_Stop} y \cf{Comm\_Tx\_Run} respectivamente, donde la primera inhabilita y la segunda habilita la interrupción por \textsl{buffer} listo para transmitir otro dato.
+\begin{tablaos}{IH: Archivo \cfa{Comm.inc} (2/9)}{cod:soft.ih-comm-inc-2}{!p}
+\includegraphics{ih-comm-inc-2}
+\end{tablaos}
+
+Esta sección se encuentra muy relacionada con los algoritmos de la sección \ref{sec:pc.alg.proto}, en la cual se ha descripto el funcionamiento del protocolo de comunicación entre la \ac{IH} y el \ac{HOST}, de forma general y del lado de la \ac{IH}.
+
+En esta sección se realiza una adaptación de los algoritmos generales de las figuras \ref{fig:pc.rx.general} y \ref{fig:pc.tx.general}, en función de las conveniencias de implementación del software en el \ac{uC} y de los tipos de tramas que se reciben y envían desde la \ac{IH}. El desarrollo de está parte de software esta basado en la funcionalidad del diagrama de flujo de datos de la figura \ref{fig:ss.ih.flujo} antes visto en la sección \ref{sec:pc.diag.ih}.
+
+
+\subsubsection{El DEMUX}
+\label{sec:soft.ih.pc.demux}
+
+Siguiendo el orden en que fue escrito el archivo \cfa{Comm.inc} comenzamos a explicar el funcionamiento del DEMUX. En la figura \ref{fig:soft.pc-rx-ih} podemos ver una parte del diagrama de flujo que representa el proceso que se realiza cada vez que llega un nuevo byte al puerto \ac{UART} del \ac{uC}. La continuación de este diagrama de flujo la veremos más adelante en la figura \ref{fig:soft.pc-rx-ih-colas}. El diagrama de flujo completo está basado en la adaptación, para la \ac{IH}, del diagrama de flujo general de la figura \ref{fig:pc.rx.general} antes visto.
+
+Antes de comenzar con el algoritmo, en la macro \cf{Comm\_Rx\_Interrupt}, más específicamente en la líneas 76 a 87 (tabla \ref{cod:soft.ih-comm-inc-2}) podemos ver la secuencia que verifica si esta interrupción se encuentra pendiente a ser procesada. De ser cierto, se verifica si ha ocurrido un error por \textsl{overflow} en el \textsl{buffer} de recepción del puerto \ac{UART}. Si ha ocurrido, es muy importante que se resetea este error ya que el no hacerlo inhabilita la recepción de nuevos datos (ver sección \ref{sec:def.USART.asincro.rx}). Luego en las líneas 88 a 90 se realiza la lectura del nuevo byte recibido, desde el registro \reg{RCREG}, para luego ser cargado en la variable \cf{Rx}. Esto se hace para que las sucesivas lecturas del valor actual recibido, cargado ahora en \cf{Rx}, no interfiera con la lógica de recepción del puerto \ac{UART}.
+
+Para describir el algoritmo a ejecutar cada vez que se recibe un nuevo byte, iremos relacionando el diagrama de flujo de la figura \ref{fig:soft.pc-rx-ih} con el código fuente equivalente a éste, el cual podemos verlo en la tabla \ref{cod:soft.ih-comm-inc-2} a partir de la línea 90.
+\figuraos{Algoritmo para la interpretación de un nuevo byte proveniente del puerto \acs{UART} de la \acs{IH}}{fig:soft.pc-rx-ih}{}{pc-rx-ih}{!p}
+Primero se verifica si el byte actual es un byte de sincronismo (líneas 91 y 92). De ser cierto, se salta a la etiqueta \cf{Rx\_128} y se activa la bandera de cabecera --que en el código fuente figura como \cfc{Flag,CMD}-- y luego se finaliza (líneas 96 y 97). Sino, se salta a la etiqueta \cf{test\_cmd} para verificar si el byte actual debe ser procesado como una cabecera (líneas 109 y 110). Si debe ser procesado como una cabecera, se desactiva la bandera de cabecera y se verifica si \cf{Rx} coincide con alguno de los cuatro mensajes de bajo nivel (líneas 111 a 125, también en tabla \ref{cod:soft.ih-comm-inc-3}).
+\begin{tablaos}{IH: Archivo \cfa{Comm.inc} (3/9)}{cod:soft.ih-comm-inc-3}{!p}
+\includegraphics{ih-comm-inc-3}
+\end{tablaos}
+Para mayor información ver los primeros cuatro mensajes de envío o retorno en la sección \ref{sec:pc.msg}. Si el mensaje es NOP se salta a la etiqueta \cf{Rx\_0}, la cual equivale al mismo punto que \cf{Rx\_128}, antes mencionado. Si el mensaje es SF1 (sincronismo falso 1) se cambia el valor de \cf{Rx} a 128 y se salta a la etiqueta \cf{colas} (líneas 105 a 107). En cambio, si el mensaje es SF2 (sincronismo falso 2), además se activa la bandera de ``interpretar como dos'' \cfc{Flag,DOBLE128} (líneas 103 a 107). Como última prueba, si el mensaje es PS (pedido de sincronismo) se llama a la macro \cf{IIS\_Send}, también se activa la bandera de cabecera y se finaliza (líneas 99 a 101). Esta macro realiza lo necesario para que el MUX inserte un sincronismo absoluto en la transmisión cuando sea posible. A la activación de la bandera IIS podemos relacionarla como el vinculo de pedido de sincronismo entre DEMUX y MUX de la figura \ref{fig:ss.ih.flujo}. En fin, si no se trata de alguno de los mensajes antes mencionados, se salta a la etiqueta \cf{Rx\_else} para el análisis del tipo de trama.
+
+
+Si bien, los cuatros mensajes de bajo nivel son parte de la lista de mensajes de envío y de retorno, se lo ha procesado de manera especial por tener influencia directa en el protocolo de comunicación. Además tenemos que tener en cuenta que estos mensajes se utilizan sólo en modo de alta prioridad. Por eso es que, al tener los dos bits de prioridad de la trama de mensaje en cero y ser de un byte de longitud, pudo ser interpretado leyendo solamente el byte actual \cf{Rx}. Para el resto de los mensajes se realiza el análisis previo de tipo de trama.
+
+Un detalle a tener en cuenta es que la tabla de mensajes sigue siendo la misma, se trate de mensajes de alta prioridad o de baja prioridad. Pero no es la misma para los mensajes de envío que para los mensajes de retorno.
+
+Comenzamos por el análisis de la trama tipo `00' (TT00), es decir, los mensajes de alta prioridad de retorno. Esto se ve ilustrado en el diagrama de flujo de la figura \ref{fig:soft.pc-rx-ih} como lo que está contenido dentro del bloque A00. Esto se implementa en el código fuente de las líneas 128 a 136 (tabla \ref{cod:soft.ih-comm-inc-3}). Primero se reinicia la \cf{Cola00rx} y luego se comprueba si ambos bits, que definen la prioridad, valen cero. De ser cierto, se trata de una cabecera TT00, con la cual se calcula la longitud del mensaje de retorno que implica y se la almacena en la variable \cf{C00} (línea 133). Luego se salta directamente a la etiqueta \cf{colas} porque esta cabecera también forma parte de los dato útiles que conforman el mensaje. En cambio, si no se trata de una cabecera TT00 se salta a la etiqueta \cf{No00} para poner a cero el contador \cf{C00} (línea 136) y continuar con el análisis del siguiente tipo de trama.
+
+Continuando con el análisis de la trama tipo `01' (TT01), que en este caso es la trama de audio de retorno (bloque A01 y líneas 138 a 145), se la verifica a través de los bits de prioridad de la cabecera (líneas 138 a 141). Si estos bits valen `01' se fija el contador \cf{C01} con el valor de longitud de datos útiles extraído de la misma cabecera (línea 142). Luego se salta a \cf{fin} porque esta cabecera no contiene datos útiles. Si la cabecera no pertenece a una TT01, se salta a \cf{No01} y se pone a cero el contador \cf{C01}.
+
+Continuando (bloque A10 y líneas 147 a 157), se verifica si la cabecera coincide con una trama tipo `10' (TT10), que en este caso es la trama de video de retorno (líneas 147 a 150). Si coincide, se activa la bandera \cfc{Flag,X} (línea 151), que es utilizada más adelante. Además, se inhabilita la interfaz de comunicación del \ac{LCD} para que, de ser necesario, cambiar entre datos o comandos. Luego, se carga en el contador \cf{C1X} el valor de la longitud de datos útiles de video, extraído de la cabecera (línea 153). Entonces, se fija el valor del bit \cf{PIN\_LCD\_DC} en función del bit 4 de la cabecera (líneas 154 a 156). Para mayor información acerca de la cabecera de la trama de video ver la sección \ref{sec:pc.tramas}. Por último, se salta directamente a \cf{fin} porque esta cabecera no forma parte de los datos útiles de video.
+
+En cambio, al no ser la cabecera de ninguno de los tipos anteriores, se trata de una cabecera de trama tipo `11' (TT11). Esto corresponde a una trama de mensaje de retorno de baja prioridad. El proceso que se realiza entonces es el contenido en el bloque A11 y en las líneas 160 a 162. Primero se activa la bandera \cfc{Flag,X} (línea 160). Luego se reinicia la \cf{Cola11rx} (línea 161). Por último se fija el valor del contador \cf{C1X} en base a la información extraída de la cabecera. A continuación se sigue por la etiqueta  \cf{colas}, debido a que esta cabecera forma parte de la información útil de esta trama de mensaje.
+
+Para continuar la descripción pasaremos al diagrama de flujo de la figura \ref{fig:soft.pc-rx-ih-colas}, el cual, como mencionamos antes, es la continuación del diagrama de la figura \ref{fig:soft.pc-rx-ih}.
+
+\figuraos{Continuación del algoritmo para la interpretación de un nuevo byte proveniente del puerto \acs{UART} de la \acs{IH}}{fig:soft.pc-rx-ih-colas}{}{pc-rx-ih-colas}{!p}
+
+El bloque B00, el cual se relaciona con el bloque A00 antes visto, está implementado en el código de las líneas 166 a 172 (tabla \ref{cod:soft.ih-comm-inc-4}). 
+\begin{tablaos}{IH: Archivo \cfa{Comm.inc} (4/9)}{cod:soft.ih-comm-inc-4}{!p}
+\includegraphics{ih-comm-inc-4}
+\end{tablaos}
+Primero, en función del valor del contador \cf{C00} se verifica si existen datos pendientes para la reconstrucción de la trama de mensaje de retorno de alta prioridad (líneas 167 a 169). Si el contador vale cero se pasa al bloque B01 saltando a la etiqueta \cf{cola01\_test}. Sino, primero se decrementa el contador \cf{C00} (línea 171). Luego se inserta \cf{Rx} en la \cf{Cola00rx} para la reconstrucción de la TT00 (líneas 172). Ahora, se vuelve a comprobar si \cf{C00} todavía es mayor a cero (líneas 174 a 176). Si \cf{C00} vale cero significa que se han recibido todos los byte que componen esta trama de mensaje, entonces se llama a la rutina \cf{f\_Procesar\_Mensaje} (línea 177). Luego del retorno de esta rutina se salta a \cf{cola01\_test2} para que se realice la verificación secuencial que veremos luego. En cambio, si \cf{C00} todavía es mayor a cero, se salta a \cf{doble128\_test}.
+
+Retrocediendo un poco, si \cf{C00} vale cero, entonces se pasa a verificar el contador \cf{C01} en el bloque B01 (líneas 180 a 197). Ahora, si \cf{C01} es mayor a cero (líneas 181 a 183), se decrementa el contador \cf{C01} y se inserta \cf{Rx} en la \cf{Cola01rx} (líneas 185 y 186). Si esta inserción produjo una sobrecarga en la cola y recientemente no se ha enviado el aviso correspondiente (líneas 187 a 190), se lo envía hacia el \acs{HOST} mediante un mensaje de alta prioridad (línea 191) y se activa la bandera \cfc{Audio\_Flag, AudioOut\_OverFlowEnviado}. Continuando, o en el caso que no se haya cumplido la condición anterior, se pasa a la etiqueta \cf{cola01\_test2}. Ahora, se vuelve a comprobar el valor de \cf{C01} (líneas 194 y 195). Si éste continua siendo mayor a cero se salta a la etiqueta \cf{doble128\_test}. Sino, se salta a la etiqueta \cf{cola1X\_test2} a modo de entrar en la verificación secuencial, la cual comprenderemos al final del bloque B1X.
+
+Como último bloque, si \cf{C01} también vale cero, se pasa al bloque B1X (líneas 199 a 231). Primero se verifica si el contador \cf{C1X} es mayor a cero (líneas 200 y 201). Si es cierto, se decrementa \cf{C1X} y se analiza el estado de la bandera \cfc{Flag,X} --lo que permite distinguir entre TT10 o TT11-- (líneas 204 y 205). Si \cfc{Flag,X} se encuentra desactivada se pasa a la línea 208, en donde se llama a la macro \cf{LCDSPI\_Send} para enviar \cf{Rx} al \ac{LCD}. Luego, se verifica si \cf{C1X} sigue siendo mayor a cero (líneas 209 y 210). Si es cierto, se salta a la etiqueta \cf{doble128\_test}. Sino, se llama a la macro \cf{LCDSPI\_Interrupt\_On} que sólo cumple la función de inhabilitar la interfaz de comunicación del \ac{LCD} luego de la transmisión de último byte (valor actual en \cf{Rx}). Esto en necesario para que se haga efectiva la transmisión del último byte antes mencionado. Luego, se salta a la etiqueta \cf{colafin\_cmd}.
+
+Ahora, si \cfc{Flag,X} se encuentra activada se pasa a la etiqueta \cf{cola11}. Entonces, se intenta reconstruir T11 con el byte \cf{Rx} mediante la llamada a la macro \cf{Cola11rx\_Put} (línea 215). Luego, se vuelve a verificar el valor del contador \cf{C1X}. Si éste sigue siendo mayor a cero, se salta a la etiqueta \cf{doble128\_test}. Sino, entonces como \cf{C1X} vale cero se procesa el mensaje de la trama T11 ya reconstruida. Para esto hace falta copiar cada uno de los bytes de T11 a las variables \cf{Protocolo\_Procesar\_Mensaje\_pX} --donde \cf{X} vale 0, 1 y 2-- (líneas 221 a 226). Esto es necesario porque la rutina \cf{f\_Procesar\_Mensaje} lee el mensaje de estas últimas variables. Podría uno preguntarse: \textquestiondown Por qué, para el caso de T00, no hizo falta copiar sus bytes a estas variables? La respuesta es --Porque los bytes de T00 se encuentran localizados en las mismas posiciones de memoria que las variables \cf{Protocolo\_Procesar\_Mensaje\_pX}--. Pero ahora surge la siguiente duda: \textquestiondown Pero entonces, al realizar la copia de los bytes de T11 a \cf{Protocolo\_Procesar\_Mensaje\_pX} se estaría sobrescribiendo los valores de T00? La respuesta es afirmativa, pero esto no implica ningún inconveniente, debido a que nunca podría quedar pendiente a reconstruir una T00 mientras se esté reconstruyendo una T11 por la diferencia en sus niveles de prioridad. Continuando, en la línea 228 (tabla \ref{cod:soft.ih-comm-inc-5}), efectivamente se llama a la rutina \cf{f\_Procesar\_Mensaje}, la cual, si debe generar un mensaje de respuesta, lo hará por defecto con un mensaje de envío de baja prioridad.
+\begin{tablaos}{IH: Archivo \cfa{Comm.inc} (5/9)}{cod:soft.ih-comm-inc-5}{!p}
+\includegraphics{ih-comm-inc-5}
+\end{tablaos}
+Esto es acorde a que el mensaje de petición (mensaje de retorno) ha sido de baja prioridad. Por último se salta a la etiqueta \cf{colafin\_cmd}.
+
+Ahora, a partir de la etiqueta \cf{cola1X\_test2} que habíamos dejado pendiente a explicar, se determina --junto con las verificaciones hechas en \cf{cola00\_test2} y \cf{cola01\_test2}-- que todos los contadores (\cf{C00}, \cf{C01} y \cf{C1X}) valen cero. Además ocurre que alguno de estos contadores pasó a valer cero tras el procesamiento de \cf{Rx}. Entonces, esto implica la activación de la bandera de cabecera \cfc{Flag,CMD} (línea 234) a modo de establecer que el próximo byte recibido debe ser interpretado como una cabecera de trama. Luego se desactiva la bandera \cfc{Flag,DOBLE128} por seguridad y se finaliza.
+
+Si al comienzo del bloque B1X el contador \cf{C1X} vale cero, se salta a la etiqueta \cf{perdida\_sincro}, en donde antes de pasar a \cf{doble128\_test} se envía un mensaje de pedido de sincronismo, como podemos ver en la línea 238. Pasando a \cf{doble128\_test}, se verifica la bandera \cfc{Flag,DOBLE128}. Si ésta es falsa se finaliza, pero si es verdadera se la desactiva y se salta a la etiqueta \cf{colas} para un nuevo ciclo de proceso de \cf{Rx} valiendo $128$.
+
+
+
+
+\subsubsection{El MUX}
+\label{sec:soft.ih.pc.mux}
+
+En esta sección se realiza la explicación de la implementación del multiplexor (MUX). Éste se encarga de tomar los datos provenientes de las colas de transmisión, que se han visto en la sección \ref{sec:soft.ih.colas}; con un esquema de turnos por prioridad, como se vio en la sección \ref{sec:pc.diag}.
+
+El diagrama de flujo del algoritmo para la obtención de un nuevo byte a transmitir se encuentra compuesto por las figuras \ref{fig:soft.pc-tx-ih-ob}, \ref{fig:soft.pc-tx-ih-00}, \ref{fig:soft.pc-tx-ih-01}, \ref{fig:soft.pc-tx-ih-11} y \ref{fig:soft.pc-tx-ih-ene}. Éste define la implementación para la \ac{IH} del diagrama de flujo general de la figura \ref{fig:pc.tx.general}, antes visto.
+
+Haciendo una relación entre el diagrama de flujo general y el diagrama de flujo de la figura \ref{fig:soft.pc-tx-ih-ob} observamos pocas diferencias.
+\figuraoo{Algoritmo para la obtención del próximo byte a transmitir por el puerto \acs{UART} de la \acs{IH}}{fig:soft.pc-tx-ih-ob}{}{pc-tx-ih-ob}{!h}
+Una adaptación fue que en el último, en vez de entregar directamente los valores SF2 y SF1 (0x02 y 0x01 respectivamente), se los copia a la variable Tx. La otra diferencia es que en vez de finalizar el algoritmo se salta a la etiqueta ``Entregar'', lo que veremos luego. Esta nueva parte del diagrama de flujo se puede ver implementada en código de programa en las líneas 264 a 278 (tabla \ref{cod:soft.ih-comm-inc-5}).
+
+Pasando a la etiqueta \cf{D00\_test}, nos encontramos con el bloque A00. Éste se encuentra representado en el diagrama de flujo de la figura \ref{fig:soft.pc-tx-ih-00}.
+\figuraot{Algoritmo para la obtención del próximo byte a transmitir por el puerto \acs{UART} de la \acs{IH} (bloque 00)}{fig:soft.pc-tx-ih-00}{}{pc-tx-ih-00}{!t}
+Esta parte del proceso se divide en la transmisión de la trama actual T00 y en la configuración para la transmisión de una nueva trama. La transmisión de la trama actual ocurre mientras \cf{C00} sea mayor a cero. A esto lo podemos ver implementado en código de programa en las líneas 312 a 336 (tabla \ref{cod:soft.ih-comm-inc-6}).
+\begin{tablaos}{IH: Archivo \cfa{Comm.inc} (6/9)}{cod:soft.ih-comm-inc-6}{!p}
+\includegraphics{ih-comm-inc-6}
+\end{tablaos}
+En cambio, si \cf{C00} vale cero se realiza la verificación de si existen datos suficientes en \cf{Cola00tx} que formen una trama de mensaje de alta prioridad completa (líneas 286 a 297). Sólo si las anteriores condiciones son falsas, se continúa en el bloque A01 pasando a la etiqueta \cf{D01\_test}.
+
+
+En el bloque A01 se verifican básicamente las mismas condiciones. Éste se encuentra representado por el diagrama de flujo de la figura \ref{fig:soft.pc-tx-ih-01}.
+\figuraot{Algoritmo para la obtención del próximo byte a transmitir por el puerto \acs{UART} de la \acs{IH} (bloque 01)}{fig:soft.pc-tx-ih-01}{}{pc-tx-ih-01}{!t}
+
+La transmisión de la trama actual T01 se realiza mientras el contador \cf{C01} sea mayor a cero (líneas 365 a 386, tabla \ref{cod:soft.ih-comm-inc-7}).
+\begin{tablaos}{IH: Archivo \cfa{Comm.inc} (7/9)}{cod:soft.ih-comm-inc-7}{!p}
+\includegraphics{ih-comm-inc-7}
+\end{tablaos}
+Si es cierto, se pasa a la etiqueta \cf{ICA\_test}. Aquí, una de las diferencias que podemos ver respecto al bloque A00 es la inserción de una cabecera de audio que no forma parte de la \cf{Cola01tx}. Para esto, si la bandera \cfc{Flag,ICA} está activada, se carga en \cf{Tx} el valor de la cabecera de audio que se construye en función de la cantidad de muestras (CM) que se van a transmitir en la trama. Pero si la bandera \cfc{Flag,ICA} está desactivada, se realiza la extracción de la próxima muestra de audio a ser transmitida en esta trama. Podemos notar también que en esta parte, el análisis de la coincidencia del byte a transmitir (\cf{Tx}) con el valor del sincronismo absoluto (SA) se encuentra simplificado respecto al bloque A00. Esto es debido a que los valores de las muestras de audio se encuentran acotadas entre $-127$ a $+127$ (ver sección \ref{sec:pc.sincro}) por lo que no deberían coincidir con el valor $128$ del SA. No obstante, en caso que coincida por error, se lo cambia al valor $127$. Ahora, si el contador \cf{C01} vale cero, se verifica si existen muestras de audio suficientes (CM) para configurar la generación de una nueva trama de audio de envío (líneas 344 a 348). Si existen suficientes muestras, se realiza la configuración para la transmisión de una nueva trama de audio de envío (líneas 350 a 363).
+
+Sólo si las condiciones del bloque A00 y A01 son falsas se continúa en el bloque A11 pasando a la etiqueta \cf{D11\_test} (línea 389).
+
+El bloque A11 tiene las mismas características que el bloque A00. Éste se encuentra representado por el diagrama de flujo de la figura \ref{fig:soft.pc-tx-ih-11}.
+\figuraot{Algoritmo para la obtención del próximo byte a transmitir por el puerto \acs{UART} de la \acs{IH} (bloque 11)}{fig:soft.pc-tx-ih-11}{}{pc-tx-ih-11}{!p}
+Podemos ver la implementación del bloque A11 en código de programa en las líneas 389 (tabla \ref{cod:soft.ih-comm-inc-7}) a 445 (tabla \ref{cod:soft.ih-comm-inc-8}).
+\begin{tablaos}{IH: Archivo \cfa{Comm.inc} (8/9)}{cod:soft.ih-comm-inc-8}{!p}
+\includegraphics{ih-comm-inc-8}
+\end{tablaos}
+
+La etiqueta \cf{Tx128} (línea 448) es una optimización del código de programa utilizada cuando se pretende entregar particularmente el valor $128$.
+
+En la figura \ref{fig:soft.pc-tx-ih-ene} podemos observar los diagramas de flujo para el caso de entregar el valor cargado en la variable \cf{Tx} o para el caso en que no existan más tramas a ser transmitidas.
+\figuraos{Algoritmo para la obtención del próximo byte a transmitir por el puerto \acs{UART} de la \acs{IH} (finalización)}{fig:soft.pc-tx-ih-ene}{}{pc-tx-ih-ene}{!p}
+Para el caso de entregar \cf{Tx} se salta a la etiqueta \cf{entregar} (línea 451) en donde se copia el valor de \cf{Tx} al registro \reg{TXREG} (para mayor información ver sección \ref{sec:def.USART.asincro.tx}). Luego se finaliza (línea 454, tabla \ref{cod:soft.ih-comm-inc-9}).
+\begin{tablaos}{IH: Archivo \cfa{Comm.inc} (9/9)}{cod:soft.ih-comm-inc-9}{!p}
+\includegraphics{ih-comm-inc-9}
+\end{tablaos}
+Pero si el caso es que no existen más tramas a ser transmitidas, se salta a la etiqueta \cf{noentregarmas} (línea 456) en donde se detiene el proceso de generación del próximo byte a transmitir. Para esto, se fija a cero el contador de tramas pendientes en transmisión (línea 457). Además, si se encuentra pendiente el intento de insertar un sincronismo absoluto se lo entrega (líneas  458 a 462). También se detiene la generación de esta interrupción, llamando a la macro \cf{Comm\_Tx\_Stop} (línea 464). Por último, si se encuentra pendiente la bandera para pasar al modo programación, se inhabilitan todas las interrupciones y se pasa a dicho modo (líneas 465 a 470). Esto se realiza en esta parte del programa, para que se terminen de transmitir todas las tramas pendientes en las colas antes de pasar al modo programación. Para mayor información acerca del modo programación en el \textsl{bootloader}, ver la sección \ref{sec:boot}.
+
+
+
+
+
+
+
+\section{Desarrollo de la \acs{API} del lado del \acs{HOST}}
+\label{sec:soft.host}
+
+En este caso, la \acf{API} es un conjunto de funciones en una estructura orientada a objeto en lenguaje C++. Estas funciones facilitan el manejo de los recursos de la \ac{IH}, como ser la transmisión de muestras de audio, el activar o desactivar el altavoz, el actualizar la imagen en el \ac{LCD}, etc. Éstas son las funciones que hacen las veces de ``métodos''. También existen funciones que hacen las veces de ``eventos''. Éstas últimas son llamadas desde la \ac{API} cuando en la \ac{IH} se producen eventos que son transmitidos al \ac{HOST}. Estas funciones deben ser implementadas por la aplicación final, para definir los procesos que se deben realizar cuando ocurran estos eventos. En la \ac{IH} son, por ejemplo, la pulsación de una tecla, el colgar y descolgar la orquilla, etc.
+\begin{quote}
+Debemos tener en cuenta que seguimos usando la frase ``de envío'' para referirnos a lo que es transmitido por la \ac{IH} y recibido por el \ac{HOST}; y con la frase ``de retorno'', a lo que es transmitido por el \ac{HOST} y recibido por la \ac{IH}.  
+\end{quote}
+En la figura \ref{fig:soft-host-capas} podemos observar la interacción entre la capa de aplicación y la capa de \ac{API}.
+\figuraot{Diagrama en bloques del \ac{HOST} dividido en capas}{fig:soft-host-capas}{}{soft-host-capas}{!t}
+La mayoría de los métodos se relacionan con mensajes de retorno, pero existen otros que generan tramas de audio y de video. Así también, la mayoría de los eventos se relacionan con mensajes de envío, pero existe uno que se genera al recibir una nueva trama de audio. Para mayor información acerca de las tramas de datos ver sección \ref{sec:pc}.
+
+También podemos ver, en la figura \ref{fig:soft-host-capas}, que existen eventos ``de respuestas'' y eventos ``asincrónicos''. Los eventos de respuestas son los que se producen luego de una petición a través de un método. Un ejemplo de estos es la lectura del estado actual del teclado de la \ac{IH}. En cambio, los eventos asincrónicos son aquello producidos por eventos aleatorios o eventos periódicos, mientras se encuentren habilitados. La forma de habilitarlos o inhabilitarlos es mediante métodos.
+
+Para ir entendiendo la estructura de la \ac{API}, se detallará la jerarquía entre las clases y los objetos creados internamente (secciones \ref{sec:soft.host.tramas} y \ref{sec:soft.host.api}).
+%Luego, se verá a grandes razgos como interactúan los objetos, transmitiendo y recibiendo otros objetos (sección \ref{sec:soft.host.flujo}).
+Por último, se presentarán los métodos y los eventos que hacen de interfaz con la aplicación final (sección \ref{sec:soft.host.ia}).
+
+\subsection{Jerarquía de clases y objetos para las tramas}
+\label{sec:soft.host.tramas}
+Para el manejo de la estructura de datos de las diferentes tramas se realizaron clases independientes para cada tipo de trama, con el objeto de acceder a las particularidades de cada una. Éstas, contienen la estructura de datos para almacenar dicha trama y los métodos para acceder a cada uno de sus campos de dato. Al mismo tiempo, todas estas clases comparten una interfaz común para acceder a sus estructuras de datos independientemente del tipo de trama. En la figura \ref{fig:soft.host.tramas} podemos ver la relación jerárquica que existe entre estas clases.
+\figuraot{Jerarquía de clases y objetos para las tramas}{fig:soft.host.tramas}{}{sh-tramas}{!t}
+Para que podamos interpretar mejor la figura, en ésta se encuentran coloreados los objetos declarados dentro de una clase y sin color las clases con su relación de herencia. Dentro de los cuadros coloreados podemos ver, a la derecha el tipo o clase de objeto y a la izquierda el nombre del objeto.
+
+La clase de mayor jerarquía es llamada \etclass{Trama}. Ésta brinda información sobre la longitud de la trama, la longitud de la cabecera y la longitud de los datos útiles. Además, provee el acceso de lectura y escritura a cada uno de los bytes que componen la trama, independientemente de su estructura de datos particular.
+
+La clase \etclass{Mensaje} hereda la interfaz de la clase \etclass{Trama} y define los campos de la trama de mensaje. A su vez, la clase \etclass{ME} hereda las características de la clase \etclass{Mensaje} y define la lista de mensajes de envío junto con la longitud de cada uno. De la misma manera, la clase \etclass{MR} hereda las características de la clase \etclass{Mensaje} y define la lista de mensajes de retorno junto con la longitud de cada uno.
+
+Otras clases que heredan la interfaz de la clase \etclass{Trama} son las clases \etclass{Audio}, \etclass{Video} y \etclass{T1X}. Éstas, al igual que \etclass{Mensaje}, definen los campos de cada tipo de trama y los métodos de acceso a los mismos. Particularmente, para \etclass{T1X} se describe la definición de dos objetos internos. Éstos son \etobj{c} y \etobj{v}, los cuales son de tipo \etclass{MR} y \etclass{Video} respectivamente. La clase \etclass{T1X} es un contenedor para objetos tipo \etclass{MR} o \etclass{Video} y su utilidad la veremos en la sección \ref{sec:soft.host.api}.
+
+
+\subsection{Jerarquía de clases y objetos dentro de la \acs{API}}
+\label{sec:soft.host.api}
+La clase principal, a través de la cual se define la \ac{API}, es \etclass{IH8K}. Ésta es la que contiene los métodos y los eventos relativos a la \ac{IH}.
+
+En la figura \ref{fig:soft.host.api} podemos observar la relación, tanto de herencias como de objetos internos (coloreados) de cada clase.
+\figuraot{Jerarquía de clases y objetos dentro de la \acs{API}}{fig:soft.host.api}{}{sh-ih8k}{!t}
+Según esta figura, que la clase \etclass{IH8K} no sea la de mayor jerarquía no implica que \etclass{Pthread} deba ser de interfaz. En vez de esto, \etclass{Pthread} forma parte de una característica privada de \etclass{IH8K}. Lo mismo ocurre para las clases \etclass{Mux} y \etclass{Tempo}.
+
+La clase \etclass{Pthread} ha sido diseñada --de forma acotada al uso que se le pretende dar-- en función de los conocimientos sobre \textsl{POSIX threads} extraídos de los libros \cite{stevens.unp.ipc} y \cite{stevens.unp.snapi}. Esta clase proporciona la característica de crear un hilo de ejecución concurrente en el proceso actual. Entre los métodos que define esta clase están, crear el hilo, terminarlo o esperarlo. Además, define una función virtual pura llamada \cf{thread}(), la cual debe ser implementada en la clase que hereda a \etclass{Pthread} o al menos en la clase correlativa que pretenda crear un objeto. Para este caso, es en las clases \etclass{IH8K}, \etclass{Mux} y \etclass{Tempo} en donde se encuentran las implementaciones específicas de la función \cf{thread}(). En \etclass{IH8K}, ésta realiza la interpretación de los datos de envío, es decir, los procedentes de la \ac{IH}. En \etclass{Mux}, \cf{thread}() realiza la serialización de los datos de retorno, es decir, los transmitidos hacia la \ac{IH}. Por último, en \etclass{Tempo}, \cf{thread}() realiza la ejecución periódica de otra función con un intervalo de tiempo de espera entre llamadas, configurable. Esta otra función pertenece a \etclass{Tempo} y es una función virtual pura llamada \cf{TempoEjecucion}(), la cual es implementada en \etclass{CLocal\_IIS}, realizando un ``intento de insertar un sincronismo absoluto'' cada cierto período de tiempo.
+
+Entre los objetos más relevantes, definidos dentro de la clase \etclass{IH8K}, se encuentran \etobj{*pcomm}, \etobj{*pmux}, \etobj{*pdemux} y \etobj{*Local\_IIS}.
+
+El puntero \etobj{pcomm} apunta a un objeto tipo \etclass{TtyS}. Este objeto permite, abrir un dispositivo serial como ser \cfa{/dev/ttyS0}; definir la velocidad de comunicación; transmitir o esperar a la recepción de un byte; cerrar el dispositivo.
+
+El puntero \etobj{pmux} apunta a un objeto tipo \etclass{Mux}. Este objeto se encarga de la multiplexación de las diferentes tramas en una sola secuencia de bytes, que luego es entregada a \etobj{*pcomm} para ser transmitida. \etclass{Mux} también define tres colas llamadas \etobj{Cola00}, \etobj{Cola01} y \etobj{Cola1X}. \etobj{Cola00} es un objeto tipo \etclass{TCola} con capacidad para 100 objetos tipo \etobj{MR::Campos} (solamente los campos de una trama de mensaje de retorno). \etobj{Cola01} es un objeto tipo \etclass{TCola} con capacidad para 8 objetos tipo \etobj{Audio::Campos} (solamente los campos de una trama de audio). \etobj{Cola1X} es un objeto tipo \etclass{TCola} con capacidad para 100 objetos tipo \etclass{T1X}, los cuales pueden contener indistintamente objetos tipo \etclass{MR} o tipo \etclass{Video}. Estas colas son \textsl{buffers} tipo \aci{FIFO} que permiten almacenar temporalmente las diferentes tramas. Esto es útil para no bloquear la aplicación a la espera de la transmisión de una trama.
+
+El puntero \etobj{pdemux} apunta a un objeto tipo \etclass{Demux}. Este objeto se encarga de la demultiplexación de los datos provenientes de la secuencia de byte recibidos por \etobj{*pcomm}. \etclass{Demux} no cuenta con colas para cada tipo de trama. En vez de esto, tiene un solo objeto de cada tipo de trama para la reconstrucción de la trama. En cuanto alguna de éstas sea reconstruida, se realiza su interpretación y posterior llamado al evento correspondiente. Cada uno de estos eventos predefinidos puede ser implementado por la aplicación final. En caso de no ser implementado, simplemente se descarta la correspondiente trama.
+
+El puntero \etobj{Local\_IIS} apunta a un objeto tipo \etclass{CLocal\_IIS}. Este objeto se utiliza para que se realice el intento de inserción del sincronismo absoluto cada cierto periodo de tiempo preestablecido, de manera autónoma. Esta función puede ser habilitada o inhabilitada desde la aplicación, como veremos en la sección \ref{sec:soft.host.ia}.
+
+
+%\subsection{Flujo de datos entre los objetos}
+%\label{sec:soft.host.flujo}
+
+
+
+
+\subsection{Interfaz con la aplicación (manual de uso)}
+\label{sec:soft.host.ia}
+Para hacer uso de la \ac{IH} desde una aplicación que corre en el \ac{HOST}, programada en C++, se debe incluir únicamente el archivo \cfa{IH8K/IH8K.h}. Este archivo define la clase principal llamada \etclass{IH8K} y todas las demás clases y tipos relativos a la misma.
+
+La idea de trabajar con programación orientada a objetos es la de contener dentro de un único objeto la interactividad con la \ac{IH}. Este objeto debe ser creado por la clase \etclass{IH8K} o por una clase derivada de ésta.
+
+Para poder definir la acciones a realizarse con cada evento producido por la \ac{IH}, hace falta crear una clase derivada de \etclass{IH8K} en la cual se implementen las funciones virtuales que hacen las veces de eventos.
+
+En las tablas \ref{cod:soft.host-ih8k-h-1} y \ref{cod:soft.host-ih8k-h-2} podemos ver las primeras 102 líneas del archivo \cfa{IH8K/IH8K.h}.
+\begin{tablaos}{HOST: Fragmento del archivo \cfa{IH8K.h} (1/2)}{cod:soft.host-ih8k-h-1}{!p}
+\includegraphics{host-ih8k-h-1}
+\end{tablaos}
+\begin{tablaos}{HOST: Fragmento del archivo \cfa{IH8K.h} (2/2)}{cod:soft.host-ih8k-h-2}{!p}
+\includegraphics{host-ih8k-h-2}
+\end{tablaos}
+
+Como podemos ver, en la línea 21 se encuentra la declaración de la clase \cfcl{IH8K} y la herencia de la clase \cfcl{Pthread}, como vimos en la figura \ref{fig:soft.host.api}.
+
+Todos los miembros de la clase \cfcl{IH8K} que se van a describir son miembros públicos y son los únicos importantes como interfaz de programación.
+
+Todas las funciones que vemos declaradas como virtuales son eventos producidos por la \ac{IH} en el \ac{HOST}. Que estas funciones sean virtuales permite redefinir su implementación en una clase derivada. Esto quiere decir que, al momento de realizar una aplicación, conviene crear una nueva clase que herede a \cfcl{IH8K} y en donde se implementen estos eventos.
+
+Todas las funciones que tienen el parámetro \cf{Urgente} son métodos que tienen asociado una trama de mensaje. Entonces, es \cf{Urgente} el que define con \cfp{true} si se trata de un mensaje de alta prioridad o con \cfp{false} si se trata de un mensaje de baja prioridad. El valor por defecto de \cf{Urgente} es \cfp{false}. Algunos de estos métodos tienen asociado un evento de respuesta y otros no. Por ejemplo, \cf{Audio\_HabilitarAltavoz} habilita la emisión de sonido por el altavoz pero no produce ningún evento en el \ac{HOST}. En cambio, por ejemplo \cf{Teclado\_Leer} realiza la petición de lectura del estado actual del teclado de la \ac{IH}, lo que luego genera el evento \cf{\_Teclado\_Lectura} en el \ac{HOST} entregando el resultado de la lectura.
+
+Los eventos asincrónicos periódicos son sólo dos: \cf{\_Mic\_NuevasMuestras} y \cf{\_Retorno\_Alarma}. La habilitación de ambos eventos se realiza con los métodos \cf{Audio\_Stream\_On} y \cf{Audio\_Stream\_Off}. La característica de periódico se refiere a que estos eventos son invocados de manera periódica cada un cierto tiempo. Más adelante, a partir del título \textbf{Manejo del audio}, se detallará su utilidad.
+
+Los eventos asincrónicos aleatorios son aquellos que puede ocurrir en cualquier momento. La mayoría de éstos se pueden habilitar o inhabilitar. Por ejemplo, podemos habilitar o inhabilitar el evento \cf{\_Teclado\_Cambio} mediante los métodos \cf{Teclado\_Eventos\_On} y \cf{Teclado\_Eventos\_Off}.
+
+A continuación se describirá el uso de cada uno de estos métodos y eventos.
+
+
+\subsubsection{Configuración local}
+\label{sec:shia.local}
+El método \cf{ModemDevice} sirve para determinar el nombre del archivo asociado al puerto serie que se va a utilizar. Recordemos que éste es el único vinculo entre la \ac{IH} y el \ac{HOST}.
+
+El método \cf{Run} configura el puerto serie y pone en funcionamiento la comunicación entre la \ac{IH} y esta \ac{API}. Al contrario el método \cf{Stop} libera el puerto serie y detiene el funcionamiento (éste también es ejecutado automáticamente al momento de la destrucción del objeto tipo \cfcl{IH8K}).
+
+Esta \ac{API} cuenta con un sistema autónomo para intentar introducir un sincronismo absoluto (IIS) cada cierto intervalo de tiempo. Haciendo uso del método \cf{Local\_IIS\_Intervalo} fijamos este intervalo en microsegundos y con los métodos \cf{Local\_IIS\_On} y \cf{Local\_IIS\_Off} habilitamos o inhabilitamos el IIS.
+ 
+
+\subsubsection{Manejo del audio}
+\label{sec:shia.audio}
+En el manejo del audio intervienen tanto el audio de envío (desde la \ac{IH} hacia el \ac{HOST}) como el audio de retorno (desde el \ac{HOST} hacia la \ac{IH}). Los métodos \cf{Audio\_Stream\_On} y \cf{Audio\_Stream\_Off} controlan la habilitación del flujo de muestras de audio en ambos sentidos.
+
+El método \cf{Audio\_MuestrasPorTrama\_Envio} determina la cantidad de muestras de audio por trama que la \ac{IH} debe enviar hacia el \ac{HOST}. Esta cantidad es por defecto de 40 muestras de audio, siendo ésta la longitud recomendada para las tramas de audio. Tenemos que tener en cuenta que un trama de audio puede transportar hasta un máximo de 63 muestras (ver sección \ref{sec:pc.tramas} y tabla \ref{tab:pc.trama.audio}).
+
+Los eventos \cf{\_Mic\_NuevasMuestras} y \cf{\_Retorno\_Alarma} ocurren periódicamente mientras el flujo de muestras de audio se encuentra habilitado. Ambos eventos tienen el mismo período de repetición, aunque no ocurran necesariamente al mismo tiempo. Este período se encuentra determinado por la cantidad de muestras por trama de audio de envío antes mencionado. A esta cantidad la denominaremos $n$. Entonces, cada vez que la \ac{IH} digitaliza $n$ muestras, éstas son enviadas en una trama de audio. Luego de su recepción completa y su procesamiento, se produce el evento \cf{\_Mic\_NuevasMuestras}. Este evento entrega las nuevas muestras de audio como un parámetro de clase \cfcl{Audio} (ver línea 36). Entonces, este evento se produce cada un período de tiempo promedio $\overline{T_1}$ de:
+\begin{align}
+	\overline{T_1} &= \frac{n}{8000\un{mu/s}} \\ 
+	\intertext{siendo $n=40\un{mu}$ por defecto}
+	\overline{T_1} &= \frac{40\un{mu}}{8000\un{mu/s}} \\ 
+	\overline{T_1} &= 5\un{ms}
+\end{align}
+Este período no es instantáneamente constante, sino que se ve alterado por los retardos de procesamiento y encolamiento en los \textsl{buffers} intermedios del protocolo de comunicación y del sistema operativo en el \ac{HOST}. Continuando, cada vez que $n$ muestras de audio son convertidas por la \ac{IH} al dominio analógico, ésta envía un mensaje al \ac{HOST} indicándole cuantas muestras restantes le quedan aún en el FIFO\si{01RX}. Para recordar, el FIFO\si{01RX} de la \ac{IH} es el \textsl{buffer} que amortigua el \textsl{jitter} de las trama de audio de retorno (ver sección \ref{sec:pc.diag.ih}). Este mecanismo cumple dos funciones; una es la de realizar la petición de más muestras cada vez que se hayan convertido $n$ muestras; la otra función es la de mantener actualizada a la aplicación con el estado de carga del antedicho \textsl{buffer}. Entonces, este mecanismo sirve para mantener sin interrupciones la reproducción del audio de retorno.
+
+Para transmitir una trama de audio sólo hace falta utilizar el operador de inserción respecto al multiplexor, el cual se encuentra públicamente referenciado por \cf{mux}() (ver línea 102). Por ejemplo, externamente al objeto tipo \cfcl{IH8K}, la manera es:
+\begin{mylisting}
+\begin{verbatim}
+IH8K ih;
+Audio a;
+ih.mux() << a;
+\end{verbatim}
+\end{mylisting}
+
+Otra parte relacionada con audio es la habilitación e inhabilitación del altavoz. Esto se logra con el método \cf{Audio\_HabilitarAltavoz} y con el método \cf{Audio\_InhabilitarAltavoz} respectivamente. Lo que realizan es silenciar o no el altavoz, evitando o permitiendo que la señal de audio enviada hacia el auricular salga también por el altavoz. Esto es útil por ejemplo para emitir sonidos de llamada o el audio de la comunicación por el altavoz.
+
+\subsubsection{Manejo del teclado}
+\label{sec:shia.teclado}
+El método \cf{Teclado\_Leer} realiza la petición del estado actual del teclado (teclas presionadas y liberadas). Esto desencadena luego el evento de respuesta \cf{\_Teclado\_Lectura} con el resultado de la lectura del teclado en binario. La relación entre los bit y cada una de las teclas se ha visto en la figura \ref{fig:pc.teclado.bits} (para mayor información ver la sección \ref{sec:pc.ME}).
+
+Otra manera de interactuar con el teclado es mediante la habilitación del evento asincrónico \cf{\_Teclado\_Cambio} (línea 51). Para habilitarlo o inhabilitarlo se utilizan los métodos \cf{Teclado\_Eventos\_On} o \cf{Teclado\_Eventos\_Off} respectivamente. Este evento ocurrirá cada vez que se presione o libere alguna tecla del teclado, mientras éste se encuentre habilitado.
+
+Cada vez que ocurra un evento de lectura o de cambio del estado del teclado, se actualiza una variable que mantiene una copia local del estado del teclado. Podemos acceder a esta información mediante el método \cf{Teclado\_Matriz} (línea 47) especificando la fila y la columna de la tecla.
+
+\subsubsection{Manejo de la orquilla}
+\label{sec:shia.orquilla}
+El modo de manejar el estado de la orquilla es igual al del teclado. La petición de lectura se realiza con el método \cf{Orquilla\_Leer}, el evento de respuesta es \cf{\_Teclado\_Lectura}. El evento asincrónico que ocurre por cambio en el estado de la orquilla es \cf{\_Teclado\_Cambio} y su habilitación se controla con los métodos \cf{Orquilla\_Eventos\_On} o \cf{Orquilla\_Eventos\_Off}. Por último, la información local del estado de la orquilla se puede obtener mediante el método \cf{Orquilla\_Colgado}.
+
+\subsubsection{Control del \acs{LED} indicador}
+\label{sec:shia.led}
+El \ac{LED} indicador se controla a través del método \cf{LED\_Intensidad} (línea 62). Éste permite no sólo encender el \ac{LED} o apagarlo, sino variar su intensidad. La intensidad se especifica mediante el prámetro \cf{Valor}, el cual puede valer 0, 1, 2, \dots, 10, para intensidades de 0\%, 10\%, 20\%, \dots, 100\% respectivamente.
+
+\subsubsection{Manejo del \acs{LCD}}
+\label{sec:shia.lcd}
+El \ac{LCD} cuenta con retroiluminación (backlight), el cual se controla con el método \cf{Pantalla\_BackLight\_Intensidad}, de la misma manera que el \ac{LED} indicador.
+
+La imagen del \ac{LCD} se controla a través de una matriz local, que representa a la matriz de píxeles. Para acceder a la matriz local se utilizan dos métodos llamados \cf{Pantalla\_Matriz}. El método de la línea 66 permite modificar el valor de un píxel, especificando la \cf{Fila} y la \cf{Columna} a la que corresponde y el \cf{Valor} que se le asigna. Este \cf{Valor} como \cfp{true} o \cf{1} determina un punto negro; en cambio, si vale \cfp{false} o \cf{0} determina la ausencia del punto negro. En cambio, el método de la línea 67 lee el estado actual y local de un determinado píxel especificado por la \cf{Fila} y la \cf{Columna}.
+
+Antes de comenzar a interactuar con el \ac{LCD} es necesario invocar el método \cf{Pantalla\_Reset}, el cual lo inicializa.
+
+Para limpiar o borrar la imagen de la pantalla (desactivar todos los píxeles) se utiliza el método \cf{Pantalla\_Clear}. Este método no sólo limpia el \ac{LCD} sino también limpia la matriz local.
+
+Para actualizar la imagen del \ac{LCD} respecto a lo que se ha fijado en la matriz local, se cuenta con dos métodos. El primero es \cf{Pantalla\_Refrescar}, el cual actualiza completamente todos los píxeles del \ac{LCD} respecto a la matriz local. El otro método es \cf{Pantalla\_Flush} el cual solamente actualiza en el \ac{LCD} los cambios realizados desde la última actualización. Esto, cuando se trata de pocos cambios, permite una actualización más rápida y una menor ocupación del canal serial de comunicación.
+
+
+
+\subsubsection{Controles de sistema de la \acs{IH}}
+\label{sec:shia.sys}
+Los métodos \cf{Sys\_RAM\_Set} y \cf{Sys\_RAM\_Get} permiten cambiar o leer un byte del área de memoria de datos del \ac{uC} de la \ac{IH}. La \cf{Direccion} está acotada entre los valores \cf{0x00} a \cf{0xff}. El uso de estos métodos es para casos especiales, como por ejemplo de depuración.
+
+Para cambiar la \ac{IH} al modo de programación del software que se encuentra en el \ac{uC}, se utiliza el método \cf{Sys\_ModoProgramacion}. Como consecuencia de la invocación del anterior método, la \ac{IH} envía una respuesta que confirma que se ha pasado al modo de programación. Esta confirmación genera en el \ac{HOST} la ocurrencia del evento \cf{\_Sys\_YendoAlModoProg}. Además, la \ac{API} ejecuta automáticamente el método \cf{Stop} para detener la multiplexación y demultiplexación sobre el puerto serie. Esto permite trabajar directamente con el puerto serie para interactuar con el modo programación.
+
+Para poder transmitir y recibir directamente bytes por el puerto serie se puede utilizar el método de referencia a objeto \cf{comm}() junto con los submétodos \cf{Write} y \cf{Read} o los operadores de inserción y extracción, de la siguiente manera:
+\begin{mylisting}
+\begin{verbatim}
+IH8K ih;
+uint8 B;
+ih.comm() << B;     // Trasmite el byte B por el puerto serie
+ih.comm().Write(B); // Trasmite el byte B por el puerto serie
+ih.comm() >> B; // Espera a la recepción de un byte por el
+                // puerto serie y lo copia a la variable B
+B = ih.comm().Read(); // Ídem
+\end{verbatim}
+\end{mylisting}
+
+Se puede obtener el estado actual de las banderas de \textsl{overflow} (sobrecarga) y \textsl{underflow} (falta de datos) de las colas del protocolo de comunicación de la \ac{IH} a través de los métodos \cf{Sys\_Overflow\_Get} y \cf{Sys\_Underflow\_Get}. Éstos desencadenan el eveto \cf{\_Sys\_Overflow\_Lectura} que retorna la lectura de las banderas de \textsl{overflow}, o el evento \cf{\_Sys\_Underflow\_Lectura} que retorna la lectura de las banderas de \textsl{underflow}. El valor de cualquiera de estas lecturas se encuentra codificado en binario y la relación entre los bits y las colas es el de la tabla \ref{tab:pc.bit.fifo} (visto en la sección \ref{sec:pc.ME}). Además, para reiniciar los estados remotos de las colas, se utilizan los métodos \cf{Sys\_Overflow\_Reset} y \cf{Sys\_Underflow\_Reset}. Esta información de estado es únicamente informativa y no interviene con la continuidad del funcionamiento del sistema.
+
+
+Para comprobar que la conectividad entre la \ac{IH} y el \ac{HOST} se encuentra en funcionamiento, se puede utilizar el método \cf{Sys\_Ping} con un \cf{Valor} entre \cf{0x00} a \cf{0xff}, a la espera del eco con el mismo \cf{Valor} a través del evento \cf{\_Sys\_Pong}.
+
+Para reiniciar el programa que corre en el \ac{uC} del la \ac{IH} se utiliza el método \cf{Sys\_Reset}.
+
+El método \cf{Sys\_NOP} transmite a la \ac{IH} el ``mensaje que no hace nada''.
+
+Para habilitar, inhabilitar o modificar el período de repetición del IIS que se tiene lugar en la \ac{IH}, se utilizan los métodos de las líneas 95 a 97.
+
+El método \cf{Sys\_PedidoDeSincro} pide a la \ac{IH} que intente insertar un sincronismo absoluto.
+
+Por último, cuando la \ac{IH} envía una petición de pedido de sincronismo absoluto, el \ac{HOST}, además de intentar insertar dicho sincronismo, genera el evento \cf{\_Sys\_PedidoDeSincro} a modo informativo.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Pruebas de funcionamiento del prototipo}
+\label{sec:soft.pruebas}
+Durante el proceso de puesta en funcionamiento del prototipo de la \ac{IH} junto con el \ac{HOST}, surgieron una serie de inconvenientes. La gran mayoría de estos fueron problemas leves que se fueron solucionando sobre la marcha. Pero, existieron otros que trajeron consigo modificaciones importantes.
+
+Un problema fue que en la \ac{IH} no era suficiente la capacidad del FIFO\si{01RX}. La modificación realizada ya forma parte de lo anteriormente escrito en este trabajo y se trata de estar usando actualmente el \ac{uC} PIC16F876 en vez del PIC16F873. En la sección \ref{sec:soft.pruebas.jitter} se verá el problema por el cual hubo que hacer la modificación.
+
+Otro problema fue el tener que mejorar la calidad de sonido, en la conversión desde el dominio digital al analógico, lograda a través del \ac{PWM}. Primero se realizó un análisis sobre una simulación de un \ac{PWM} modulado por un tono de $1\un{KHz}$. Como se verá en la sección \ref{sec:soft.pruebas.simPMW} se realizó un programa en lenguaje C++ para la construcción de la señal de análisis. Luego, esta señal fue cargada en el software \textsl{NI SignalExpress Tektronix Edition} el cual permitió realizar los análisis. Esto resultó en la necesidad de realizar filtros analógico de orden elevado, los cuales se verán en la sección \ref{sec:soft.pruebas.FPB}. Esto ha sido necesario para atenuar las componentes de frecuencias superiores a $4\un{KHz}$.
+
+Por último, luego de la solución a los problemas se planteó una modificación al diseño del circuito esquemático  de la \ac{IH} (ver sección \ref{sec:soft.redis.hard}).
+
+\subsection{Problema con el \textsl{jitter} de las tramas de audio de retorno}
+\label{sec:soft.pruebas.jitter}
+En un principio se estaba utilizando el \ac{uC} PIC16F873, el cual tiene las mismas funciones que el PIC16F876 pero con la desventaja de poseer la mitad de memoria de programa y 192 bytes en vez de 368 bytes para datos de usuario (ver sección \ref{sec:des.uc}). Actualmente se cuenta con un \textsl{buffer} que puede almacenar hasta $T_{01RX}=192/8\un{KHz}=24\un{ms}$ de muestras de audio. En un principio sólo se contaba con $T'_{01RX}=48/8\un{KHz}=6\un{ms}$. La razón de la necesidad de un \textsl{buffer} de más de 6\un{ms} viene dada por una característica funcional en el \ac{HOST}.
+
+En el caso del prototipo de la \ac{IH}, el \ac{HOST} se trata de una \ac{PC} con Linux, el cual es un sistema operativo multiproceso. Esto significa que el sistema operativo reparte el recurso del procesador entre los diferentes procesos que corren (en el caso de tener un solo procesador). Esto implica que existe un tiempo de demora hasta que se atiende nuevamente a nuestro proceso. Según las mediciones hechas esta demora oscila entre $0\un{ms}$ a $12\un{ms}$. Las mediciones se realizaron a través de registrar en archivos de texto los eventos de nuevas muestras de audio de envío (ver sección \ref{sec:pc.tramas}) y mensaje de estado actual del FIFO\si{01RX} en la \ac{IH} (ver mensaje E14 en la tabla \ref{tab:pc.ME}).
+
+En la tabla \ref{tab:soft.ail} se observa parte del la salida al archivo que registra los eventos de nuevas muestras de audio de envío.
+\begin{tablao}{Parte del registro de eventos de nuevas muestras de audio de envío en el \acs{HOST}}{tab:soft.ail}{!h}
+	\scriptsize
+	\vdots
+	\begin{verbatim}
+[tDif=4mSeg	tDifprom=4mSeg]	[N=40]	
+[tDif=4mSeg	tDifprom=4mSeg]	[N=40]	
+[tDif=8mSeg	tDifprom=4mSeg]	[N=40]	
+[tDif=7mSeg	tDifprom=4mSeg]	[N=40]	
+[tDif=9mSeg	tDifprom=4mSeg]	[N=40]	
+[tDif=8mSeg	tDifprom=4mSeg]	[N=40]	
+[tDif=8mSeg	tDifprom=5mSeg]	[N=40]	
+[tDif=8mSeg	tDifprom=5mSeg]	[N=40]	
+[tDif=7mSeg	tDifprom=5mSeg]	[N=40]	
+[tDif=9mSeg	tDifprom=5mSeg]	[N=40]	
+[tDif=8mSeg	tDifprom=5mSeg]	[N=40]	
+[tDif=16mSeg	tDifprom=5mSeg]	[N=40]	
+[tDif=8mSeg	tDifprom=5mSeg]	[N=40]	
+[tDif=8mSeg	tDifprom=5mSeg]	[N=40]	
+[tDif=8mSeg	tDifprom=5mSeg]	[N=40]	
+[tDif=8mSeg	tDifprom=5mSeg]	[N=40]	
+[tDif=4mSeg	tDifprom=5mSeg]	[N=40]	
+[tDif=4mSeg	tDifprom=5mSeg]	[N=40]	
+[tDif=8mSeg	tDifprom=5mSeg]	[N=40]
+	\end{verbatim}
+	\vdots
+	\normalsize
+\end{tablao}
+En este, \texttt{tDif} indica el intervalo de tiempo entre el evento actual y el anterior. En cambio, \texttt{tDifprom} indica el valor promedio del los intervalos anteriores. Este valor tiende a $5\un{ms}$ ya que, en promedio, coincide con el tiempo que toman convertir 40 muestras a una tasa de $8\un{KHz}$.
+También, en la tabla \ref{tab:soft.aol} se observan registrados los eventos del estado de muestras restantes que tuvo FIFO\si{01RX} y los intervalos de tiempo entre estos mensajes.
+\begin{tablaot}{Parte del registro de los estados del FIFO de audio de retorno}{tab:soft.aol}{!t}
+	\scriptsize
+	\vdots
+	\begin{verbatim}
+[tDif=4mSeg	tDifprom=4mSeg]	[MuestrasRestantes=96]	[n=40]	
+[tDif=4mSeg	tDifprom=4mSeg]	[MuestrasRestantes=96]	[n=40]	
+[tDif=4mSeg	tDifprom=4mSeg]	[MuestrasRestantes=82]	[n=42]	
+[tDif=8mSeg	tDifprom=4mSeg]	[MuestrasRestantes=87]	[n=42]	
+[tDif=7mSeg	tDifprom=4mSeg]	[MuestrasRestantes=72]	[n=42]	
+[tDif=9mSeg	tDifprom=4mSeg]	[MuestrasRestantes=84]	[n=42]	
+[tDif=8mSeg	tDifprom=4mSeg]	[MuestrasRestantes=97]	[n=40]	
+[tDif=16mSeg	tDifprom=5mSeg]	[MuestrasRestantes=107]	[n=38]	
+[tDif=0mSeg	tDifprom=5mSeg]	[MuestrasRestantes=106]	[n=38]	
+[tDif=8mSeg	tDifprom=5mSeg]	[MuestrasRestantes=103]	[n=38]	
+[tDif=8mSeg	tDifprom=5mSeg]	[MuestrasRestantes=66]	[n=42]	
+[tDif=16mSeg	tDifprom=5mSeg]	[MuestrasRestantes=75]	[n=42]	
+[tDif=8mSeg	tDifprom=5mSeg]	[MuestrasRestantes=91]	[n=42]	
+[tDif=8mSeg	tDifprom=5mSeg]	[MuestrasRestantes=102]	[n=38]	
+[tDif=8mSeg	tDifprom=5mSeg]	[MuestrasRestantes=101]	[n=38]	
+[tDif=11mSeg	tDifprom=5mSeg]	[MuestrasRestantes=110]	[n=38]	
+[tDif=5mSeg	tDifprom=5mSeg]	[MuestrasRestantes=119]	[n=38]	
+[tDif=4mSeg	tDifprom=5mSeg]	[MuestrasRestantes=102]	[n=38]	
+[tDif=4mSeg	tDifprom=5mSeg]	[MuestrasRestantes=100]	[n=38]	
+[tDif=8mSeg	tDifprom=5mSeg]	[MuestrasRestantes=98]	[n=40]	
+[tDif=4mSeg	tDifprom=5mSeg]	[MuestrasRestantes=96]	[n=40]	
+[tDif=4mSeg	tDifprom=5mSeg]	[MuestrasRestantes=94]	[n=40]	
+[tDif=4mSeg	tDifprom=5mSeg]	[MuestrasRestantes=94]	[n=40]	
+[tDif=4mSeg	tDifprom=5mSeg]	[MuestrasRestantes=92]	[n=42]	
+[tDif=8mSeg	tDifprom=5mSeg]	[MuestrasRestantes=98]	[n=40]
+	\end{verbatim}
+	\vdots
+	\normalsize
+\end{tablaot}
+Este evento se genera cada un periodo de tiempo igual al que toman $n$ muestras ser convertidas por el \ac{PWM}. Ahora, $n$ es la cantidad de muestras para transmitir por cada trama de audio de envío, que tiene configurada la \ac{IH}. Entonces, como la actualización del \ac{PWM} se realiza a una tasa de $8\un{KHz}$ (sección \ref{sec:des.pwm}), el evento se produce cada $T_{E14}=n/8\un{KHz}$. Para el caso predeterminado de $n=40$ muestras por trama de audio de envío, el evento de mensaje de estado del FIFO\si{01RX} se produce cada $T_{E14}=5\un{ms}$. Entonces, esto se trata de un muestreo uniforme del estado de carga de dicho \textsl{buffer}.
+
+Para un análisis real, se tomaron los valores de \texttt{MuestrasRestantes}, como se observa en la tabla \ref{tab:soft.aol}, por un período de tiempo de 7 segundos. Esto implica un total de 1400 muestras, las cuales fueron cargadas en el software \textsl{NI SignalExpress Tektronix Edition}.
+
+El valor instantáneo de las muestras restantes en el dominio del tiempo se puede observar en la figura \ref{fig:soft.MR96-t}.
+\figuraot{Muestras restantes (MR) en el dominio del tiempo (96 nominales)}{fig:soft.MR96-t}{width=\textwidth}{MR96-t}{!p}
+Para ver cuál es su característica de distribución, se realizó un histograma de frecuencias de la cantidad de muestras restantes. Dicho histograma se puede ver en la figura \ref{fig:soft.MR96-Hist}.
+\figuraos{Histograma del estado de muestras restantes (MR) (96 nominales)}{fig:soft.MR96-Hist}{width=\textwidth}{MR96-Hist}{!p}
+En la misma se ver una distribución aproximadamente normal alrededor de 96 muestras, representadas por la magnitud \textit{Amplitude}. Al observar esta distribución se llegó a la conclusión que 96 muestras, como carga nominal, es un buen número debido a la distribución aproximadamente simétrica. El valor 96 es la mitad de la capacidad actual del FIFO\si{RX01}, de 192 muestras. También es un buen número porque, al aumentar el valor nominal de carga, aumenta la probabilidad de pérdida de muestras por sobrecarga del \textsl{buffer} y no se logra alcanzar la media deseada. Esto se puede ver en la figura \ref{fig:soft.MR180-Hist},
+\figuraoo{Histograma del estado de muestras restantes (MR) (180 nominales)}{fig:soft.MR180-Hist}{width=\textwidth}{MR180-Hist}{!h}
+en donde se eligió una carga nominal de 180 muestras y sin embargo se logra una media aproximada de 170 muestras.
+Esto se debe a la sobrecarga del \textsl{buffer}, lo que se puede apreciar en la figura \ref{fig:soft.MR180-t} como un recorte superior notorio en 192 muestras.
+\figuraot{Muestras restantes (MR) en el dominio del tiempo (180 nominales)}{fig:soft.MR180-t}{width=\textwidth}{MR180-t}{!p}
+
+Otro dato interesante es ver la distribución de la variación de la carga del \textsl{buffer} para el caso de 96 y 180 muestras. La variación se refiere a la cantidad de muestras en que ha aumentado o disminuido la carga del \textsl{buffer}. Para el caso de una carga nominal de 96 muestras, su distribución se puede observar en la figura \ref{fig:soft.MR96-Dif-Hist}. También, en la figura \ref{fig:soft.MR180-Dif-Hist} se observa la distribución de carga pero para el caso de 180 muestras nominales.
+\figuraos{Histograma del estado de MR diferencial (96 nominales)}{fig:soft.MR96-Dif-Hist}{width=\textwidth}{MR96-Dif-Hist}{!p}
+\figuraot{Histograma del estado de MR diferencial (180 nominales)}{fig:soft.MR180-Dif-Hist}{width=\textwidth}{MR180-Dif-Hist}{!t}
+En dichas figuras se puede ver una diferencia en la distribución de la variación de carga. Para el caso de 96 muestras nominales, la variación se encuentra concentrada en valores cercanos a 0. En cambio, para el caso de 180 muestras nominales, la variación aumenta su dispersión. Esto se debe a la pérdida de datos por sobrecarga, lo que luego produce mayor decaimiento de la carga del \textsl{buffer} y se traslada también a una necesidad posterior de enviar más muestras. Es decir, existe mayor amplitud de variación del las subidas y bajadas del \textsl{buffer}, como también se puede apreciar comparando las señales DifMR de las figuras \ref{fig:soft.MR96-t} y \ref{fig:soft.MR180-t}.
+
+Los datos obtenidos en este análisis reflejan la necesidad de capacidad que actualmente tiene el FIFO\si{01RX}. Ahora, con capacidad para 192 muestras de audio, puede soportar las variaciones de tiempos (\textsl{jitter}) que presentan las tramas de audio y los mensajes de eventos.
+
+Intentando mantener al FIFO\si{01RX} de la \ac{IH} con una carga nominal de 96 muestras se logra amortiguar la falta de muestras por un máximo de $12\un{ms}$. También así se tiene un margen hacia arriba, de 96 muestras, por una posible sobre carga debido a la llegada retardada de datos acumulados.
+
+
+
+
+
+
+
+
+
+\subsection{Simulación del comportamiento en frecuencia de un \acs{PWM} modulado}
+\label{sec:soft.pruebas.simPMW}
+En esta sección, se realiza un análisis sobre cuales son las características en frecuencia --de un \ac{PWM} de $40\un{KHz}$ modulado por un tono de $1\un{KHz}$--. Además, se aplican filtros digitales pasa bajos para atenuar las componentes amónicas de frecuencias no deseadas y se obtienen los datos necesarios que serán utilizados para la construcción de filtros analógicos en la sección \ref{sec:soft.pruebas.FPB}.
+
+Para realizar esta simulación, primero hizo falta de la construcción de las señales a analizar. Las señales comprenden un tono de $1\un{KHz}$ de amplitud unitaria, al cual llamaremos Fuente y una señal \ac{PWM} que se encuentre modulada por antedicho tono. También hace falta definir la amplitud porcentual de la modulación para el \ac{PWM}. Esta amplitud es la especificada en la sección \ref{sec:proto.conf.PWM}, con valores de $24.60\%$ a $75.40\%$. Otro dato es que la salida de \ac{PWM} del \ac{uC}, como todas sus salidas digitales, tiene una amplitud de tensión pico a pico de $5\un{V}$. Estas señales fueron construidas con el programa hecho en C++ que se observa en la tabla \ref{tab:soft.gentabpwm-cc}.
+\begin{tablaos}{Archivo \cfa{gentabpwm.cc}}{tab:soft.gentabpwm-cc}{!p}
+\includegraphics{gentabpwm-cc}
+\end{tablaos}
+A continuación se realiza la descripción del programa, referenciado por las líneas:
+\begin{description}
+	\item[\texttt{10}] \texttt{fm} es la frecuencia de muestras que actualizan al \ac{PWM}.
+	\item[\texttt{11}] \texttt{Tm} es el período entre muestras.
+	\item[\texttt{12}] \texttt{t} es la variable de tiempo.
+	\item[\texttt{13}] \texttt{mpcm} es el valor de la muestra de la fuente para cada instante de tiempo.
+	\item[\texttt{16--26}] El primer \texttt{for} es el que genera los instantes de tiempo durante todo el muestreo. En esta iteración se calcula el valor de las muestras de la señal fuente y se escribe en el archivo \texttt{tab} su valor y su instante de tiempo.
+	\item[\texttt{20--25}] Otra iteración es la de generar 5 períodos de \ac{PWM} el cual cuenta con 500 muestras por período. Esto se debe a que el \ac{PWM} tiene una frecuencia 5 veces mayor a \texttt{fm} y trabaja con una frecuencia de conteo de $20\un{MHz}$, lo que permite una amplitud de conteo de 500 pasos. Esto implica $5\cdot 500=2500$ muestras de la señal \ac{PWM} por cada muestra de la señal fuente. También así se comprueba la relación $2500\cdot \texttt{fm}=20\un{MHz}$.
+	\item[\texttt{22--23}] Para cada una de las muestras del \ac{PWM} se genera su valor de tensión de salida pero sin componente de continua. Estos valores son $+2.5\un{V}$ para el pulso y $-2.5\un{V}$ para el espacio del \ac{PWM}.
+\item[\texttt{30--41}] Es la función \texttt{main} la cual toma dos parámetros de ejecución. Estos son los nombres de los archivos de texto separado por tabuladores, para la señal del \ac{PWM} y para la señal fuente. Luego se abren los archivos y se ejecuta la función \texttt{pwm} con los siguientes parámetros:
+	\begin{itemize}
+		\item Frecuencia de $1\un{KHz}$;
+		\item Amplitud pico de $1.0\un{V}$;
+		\item Período total de muestreo de $10\un{ms}$.
+	\end{itemize}
+Por último se cierran los archivos y se termina el programa.
+\end{description}
+
+Luego de haber obtenido los dos archivos separados por tabuladores, se los carga en el software \textsl{NI SignalExpress Tektronix Edition} y se realizan una serie de análisis.
+
+En primera lugar, en la figura \ref{fig:soft.NI-Sim-FPB-t}, se observan cinco señales en el dominio del tiempo. La señal \textbf{Fuente} es la de referencia para la construcción del \ac{PWM} y es la onda senoidal de amplitud $\pm1\un{V}$. La señal \textbf{PWM} es la onda cuadrada de alta frecuencia y de $\pm2.5\un{V}$. Existen tres señales más, las cuales se obtienen al aplicar filtros pasa bajos digitales.
+\figuraot{Simulación en el dominio del tiempo del PWM del audio con el software \textsl{NI SignalExpress Tektronix Edition}}{fig:soft.NI-Sim-FPB-t}{width=\textwidth}{NI-Sim-FPB-t}{!t}
+
+Para la simulación se utilizaron tres filtros pasa bajos IIR de topología Butterworth, uno de cuarto orden con frecuencia de corte en $2\un{KHz}$, otro de sexto orden con frecuencia de corte en $3.4\un{KHz}$ y otro de primer orden con frecuencia de corte en $3.4\un{KHz}$. Esto se realizó con herramientas propias del software \textsl{NI SignalExpress Tektronix Edition}. La elección de estos filtros fue para luego decidir cual sería el filtro analógico realizable más adecuado.
+
+Las tres señales de la figura \ref{fig:soft.NI-Sim-FPB-t} que quedaron pendiente a explicar son, las señales obtenidas a partir de la señal \ac{PWM} que luego pasan por los filtros digitales antes mencionados. De las tres señales, la del filtro de primer orden es la que se venía obteniendo con el filtro analógico actual de la \ac{IH}. Las dos restantes son potenciales modificaciones.
+
+En segundo lugar, se realizó el análisis en frecuencia de las señales mencionadas anteriormente. Cada señal se encuentra etiquetada en las figuras a las que se harán referencia. En la figura \ref{fig:soft.NI-Sim-FPB-f0a20k}
+\figuraot{Simulación en el dominio de la frecuencia (hasta 20\un{KHz}) del PWM del audio con el software \textsl{NI SignalExpress Tektronix Edition}}{fig:soft.NI-Sim-FPB-f0a20k}{width=\textwidth}{NI-Sim-FPB-f0a20k}{!t}
+se puede observar el espectro de audio, entre $0\un{Hz}$ a $20\un{KHz}$, en el cual se aprecia una gran cantidad de armónicos de amplitud elevada no deseados. Hay que tener en cuenta que el ruido de cuantificación, con 8 bits de resolución lineal, se encuentra a una magnitud $N_Q$ respecto de la máxima señal:
+\[N_Q=20\cdot \log_{10}{\frac{2.5\cdot\frac{256}{500}}{2^{8}}}\approx -46.02\un{dB}\]
+En la figura \ref{fig:soft.NI-Sim-FPB-f0a20k} también se puede lograr apreciar cómo estos armónicos son atenuados luego de la aplicación de los filtros pasa bajos de orden mayor a uno. Como para frecuencias mayores a $4\un{KHz}$, estos armónicos fueron atenuados por debajo de $N_Q$, en la figura \ref{fig:soft.NI-Sim-FPB-f0a4k}
+\figuraot{Simulación en el dominio de la frecuencia (hasta 4\un{KHz}) del PWM del audio con el software \textsl{NI SignalExpress Tektronix Edition}}{fig:soft.NI-Sim-FPB-f0a4k}{width=\textwidth}{NI-Sim-FPB-f0a4k}{!t}
+se muestra --con más detalle-- solamente la banda entre $0\un{Hz}$ a $4\un{KHz}$. En la figura \ref{fig:soft.NI-Sim-FPB-f0a4k}, se observa además la existencia de un armónico no deseado de $2\un{KHz}$ con una amplitud aproximada de: $-39\un{dB}$ luego del filtro de $2\un{KHz}$; y $-36\un{dB}$ luego del filtro de $3.4\un{KHz}$. Lamentablemente este armónico se encuentra dentro de la banda de audio de deseable, lo que imposibilita su atenuación. Pero, desde otro punto de vista, tras hacer un análisis de \ac{THD} con el software \textsl{NI SignalExpress Tektronix Edition}, se obtuvieron los valores que se observan en la tabla \ref{tab:soft.NI.Sim.FPB.v}.
+\begin{tablaot}{\ac{THD} de las señales filtradas del \acs{PWM}}{tab:soft.NI.Sim.FPB.v}{!t}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		\textbf{Nombre}&\textbf{Frecuencia de corte del filtro}&\textbf{Orden del filtro}&\textbf{THD}\\
+		\hline\hline
+		F4 & $2\un{KHz}$ & 4 &$1.35\un{\%}$\\\hline
+		F6 & $3.4\un{KHz}$ & 6 & $1.90\un{\%}$\\\hline
+		F1 & $3.4\un{KHz}$ & 1 & $8.71\un{\%}$\\\hline
+	\end{tabular}\\[5mm]
+	\textbf{Nota}: Los \ac{THD} se han computado con una frecuencia fundamental de $1\un{KHz}$, teniendo en cuenta hasta el decimonoveno armónico.
+\end{tablaot}
+Se puede apreciar como se ha obtenido una mejora en la \ac{THD} cuando se utilizan los filtros F4 o F6 en vez del F1. Al mismo tiempo, existe poca variación en la \ac{THD} al usar el filtro F4 respecto al F6, pero la diferencia está en que F4 atenúa parte de la banda deseada, pero es de menor orden; y F6 no atenúa parte de la banda deseada, pero es de mayor orden. En definitiva, hace falta el reemplazo de F1 por F4 o F6, pero la elección entre F4 o F6 se realizará en la sección \ref{sec:soft.pruebas.FPB}, en donde se harán mediciones reales de la implementación electrónica de sus equivalentes analógicos.
+
+
+
+\subsection{Filtros pasa bajos analógicos de orden elevado}
+\label{sec:soft.pruebas.FPB}
+Con la ayuda del software \textsl{FilterLab 2.0} de Microchip se han diseñado dos filtros pasa bajos analógicos, uno de cuarto orden con una frecuencia de corte $f_4=2\un{KHz}$ y otro de sexto orden con una frecuencia de corte $f_6=3.4\un{KHz}$.
+
+En base a la Guía de Usuario del \textsl{FilterLab 2.0} \cite{filterlab2.userguide} y con la hoja de datos del amplificador operacional TL048C \cite{TL084}, se comprobó que este operacional era apto para realizar los filtros. Una de las condiciones era que (ver sección E.1.1 de la Guía de Usuario) el amplificador operacional debía tener, para baja señal, un valor de \ac{GBWP} como mínimo de:
+\[ \textnormal{GBWP}=K\cdot 100\cdot f_P \]
+donde $K$ es la ganancia del filtro, que en este caso es $1$ y  $f_P$ es la frecuencia de paso, que en este caso la mayor entre $f_4$ y $f_6$ es $3.4\un{KHz}$, resultando:
+\[ \textnormal{GBWP}=1\cdot 100\cdot 3400\un{Hz} = 340\un{KHz} \]
+El valor de GBWP para el TL084C es, como mínimo, de $2.5\un{MHz}$, así que esta condición ha sido cumplida. Otra condición era que (ver sección E.1.2 de la Guía de Usuario) las señales de alta amplitud, para no sufrir distorsiones, debían ser de frecuencias menores a:
+\[ f_{\textnormal{FPBW}}=\frac{\textnormal{SR}}{\pi\cdot V_{\textnormal{OUT\_P-P}}} \]
+Donde \acs{SR} es el ``\acl{SR}'' del amplificador operacional, el cual vale como mínimo $8\un{V/$\mu$s}$ y $V_{\textnormal{OUT\_P-P}}$ es la tensión de amplitud máxima de la señal de salida, que en este caso es como máximo igual a la tensión de alimentación, es decir $5\un{V}$. Entonces:
+\[ f_{\textnormal{FPBW}}=\frac{\textnormal{8\un{V$\cdot$MHz}}}{\pi\cdot 5\un{V}} = 509.3\un{KHz}\]
+Como las señales de alta amplitud son sólo hasta una frecuencia de $3.4\un{KHz}$ y para $f_{\textnormal{FPBW}}$ las señales ya se encuentran sumamente atenuadas por el filtro, esta condición también ha sido cumplida.
+
+En todas las mediciones que se realizan en esta sección, la señal de entrada fue previamente acondicionada por un filtro pasa altos con frecuencia de corte en $300\un{Hz}$ aproximadamente. Esto es necesario para desacoplar la componente de continua, introducir una atenuación y para sumarle la tensión de \textsl{offset} de $2.5\un{V}$, necesarios para el correcto funcionamiento de los filtros pasa bajos. A razón de esto es que se observa una atenuación mínima fija en las mediciones que se realizan a continuación. Esto es necesario para trabajar con una tensión, de entrada a los filtro pasa bajos, de $1\un{V}$ a $2\un{V}$ pico a pico y no producir distorsiones por trabajar con amplitudes semejantes a la alimentación de los amplificadores operacionales.
+
+Junto con las mediciones de los filtro pasa bajos, en el laboratorio de electrónica de la \ac{UBP}, se realizó un análisis de \ac{THD} de la señal de entrada y de la señal de salida de los filtros. En la figura \ref{fig:foto-lab-ubp-hp} podemos ver una fotografía de los instrumentos utilizados en el laboratorio.
+\figuraot{Fotografía de los instrumentos utilizados en el laboratorio}{fig:foto-lab-ubp-hp}{}{foto-lab-ubp-hp}{!t}
+El análisis consistió en generar una señal senoidal de entrada de $1\un{KHz}$ y de amplitud $5\un{V}$ pico a pico con el generador de funciones HP 3312A. Luego se midieron, la señal de entrada generada y la señal de salida de los filtros pasa bajos, con el osciloscopio digital Tektronix TDS1001B. Junto con esto, se conectó el osciloscopio a una \acs{PC} vía un puerto \acs{USB}, para procesar los datos con el software \textsl{NI SignalExpress Tektronix Edition} mientras se los iban obteniendo en tiempo real. Este software fue el que realizó los cálculos de \ac{THD} contemplando hasta el decimonoveno armónico, es decir, de $2\un{KHz}$ a $19\un{KHz}$ para una frecuencia fundamental de $1\un{KHz}$. Los resultados obtenidos fueron una baja distorsión armónica del generador y de ambos filtros. Estos resultados pueden verse a continuación:
+\begin{itemize}
+	\item Frecuencia fundamental: $1\un{KHz}$
+	\item Amplitud del generador: $5\un{V}$ pico a pico
+	\item \ac{THD} del generador: $0.3266\%$
+	\item \ac{THD} luego del filtro de cuarto orden: $0.4044\%$
+	\item \ac{THD} luego del filtro de sexto orden: $0.3053\%$
+\end{itemize}
+
+Producir una atenuación mayor a 48\un{dB} sobre las frecuencias superiores a 4\un{KHz} era una meta muy ambiciosa. Esto implicaba producir una pendiente de $-204.7\un{dB}$ por octava, o sea, pasar de $3.4\un{KHz}$ a $4\un{KHz}$ con una pendiente de $-48\un{dB}$.
+\[ \frac{-48\un{dB}}{\log_2(4\un{KHz})-\log_2(3.4\un{KHz})}=-204.7\un{dB} \textnormal{ por octava} \]
+Entonces, lo primero que se hizo fue construir un filtro pasa bajos analógico de cuarto orden y elegir una frecuencia de corte $f_4=2\un{KHz}$. Se eligió esta frecuencia debido a una relación de compromiso entre el ancho de banda de la banda de paso y la atenuación necesaria en la banda no deseada. La pendiente de corte de este filtro introduce sobre la banda no deseada, una pendiente de $-24\un{dB}$ por octava. Esto produce sobre la señal que ingresa al filtro una magnitud de salida de $-24\un{dB}$ a $4\un{KHz}$ y $-48\un{dB}$ a 8\un{KHz}. En la figura \ref{fig:soft.FPB-4-2K} se pueden observar las características en frecuencia, tanto la magnitud como la fase, del filtro diseñado.
+\figuraob{Características teóricas en frecuencia del filtro analógico pasa bajos de cuarto orden generado por el \textsl{FilterLab}}{fig:soft.FPB-4-2K}{width=\textwidth}{FPB-4-2K}{!b}
+Esta figura fue extraída directamente del \textsl{FilterLab}.
+
+El \textsl{FilterLab} tiene la opción de general el circuito esquemático para el filtro diseñado. Además permite elegir entre alimentación bipolar o alimentación simple.
+
+Debido a que la \ac{IH} trabaja con alimentación simple se optó también por la alimentación simple para los amplificadores operacionales. Para este tipo de alimentación, el \textsl{FilterLab} permite elegir una topología, para los amplificadores operacionales, llamada \textbf{MFB}. Esta topología trabaja con una tensión $V/2$ sobre todos los terminales no inversores de los amplificadores operacionales, siendo $V$ la tensión de alimentación.
+
+Otra especificación realizada fue la de modificar el valor del capacitor C21 de un valor sugerido por el software de 18\un{nF} a un valor impuesto de 22\un{nF}. Esta modificación fue necesaria por la baja disponibilidad del valor de 18\un{nF} en el mercado. Esto, automáticamente, produjo los ajustes de los valores de los demás componentes. El resultado obtenido se puede ver en el circuito esquemático, extraído del \textsl{FilterLab}, de la figura \ref{fig:soft.FPB-4-2K-sch}.
+\figuraob{Circuito esquemático del filtro analógico pasa bajos de cuarto orden generado por el \textsl{FilterLab}}{fig:soft.FPB-4-2K-sch}{}{FPB-4-2K-sch}{!b}
+Además, el valor más aproximado conseguido para R11 y R12 ha sido $7.5\un{K$\Omega$}$. Sin más modificaciones, en el laboratorio de electrónica de la \ac{UBP}, con el generador de funciones HP 3312A y el osciloscopio digital Tektronix TDS1001B, se realizaron las mediciones que pueden observarse en la tabla \ref{tab:soft.FPB.4.med}. 
+
+%\figuraop{Circuito esquemático del filtro analógico pasa bajos de cuarto orden hecho en protoboard}{fig:soft.FPB-4-2K-proto}{width=\textwidth}{FPB-4-2K-proto}
+
+\begin{tablaob}{Mediciones hechas en protoboard sobre el filtro analógico de cuarto orden}{tab:soft.FPB.4.med}{!b}
+	\begin{tabular}{|c|c|c|}
+		\hline\hline
+		\textbf{Frecuencia}&\textbf{Tensión de entrada}&\textbf{Tensión de salida}\\
+		\hline\hline
+		$30.00\un{Hz}$ & $4.000\un{V}$ & $180.0\un{mV}$\\\hline
+		$300.0\un{Hz}$ & $4.000\un{V}$ & $1.270\un{V}$\\\hline
+		$600.0\un{Hz}$ & $4.000\un{V}$ & $1.800\un{V}$\\\hline
+		$2.070\un{KHz}$ & $4.000\un{V}$ & $1.240\un{V}$\\\hline
+		$3.400\un{KHz}$ & $4.000\un{V}$ & $400.0\un{mV}$\\\hline
+		$4.000\un{KHz}$ & $4.000\un{V}$ & $212.0\un{mV}$\\\hline
+		$6.000\un{KHz}$ & $4.000\un{V}$ & $60.00\un{mV}$\\\hline
+		$8.000\un{KHz}$ & $4.000\un{V}$ & $16.00\un{mV}$\\\hline
+		$20.00\un{KHz}$ & $4.000\un{V}$ & $6.000\un{mV}$\\\hline
+	\end{tabular}\\[5mm]
+\end{tablaob}
+
+Luego se realizó el filtro pasa bajos de sexto orden con frecuencia de corte en $f_6=3.4\un{KHz}$. El mismo también se realizó con el \textsl{FilterLab}, para el cual sus características en frecuencia se pueden ver en la figura \ref{fig:soft.FPB-6-3.4K}.
+\figuraoo{Características teóricas en frecuencia del filtro analógico pasa bajos de sexto orden generado por el \textsl{FilterLab}}{fig:soft.FPB-6-3.4K}{width=\textwidth}{FPB-6-3K4}{!h}
+Esta figura también fue extraída directamente del \textsl{FilterLab}. Luego, se generó, en topología MFB el circuito esquemático, en el cual se hicieron una serie de modificaciones. Se cambió el valor de C11 de $15\un{nF}$ por uno de $10\un{nF}$ y el valor de C21 de $8.2\un{nF}$ a $10\un{nF}$. De forma automática, esto produjo la actualización de los valores de los resistores. El resultado se puede ver en el circuito esquemático de la figura \ref{fig:soft.FPB-6-3.4K-sch}.
+\figuraot{Circuito esquemático del filtro analógico pasa bajos de sexto orden generado por el \textsl{FilterLab}}{fig:soft.FPB-6-3.4K-sch}{}{FPB-6-3K4-sch}{!t}
+Además, se cambiaron los valores de algunos resistores por el valor más próximo encontrado en el mercado. Esto es, para R11 y R12 se utilizó el valor de $1.74\un{K$\Omega$}$; para R13 el de $3.65\un{K$\Omega$}$; para R21 y R22 se utilizaron dos resistores en serie de $2.00\un{K$\Omega$}$; para R23 el valor de $1.62\un{K$\Omega$}$ y para R31, R32 y R33 el valor de $8.2\un{K$\Omega$}$. Sin más modificaciones, en el laboratorio de electrónica de la \ac{UBP}, con el generador de funciones HP 3312A y el osciloscopio digital Tektronix TDS1001B, se realizaron las mediciones que pueden observarse en la tabla \ref{tab:soft.FPB.6.med}.
+\begin{tablaob}{Mediciones hechas en protoboard sobre el filtro analógico de sexto orden}{tab:soft.FPB.6.med}{!b}
+	\begin{tabular}{|c|c|c|}
+		\hline
+		\textbf{Frecuencia}&\textbf{Tensión de entrada}&\textbf{Tensión de salida}\\
+		\hline\hline
+$74.21\un{Hz}$ & $5.000\un{V}$ & $424.0\un{mV}$\\\hline
+$147.5\un{Hz}$ & $5.000\un{V}$ & $720.0\un{mV}$\\\hline
+$184.6\un{Hz}$ & $5.000\un{V}$ & $848.0\un{mV}$\\\hline
+$295.6\un{Hz}$ & $5.000\un{V}$ & $1.056\un{V}$\\\hline
+$601.3\un{Hz}$ & $5.000\un{V}$ & $1.200\un{V}$\\\hline
+$2.299\un{KHz}$ & $5.000\un{V}$ & $848.0\un{mV}$\\\hline
+$3.393\un{KHz}$ & $5.000\un{V}$ & $400.0\un{mV}$\\\hline
+$4.056\un{KHz}$ & $5.000\un{V}$ & $176.0\un{mV}$\\\hline
+$5.012\un{KHz}$ & $5.000\un{V}$ & $56.00\un{mV}$\\\hline
+$6.046\un{KHz}$ & $5.000\un{V}$ & $20.00\un{mV}$\\\hline
+$7.023\un{KHz}$ & $5.000\un{V}$ & $10.00\un{mV}$\\\hline
+$8.339\un{KHz}$ & $5.000\un{V}$ & $5.000\un{mV}$\\\hline
+$10.82\un{KHz}$ & $5.000\un{V}$ & $3.400\un{mV}$\\\hline
+$19.82\un{KHz}$ & $5.000\un{V}$ & $3.800\un{mV}$\\\hline
+	\end{tabular}\\[5mm]
+\end{tablaob}
+
+Ahora, con los datos de las tablas \ref{tab:soft.FPB.6.med} y \ref{tab:soft.FPB.4.med}, se ha realizado un gráfico de magnitud de respuesta (en dB) de cada filtro referenciado a su valor máximo. Se realizó en referencia a cada valor máximo para que, en el gráfico, quedasen ambas curvas de respuesta comparables. Este gráfico se puede observar en la figura \ref{fig:soft.FPB-46-med},
+\figuraot{Gráfico de las mediciones hechas en protoboard sobre ambos filtros analógicos}{fig:soft.FPB-46-med}{width=\textwidth}{FPB-46-med}{!t}
+en el cual se observa una línea horizontal que determina los $-3\un{dB}$ respecto al máximo. Puede verse como la frecuencia de corte superior de ambos filtros es muy próxima. Esta corresponde a $2.299\un{KHz}$ para el filtro de sexto orden (ver tabla \ref{tab:soft.FPB.6.med}) y $2.070\un{KHz}$ para el filtro de cuarto orden (ver tabla \ref{tab:soft.FPB.4.med}). Esto indica que fue mucho mejor el resultado de ajuste de frecuencia de corte para el filtro de cuarto orden que para el de sexto orden. Esto puede deberse a la sensibilidad en el ajuste que presenta un filtro de mayor orden, el cual requiere componentes y valores más precisos. Es cierto también que la pendiente de corte del filtro de sexto orden resulta mayor que el de cuarto orden, pero debido a su desajuste termina siendo poco mayor. En definitiva, se elige la opción del filtro de cuarto orden con frecuencia de corte superior en $2\un{KHz}$ como la opción más adecuada y práctica, por su mejor ajuste y por su mejor complejidad.
+
+
+
+
+\section{Rediseño del circuito esquemático de la \ac{IH}}
+\label{sec:soft.redis.hard}
+Las pruebas realizadas en la sección \ref{sec:soft.pruebas} revelaron dificultades para las cuales sus 
+soluciones han implicado modificaciones en el circuito esquemático de la \ac{IH}. Esta sección trata sobre la actualización del circuito de la figura \ref{fig:sch.ih}.
+
+En la figura \ref{fig:sch.ih.v2} podemos ver el circuito esquemático de la \ac{IH}, ya modificado.
+\figuraos{Circuito esquemático de la \acs{IH} modificado}{fig:sch.ih.v2}{}{sch-ih-v3}{!p}
+Los cambio más importantes en las etapas de audio fueron:
+\begin{itemize}
+	\item Mejoramiento del filtro pasa bajos de salida.
+	\item Eliminación del selector digital de la señal PWM.
+	\item Control de silencio del amplificador del altavoz.
+	\item Mejoramiento del filtro pasa bajos de entrada y utilización de un amplificador de alta impedancia.
+	\item Agregado de un pequeño retorno local del audio de envío.
+\end{itemize}
+Entonces, se utilizó el filtro pasa bajos de cuarto orden --sin ganancia ($A_2=1$)-- de la sección \ref{sec:soft.pruebas.FPB} directamente a la salida \ac{PWM} del \ac{uC} (pin CCP1). Este filtro se encuentra representado por los amplificadores operacionales U4D y U4A. Esta red también cuenta con un filtro pasa altos de primer orden (U4C), con frecuencia de corte en $300\un{Hz}$ aproximadamente e introduce una ganancia $A_1$ de: 
+\[ A_1 = -\frac{R27}{R28} = -\frac{15\un{K$\Omega$}}{53.6\un{K$\Omega$}} \approx -0.2799 \]
+Que $|A_1|$ sea menor a la unidad implica que la señal a la salida de esta etapa es menor que a su entrada. Es importante reducir la amplitud de esta señal para que las demás etapas trabajen con una amplitud menor a la de alimentación y así evitar distorsiones.
+
+Para no tener que utilizar dos filtros pasa bajos de cuarto orden para las salidas de audio, se eliminó el selector de la señal \ac{PWM} y se envió directamente la señal filtrada a la etapas del auricular y del altavoz. Pero, para que el altavoz no se encuentre constantemente emitiendo el audio de retorno, se introdujo un control de silencio a la entrada de su amplificador (Q2, R35, R36, R37, R38 y C29). Este control produce prácticamente la atenuación total de la señal que ingresa a dicho amplificador, debido a la baja impedancia que presenta el transistor Q2 cuando se encuentra saturado. Además, el control de Q2 se realiza a través de un circuito de retardo, para disminuir la velocidad de transición de Q2 y el ruido producido por ésta.
+
+Las modificaciones anteriores implican recalcular la ganancia del amplificador del altavoz, para mantener una salida de potencia adecuada. Para esto vamos a utilizar parte de los cálculos realizados en la sección \ref{sec:schih.altavoz}. Entonces, partimos de que la tensión eficaz de la componente fundamental máxima a la salida del \ac{PWM} --menor a $4\un{KHz}$-- es de:
+\[ V_{ef} \approx 0.8980\un{V} \]
+Ahora, determinamos el factor de amplificación de la etapa pasiva (R35, C16 y la impedancia de entrada del amplificador) trabajando con una frecuencia patrón $f_0=1\un{KHz}$:
+\begin{align*}
+A_p &= \frac{Z_I}{\sqrt{\left(R_{35}\right)^2+\left(\frac{1}{2\cdot \pi \cdot f_0 \cdot C_{16}}\right)^2}+Z_I}\\
+&\approx \frac{70\un{K$\Omega$}}{\sqrt{\left(10\un{K$\Omega$}\right)^2 + \left(15.92\un{$\Omega$}\right)^2 } + 70\un{K$\Omega$}}\\
+&\approx 0.8750
+\end{align*}
+Entonces, la tensión eficaz a la entrada del amplificador será:
+\begin{align*}
+V_I &= V_{ef}\cdot |A_1| \cdot |A_2| \cdot |A_p|\\
+&\approx 0.8980\un{V}\cdot 0.2799 \cdot 1 \cdot 0.8750\\
+&\approx 0.2199\un{V}
+\end{align*}
+El otro valor a deducir es la tensión eficaz deseada en el altavoz, pero esta vez reduciendo el valor de $P_L$ a $0.25\un{W}$:
+\[ V_O=\sqrt{P_L\cdot R_L}=\sqrt{0.25\un{W}\cdot 8\un{$\Omega$}}\approx 1.414\un{V} \]
+Lo que implica lograr una ganancia de:
+\begin{align}
+	A_V = \frac{V_O}{V_I}\approx 6.430\label{ec:altavoz2.AV2}
+\end{align}
+Sabiendo que la ganancia del amplificador del altavoz es:
+\begin{align}
+ A_V = \frac{R_{17}}{R_{23}}+1\label{ec:altavoz2.AV}
+\end{align}
+Igualamos las ecuaciones \ref{ec:altavoz2.AV2} y \ref{ec:altavoz2.AV}, obteniendo:
+\begin{align*}
+	\frac{R_{17}}{R_{23}}+1 &\approx 6.430\\
+	\intertext{Despejamos $R_{23}$ fijando $R_{17}=220\un{$\Omega$}$:}
+	\frac{R_{17}}{R_{23}} &\approx 6.430-1\\
+	\frac{R_{17}}{6.430-1} &\approx R_{23}\\
+	R_{23} &\approx \frac{220\un{$\Omega$}}{6.430-1}\\
+	R_{23} &\approx 40.51\un{$\Omega$}\\
+	\intertext{El cual se fija en un valor estandarizado de:}
+	R_{23} &= 39\un{$\Omega$}\\
+\end{align*}
+
+También se reemplazó el antiguo filtro de segundo orden, para la señal del micrófono, por un filtro idéntico al filtro pasa bajos de cuarto orden antes mencionado. El nuevo filtro se encuentra representado principalmente por los amplificadores operacionales U3C y U4B. A la entrada de esta etapa también existe un filtro pasa altos de primer orden (U3B) con frecuencia de corte en $300\un{Hz}$ aproximadamente, pero tiene una ganancia $A_3$ diferente:
+\[ A_3 = \frac{R3}{R2} \approx 1.866 \]
+En este caso, $A_3$ es mayor a la unidad, porque hace falta aumentar la amplitud de la señal proveniente del micrófono de manera de aprovechar mejor el rango de conversión del \acs{ADC}.
+
+También se agregó un amplificador operacional (U3A), en configuración seguidor de tensión. Éste se encuentra entre el micrófono y el filtro pasa altos antes mencionado, para evitar introducir una variación en la impedancia del filtro, lo que modificaría su frecuencia de corte.
+
+
+Para separar la etapa de ``potencia'' del auricular de la etapa de pequeña señal de retorno, se utiliza el amplificador operacional U3D. Además, éste suma a la señal de retorno la señal de envío de forma ponderada. Esta suma pondera menos a la señal de envío y su valor fue determinado de forma empírica en función de la sensación más agradable.
+\begin{quote}
+	Al usar el tubo telefónico, el escucharse a uno mismo --levemente-- produce una sensación más agradable. 
+\end{quote}
+Continuando, a la salida de U3D se tiene a C23 para desacoplar la componente de continua de la señal transmitida hacia el auricular. Además, se tiene a R13 para reducir la sobrecarga a U3D y disminuir posibles distorsiones.
+
+Otras modificaciones menores fueron:
+\begin{itemize}
+	\item El agregado de \ac{PoE}.
+	\item El cambio de los conectores J1 y J2 del circuito esquemático anterior a la modificación, por un \textsl{jack} de 4 contactos (tipo RJ9) denominado J1.
+	\item El agregado del \textsl{jack} JP5 para la posible alimentación de la placa de un \textsl{router} \textsl{wireless} Linksys WRT54G v4.0.
+	\item El agregado de una alimentación de $5\un{V}$ a los contactos no utilizados (pines 7 y 8) de JP3.
+\end{itemize}
+
+\begin{quote}
+	\textbf{Nota}: El \ac{PoE} utilizado trabaja con una alimentación de $12\un{V}$ sobre los pares libres --como lo hace Intel, Symbol u Orinoco-- y no con una tensión de $48\un{V}$ como lo especificado más recientemente en el estándar IEEE 802.3af.~\cite{altair.poe}
+\end{quote}
+
+

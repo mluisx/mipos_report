@@ -1,0 +1,248 @@
+\chapter{Búsqueda e implementación de una \ac{API}}
+
+Para poder tener acceso a la información almacenada en un dispositivo GSM se realizó una investigación y su correspondiente implementación de una \ac{API} de licencia open-source\footnote{Software que permite una libre redistribución, distribuye el código fuente y permite modificaciones y trabajos derivados} que sirve de nexo entre la aplicación y el dispositivo GSM que se utilizará en el servidor.
+
+\section{\textquestiondown Qué es una \ac{API}?}
+\label{sec:def.API}
+
+Una \ac{API} es un conjunto de especificaciones de comunicación entre componentes software. Representa un método para conseguir abstracción en la programación, generalmente (aunque no necesariamente) entre los niveles o capas inferiores y los superiores del software ~\cite{lea99}.
+
+Uno de los principales propósitos de una API consiste en proporcionar un conjunto de funciones de uso general, por ejemplo, para dibujar ventanas o iconos en la pantalla. De esta forma, los programadores se benefician de las ventajas de la \ac{API} haciendo uso de su funcionalidad, evitándose el trabajo de programar todo desde el principio. Las APIs asimismo son abstractas: el software que proporciona una cierta API generalmente es llamado la implementación de esa API ~\cite{lea99}.
+
+En este \ac{TFC} la \ac{API} en cuestión consiste en un conjunto de clases que permiten realizar la comunicación con el dispositivo GSM de forma simple y rápida para asi poder obtener acceso a la memoria y tomar lectura de los distintos SMS almacenados.
+
+\section{\ac{API}s en Java}
+\label{sec:API.Java}
+
+Sun define tres plataformas en un intento por cubrir distintos entornos de aplicación. Así, ha distribuido muchas de sus \ac{API}s de forma que pertenezcan a cada una de las plataformas ~\cite{zukowski03}:
+
+\begin{itemize}
+\item Java ME (Java Platform, Micro Edition) o J2ME - orientada a entornos de limitados recursos, como teléfonos móviles, PDAs (Personal Digital Assistant), etc.
+\item Java SE (Java Platform, Standard Edition) o J2SE - para entornos de gama media y estaciones de trabajo. Aquí se sitúa al usuario medio en una \ac{PC} de escritorio.
+\item Java EE (Java Platform, Enterprise Edition) o J2EE - orientada a entornos distribuidos empresariales o de Internet.
+\end{itemize}
+
+Las clases en las APIs de Java se organizan en grupos disjuntos llamados paquetes. Cada paquete contiene un conjunto de interfaces, clases y excepciones relacionadas. La información sobre los paquetes que ofrece cada plataforma puede encontrarse en la documentación de ésta ~\cite{zukowski03}.
+
+El conjunto de las \ac{API}s es controlado por Sun Microsystems junto con otras entidades o personas a través del programa JCP (Java Community Process). Las compañías o individuos participantes del JCP pueden influir de forma activa en el diseño y desarrollo de las APIs, algo que ha sido motivo de controversia ~\cite{zukowski03}.
+
+Existen numerosas \ac{API}s de Java para realizar todo tipo de operaciones, existiendo las \ac{API}s propietarias de Sun Microsystems y las \ac{API}s realizadas por terceros. Algunas de las más conocidas pueden ser:
+\begin{itemize}
+\item \textsl{JAXP\footnote{JAXP es el acrónimo en inglés de Java \ac{API} for \acs{XML} Processing. Consiste en una \ac{API} Java (definido por Sun Microsystems) que sirve para la manipulación y el tratamiento de archivos XML.}}: Para procesar archivos XMLs\footnote{XML es el acrónimo en inglés de Extensible Markup Language. Es un metalenguaje extensible de etiquetas desarrollado por el \ac{W3C}}.
+\item \textsl{Servlets}: Para facilitar la implementación de soluciones web.
+\item \textsl{Hibernate}: Para facilitar la implementación de la persistencia ~\cite{Wiki.API}.
+\end{itemize}
+
+\section{La \ac{API} JSMSEngine}
+\label{sec:API.JSMSEngine}
+
+La API JSMSEngine consiste en un conjunto de clases que pueden ser utilizadas para enviar o recibir mensajes \ac{SMS}. JSMSEngine en sí, está desarrollado para dar soporte a la plataforma Java pero forma parte del paquete SMSLib que incluye soporte tanto para Java como para .NET. Ambas librerías comparten las mismas características. Las librerías JSMSEngine son componentes de software de código abierto y son distribuidos por la \ac{LGPL}.
+
+JSMSEngine requiere un módem o teléfono \ac{GSM} compatible. La mayoría de los teléfonos \ac{GSM} pueden ser utilizados si estas ofrecen las funcionalidades de un módem \ac{GSM}. Esta \ac{API} maneja la conexión serial (ya sea física o emulada, por ejemplo: Bluetooth. IrDA. \acs{USB}. etc.) con el fin de comunicarse con el dispositivo \ac{GSM}.
+El \ac{API} JSMSEngine está compuesta por un conjunto de clases Java que al interactuar entre ellos permiten establecer la comnunicación con el dispositivo \ac{GSM} para el envío y recepción de los mensajes \ac{SMS}. En las siguientes secciones se explicará el propósito de cada una de estas clases.
+
+La versión utilizada del JSMSEngine para este \ac{TFC} es la 1.2.6 (Beta1) que fue lanzado el 4 de Febrero del 2005. Versiones más actuales pueden encontrarse en internet, con algunas actualizaciones que enriquecen aun más el paquete de clases de la \ac{API}.
+
+En el escrito correspondiente a este \ac{TFC} se definieron varios estilos de texto para poder distinguir todas las partes del código realizado para la aplicación. Los estilos se encuentran detallados en la tabla \ref{tab:estilos.de.texto}.
+
+\begin{tablao}{Estilos de texto definidos para este \ac{TFC}}{tab:estilos.de.texto}{!h}
+	\begin{tabular}{|c|c|}
+	  \hline 	
+	  \bp{Estilo}& \bp{Referencia} \\
+	  \hline 	
+	  \bp{\cfa{Archivo}}& \bp{Nombres de archivos} \\
+	  \hline
+	  \cfa{Clase}& \bp{Nombres de clases Java} \\
+	  \hline
+	  \cfobj{Objeto}& \bp{Nombres de objetos} \\
+	  \hline 
+	  \cfc{Código}& \bp{Porciones de código en lenguaje Java} \\
+	  \hline 
+	  \cfm{Método}& \bp{Nombres de métodos y funciones de las clases} \\
+	  \hline 
+	  \cf{Variable}& \bp{Nombres de variables, constantes y comandos AT} \\
+	  \hline 
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+\subsection{Archivo \cfa{CService.java}}
+\label{sec:Clase.CService}
+
+Esta clase ofrece toda la funcionalidad de la \ac{API} JSMSEngine al desarrollador y todos los métodos de interfaz al mismo. Es el responsable de la inicialización de la comunicación con el dispositivo \ac{GSM} y el de poder recibir y enviar mensajes \ac{SMS} a través del \ac{TC} a la red de telefonía celular.
+
+La clase se encarga de abrir el puerto serial y enviar los apropiados comandos AT para inicializar el modo de operación del dispositivo. Además, contiene un método que permite obtener datos del dispositivo conectado. Por defecto, la \ac{API} setea el dispositivo en el modo \ac{PDU}, pudiendo optar por cambiar al modo \ac{ASCII} para transmitir \ac{SMS}s en modo texto.
+
+El constructor de la clase toma como parámetros el puerto de comunicaciones (en este caso el puerto de comunicaciones ``COM7'')  y la velocidad de conexión (definida en 115200\un{bps}) a la cual se conectará el dispositivo \ac{GSM} a la \ac{PC} que funcionará como servidor de \ac{SMS}. Muchos dispositivos funcionan bien a 9600 o 19200\un{bps}. Algunos pueden manejar velocidades hasta los 115200 \acs{BPS} como es el caso del \ac{TC} K750i. La velocidad de conexión no es un valor que esta directamente relacionado con la velocidad a la que los mensajes son procesados por el servidor. Algunos módems \ac{GSM} pueden manejar incluso velocidades mas altas en comparación a las que manejan los \ac{TC}s. 
+
+%Los dos últimos parámetros especifican en este orden el nombre del fabricante y el modelo del dispositivo, en el caso de que se quisiera especificar un handler\footnote{ver Handlers} específico. Como se dejan vacíos estos parámetros, se asume el handler por defecto.
+
+La instancia de esta clase llamada \cfobj{srv} realiza la creación de 3 objetos. La primera pertenece a la clase \cfa{CSerialDriver} (ver sección \ref{sec:Clase.CSerialDriver}), la segunda a la clase \cfa{CDeviceInfo} (ver sección \ref{sec:Clase.CDeviceInfo}) y la tercera corresponde a la subclase \cfa{CReceiveThread}. La lectura de mensajes \ac{SMS} puede realizarse en forma asíncrona o síncrona. Cuando se crea la instancia de la clase \cfa{CService} se le indica que la lectura sea en forma asíncrona.
+
+A continuación se detallan los métodos, funciones y subclases de la clase \cfa{CService}:
+
+%\figuraoo{Clase \cfa{CService}}{fig:Clase.CService}{width=\textwidth}{ClaseCService}{!h}
+
+\begin{itemize}
+	\item \cfm{getInitialized} devuelve un valor booleano que es verdadero si el servicio\footnote{Decimos que el servicio fue inicializado cuando se setearon las variables relacionadas al mismo.} ya ha sido inicializado. En cambio, el método ``getConnected'' devuelve verdadero si el servicio está conectado al dispositivo \ac{GSM} listo para transmitir datos entre el mismo y la \ac{PC}.
+	\item \cfm{getDeviceInfo} devuelve un objeto \cfobj{CDeviceInfo} que contiene información acerca del dispositivo \ac{GSM} en uso.
+	\item \cfm{setCacheDir} permite setear un directorio de trabajo que actúa como una caché para el manejo de mensajes.
+	\item \cfm{setSmscNumber} setea el número del \ac{SMSC} en formato internacional. Para utilizar el número del \ac{SMSC} que se encuentra definido en el dispositivo \ac{GSM}, se utiliza un string vacio como parámetro. En el caso de este \ac{TFC}, se deja vacío para utilizar el del \ac{TC}.
+	\item \cfm{getSmscNumber} permite obtener el número almacenado en la variable que lo contiene.
+	\item \cfm{setSimPin} setea el número de pin del \ac{SIM}. Este método se utiliza cuando el dispositivo \ac{GSM} lo necesita. Al setear la variable \cf{simPin} en nulo, la \ac{API} no entrega ningún número de pin al dispositivo (para evitar bloquearlo) y devuelve un valor definido por la constante \cf{ERR\_SIM\_PIN\_ERROR} definida en esta misma clase \cfa{CService}.
+	\item \cfm{getSimPin} devuelve el número de pin del \ac{SIM}.
+	\item \cfm{setOperationMode} setea el modo de operación del dispositivo \ac{GSM}. El modo se define de acuerdo al valor que toma el método como parámetro. Estos valores las contienen las constantes \cf{AT\_ASCII\_MODE} o \cf{MODE\_PDU}. El método \cfm{send} de la instancia \cfobj{CSerialDriver} contiene un parámetro que consiste en el comando AT que define el modo de operación. De esta manera, el método \cfm{send} es la encargada de setear el modo de operación del \ac{TC}. Como cada comando AT ejecutado envía una respuesta al terminal desde donde se generó la petición, el método \cfm{getResponse} de la clase \cfa{CSerialDriver} se encarga de recibir la respuesta y de verificar si el resultado de la misma fue un ``OK'' proveniente del \ac{TC}. 
+	\item \cfm{getOperationMode} devuelve el valor del modo que se está operando.
+	\item \cfm{setReceiveMode} setea el modo de recepción. Hay dos tipos de recepciones, el sincrónico o el asincrónico. En el modo sincrónico, se debe llamar a el método \cfm{readMessages} cada vez que se quiera chequear por nuevos mensajes. En el modo asíncrono, el motor de la \ac{API} automaticamente llama al método \cfm{received} por cada mensaje recibido. Las constantes que definen los valores del modo de recepción son \cf{RECEIVE\_MODE\_ASYNC} y \cf{RECEIVE\_MODE\_SYNC}. Por defecto, el modo de recepción es el sincrónico.
+	\item \cfm{getReceiveMode} devuelve el valor que indica el modo de recepción definido previamente.
+	\item \cfm{getCacheDir} devuelve un string que contiene el directorio que actua de caché.
+	\item \cfm{initialize} inicializa el servicio. Este debe ser el primer método a llamar.
+	\item \cfm{connect} realiza la conexión con el dispositivo \ac{GSM}. Abre el puerto serial, y envía los comandos AT apropiados para inicializar el modo de operación del \ac{TC}. Obtiene información del dispositivo. Este método se llama luego de ejecutar el método \cfm{initialize}.
+	La información específica del dispositivo \ac{GSM} (obtenido por la llamada al método \cfm{refreshDeviceInfo}) al cambiar con el tiempo (como por ejemplo el nivel de batería o de señal) debe ser actualizada. Esta actualización se realiza en forma manual a través del \cfm{refreshDeviceInfo}, es decir que, la \ac{API} no lo ejecuta de forma predefinida automaticamente. Si no se actualiza la información, quedarán registrados los datos unicamente del momento en el que se llamo al \cfm{refreshDeviceInfo}.
+	El método abre el puerto serial para establecer comunicación con el \ac{TC}. Limpia un buffer interno de la clase \cfa{CSerialDriver} y envía el comando \cf{AT} para verificar si la comunicación se estableción con exito. Si la respuesta que recibe el método es \cf{ERROR}, se genera una excepción que maneja este error, cerrando la comunicación e indicando cual fue el motivo de la falla. Si la respuesta es \cf{OK}, se envía el comando de lectura \cf{AT+CPIN?} para verificar si el \ac{SIM} no necesita del ingreso de un pin\footnote{Clave para poder acceder a los datos del \ac{SIM} que contiene un \ac{TC}.} para poder operar con el mismo.
+	Una vez verificado el pin, se establece el modo \ac{PDU} para operar y se modifica la variable \cf{connected} en verdadero. Luego, se toman los datos del dispositivo con el método \cfm{refreshDeviceInfo}. Al verificar la marca del \ac{TC}, se envía el comando AT apropiado\footnote{En el caso de la marca Sony Ericsson el comando es el \cf{AT+CPMS} explicado en la pág. \pageref{seleccion.memoria}} para setear la memoria de almacenamiento de los mensajes \ac{SMS}. Cada marca de \ac{TC} contiene un comando distinto para realizar esta operación de seteo de memoria de trabajo. 
+	\item \cfm{disconnect} realiza el cierre de la comunicación serial con el dispositivo \ac{GSM}.
+	\item \cfm{refreshDeviceInfo} envía los comandos AT adecuados para obtener los siguientes datos:
+	\begin{itemize}
+		\item Fabricante del dispositivo.
+		\item Modelo.
+		\item Número Serial de fabricación.
+		\item \ac{IMEI}.
+		\item Versión del software que contiene el dispositivo.
+		\item Nivel de batería.
+		\item Nivel de señal.
+	\end{itemize}
+	\item \cfm{readMessages} es el método que se llama cada vez que se quieran realizar lecturas de mensajes al dispositivo \ac{GSM}. Unicamente puede ser utilizado cuando se trabaja en el modo sincrónico. Por parámetro el método recibe el tipo de mensajes que se desea leer, ya sean mensajes recibidos leídos, recibidos sin leer,mensajes enviados o sin enviar (ver tabla \ref{tab:estados.sms} de la pág. \pageref{tab:estados.sms}). Una vez realizado esto, se procede a crear un buffer para los caracteres de entrada de cada mensaje \ac{SMS} que se leen. Este buffer almacena el contenido de cada mensaje en varias lineas de texto que se corresponden con las lineas de la respuesta del comando AT que lee los mensajes \ac{SMS} del \ac{TC}. El método separa los valores por medio de símbolos de coma ``,'' y separa los valores de cada mensaje para luego crear un objeto de la clase \cfa{CIncomingMessage} donde los almacena. Una vez almacenado, se procede a crear un archivo XML que contiene todos los datos del mensaje recibido. Esta creación de archivos XML puede evitarse si el operador del servidor de \ac{SMS} no lo necesita. Lo que tiene que hacer en ese caso, es desactivar la opción de generar archivos XML de todos los mensajes \ac{SMS} que el servidor procesa en las opciones de configuración del servidor en su \ac{GUI}.
+	\item \cfm{EstaEnArray} es una función definida para verificar si el índice de memoria del mensaje recibido se encuentra en un arreglo que contiene todos los índices de memoria que se fueron leyendo. Al verificar que el índice se encuentra en el arreglo, la clase considera que el mensaje ya fue leído anteriormente para no volverlo a almacenar. De esta manera, deja el paso al próximo mensaje para que luego sea verificado.
+	\item \cfm{SendMessage} es el método que se encarga de almacenar un objeto de la clase \cfa{COutgoingMessage} en una lista de objetos del mismo tipo para después llamar a otro método de igual nombre pero que recibe como parámetro a esta lista de objetos. Este otro método previo al envío del mensaje envía el comando \cf{AT+CMMS} que permite mantener abierta la conexión para el envío de datos al \ac{TC}. Se almacenan los datos del objeto \cfobj{COutgoingMessage} que contiene el mensaje \ac{SMS} y se prepara el comando \cf{AT+CMGS} para el envío del mensaje \ac{SMS}. Se envían los datos de la \ac{PDU} del mensaje y se verifica si la transmisión fue correcta con la respuesta \cf{OK} enviada por el \ac{TC}. Si el mensaje fue enviado con éxito, se llama al método \cfm{setDispatchDate} de la clase \cfa{CMessage} para fijar la fecha en el cual el mensaje fue envíado. A su vez, el método \cfm{getStatistics} de la clase \cfa{CDeviceInfo} llama a la función \cfm{incTotalOut} que realiza un conteo de los \ac{SMS}s salientes que va produciendo el servidor de \ac{SMS}.
+	\item \cfm{deleteMessage} es un método que se encarga de borrar un mensaje que se encuentra en la memoria del dispositivo \ac{GSM}. La ubicación del mensaje en memoria lo hace por medio del índice que recibe por parámetro el método. La aplicación permite almacenar los primeros 100 mensajes \ac{SMS} recibidos sin modificar la memoria. Una vez recibido el mensaje número 100, se procede a llamar a este método para eliminar todos los mensajes de la memoria del K750i, ya que esta tiene un soporte máximo de 200 mensajes.
+	\item \cfm{received} es un método que se utiliza cuando se trabaja en forma asíncrona. Se lo llama después de recibir un mensaje para que devuelva un valor binario que si es verdadero indica a la \ac{API} a que borre el mensaje de la memoria del dispositivo una vez leído. Si el valor es falso, no se lo elimina de la memoria.
+	\item la función \cfm{isIncomingMessage} cheque que tipo de \ac{PDU} del mensaje se esta procesando, si es uno del tipo SMS-DELIVER devuelve verdadero y si es del tipo SMS-SUBMIT devuelve falso.
+	\item \cfm{setConnected} se encarga de setear la variable de conexión \cf{connected}.
+	\item \cfm{setInitialized} setea la variable de inicialización ``initialized''.
+	\item \cfm{getManufacturer} es el método que envía el comando \cf{AT+CGMI} para obtener un string con el nombre del fabricante del \ac{TC}. Una vez obtenido la respuesta del comando, el método se encarga de identificar la parte que contiene el nombre para después almacenarlo en un string.
+	\item \cfm{getModel} envía el comando \cf{AT+CGMM} y almacena en un string el modelo del \ac{TC}.
+	\item \cfm{getSerialNo} utiliza el comando \cf{AT+CGSN} para obtener el dato del número de serie del dispositivo.
+	\item \cfm{getIMSI} se encarga de obtener el \ac{IMEI}\footnote{En la \ac{API} se utilizó el acrónimo IMSI para referirse al \ac{IMEI} en el cual ambos contienen el mismo significado.} a través del comando \cf{AT+CIMI}.
+	\item \cfm{getSwVersion} obtiene la versión del software del \ac{TC} por medio del comando \cf{AT+CGMR}
+	\item \cfm{getBatteryLevel} obtiene un valor que representa el nivel de las baterías del \ac{TC} mediante el uso del comando \cf{AT+CBC}
+	\item \cfm{getSwVersion} obtiene el nivel de señal a través del comando \cf{AT+CSQ}
+	\item \cfa{CReceiveThread} es la subclase utilizada en el modo asincrónico que lo que hace es generar un thread que cada 10 segundos borre los mensajes \ac{SMS}\footnote{La operación de eliminación se realiza solamente si el valor que devuelve el método \cfm{received} es verdadero.} de la memoria del \ac{TC} si estos se encuentran en la lista de objetos \cfobj{CIncomingMessage} que contienen los mensajes leídos por la \ac{API}.
+	\item \cfm{CrearXML} permite generar un archivo \textbf{\cfa{XML}} en el momento que se genera un objeto \cfobj{CIncomingMessage}.
+	\item \cfm{CrearXMLSal} permite generar un archivo \textbf{\cfa{XML}} a partir de un objeto \cfobj{COutgoingMessage}.
+\end{itemize}
+
+\subsection{Archivo \cfa{CATCommands.java}}
+\label{sec:Clase.CATCommands}
+
+La clase \cfa{CATCommands} contiene las constantes que definen los comandos AT utilizados en las distintas clases de la \ac{API}. En la tabla \ref{cod:catcommands} se puede observar el código Java perteneciente a la clase con cada constante y su respectivo comando AT que representa.
+
+\begin{tablaos}{Archivo \cfa{\textbf{CATCommands.java}}}{cod:catcommands}{!t}
+\includegraphics{CATCommands}
+\end{tablaos}
+
+\subsection{Archivo \cfa{CDeviceInfo.java}}
+\label{sec:Clase.CDeviceInfo}
+
+Esta clase contiene información y estadísticas acerca del uso del dispositivo \ac{GSM}. La información almacenada en el objeto \cfobj{deviceInfo} es generada automáticamente por la \ac{API} durante la conexión inicial. Luego, esta a cargo del programador llamar a la función \cfm{refreshDeviceInfo} del objeto \cfobj{srv} que permite la actualización de los datos del dispositivo.
+La clase contiene una instancia de la subclase \cfa{CStatistics} que contiene variables que representan contadores para el tráfico de mensajes \ac{SMS} entrantes y salientes. Estos contadores se actualizan automáticamente cuando se realizan las operaciones de lectura y envío de \ac{SMS}s.
+
+\subsection{Archivo \cfa{CGSMAlphabets.java}}
+\label{sec:Clase.CGSMAlphabets}
+
+Esta clase contiene las rutinas de conversión hacia y desde el estándar de 7 bits del alfabeto \ac{GSM}. Cada carácter normal \ac{ASCII} debe convertirse de acuerdo al alfabeto por defecto del estándar de 7 bits antes de enviarlo al dispositivo \ac{GSM}. La conversión opuesta se realiza cuando se recibe un mensaje. La sección \ref{fig:conversionhexa} de la pág \pageref{fig:conversionhexa} explica los pasos de conversión a nivel de bits de varios caracteres \ac{ASCII}.
+Debido a que algunos caracteres en el alfabeto de 7 bits están en la posición donde existen caracteres de control en el alfabeto \ac{ASCII}, cada mensaje es representado también en formato hexadecimal a través del método \cfm{text2Hex} que contiene la clase \cfa{CMessage} y sus derivados.
+Cuando se realiza una comunicación entre la \ac{PC} y el dispositivo \ac{GSM}, ya sea para leer mensajes o para enviar, un modo especial es utilizado donde cada carácter del actual mensaje es representado por dos dígitos hexadecimales. Por lo tanto, hay otro paso más de conversión para poder llegar al carácter \ac{ASCII} a partir de cada par de dígitos hexadecimales, y también en viceversa. En esta \ac{API}, el alfabeto de 7 bits es el único que soporta. En actualizaciones más recientes se soportan otros alfabetos existentes en los estándares \ac{GSM}.
+Existen métodos que realizan distintas conversiones. A continuación se detallan las funciones que cumplen cada uno de estos.
+
+\begin{itemize}
+	\item \cfm{char2Hex} permite recibir por parámetro un carácter \ac{ASCII} y un valor entero que indica el conjunto de caracteres al cual sera convertido (en este caso, el alfabeto de 7 bits). El alfabeto se encuentra almacenado en un string llamado \cf{alphabet} que se utiliza cada vez que se desea buscar el equivalente a un carácter \ac{ASCII}. Una vez encontrado el equivalente se procede a generar el valor hexadecimal llamando al método \cfm{toHexString} de la clase Java \cfa{Integer} para que genere un string que represente un valor hexadecimal.
+	\item \cfm{hex2Char} convierte un valor hexadecimal al carácter \ac{ASCII} que lo representa.
+	\item \cfm{hex2ExtChar} convierte un valor entero a un carácter \ac{ASCII} extendido (símbolos especiales) que lo representa. 
+	\item \cfm{text2Hex} convierte un string \ac{ASCII} a un string de pares hexadecimales.
+	\item \cfm{hex2Text} convierte un string de pares hexadecimales a sus equivalentes caracteres \ac{ASCII}.
+\end{itemize}
+
+\subsection{Archivo \cfa{CMessage.java}}
+\label{sec:Clase.CMessage}
+
+Clase que contiene las características de un mensaje \ac{SMS}. Los objetos creados por las clases \cfa{CIncomingMessage} y \cfa{COutgoingMessage} llaman al constructor de esta clase con los parámetros correspondientes. Este constructor toma como parámetros al tipo de mensaje (si es entrante o saliente), a la fecha de creación del mensaje, el número de teléfono del originador del mensaje (aplicable solamente a mensajes entrantes), el numero de destino (aplicable solamente a mensajes salientes), el texto correspondiente al mensaje y el índice de memoria del dispositivo \ac{GSM} donde se encuentra almacenado (solo para mensajes entrantes).
+
+El índice de memoria se tiene en cuenta unicamente en los mensajes recibidos o entrantes y no se consideran en los mensajes salientes, ya que al enviar un mensaje a la red \ac{GSM}, el \ac{TC} recibe el mensaje enviado por la \ac{PC} y la envia a destino sin almacenarlo en la memoria del dispositivo. En el caso de los mensajes entrantes, estos si se almacenan en memoria, teniendo así el dato del índice que indica la parte de la memoria donde estan almacenados.
+
+Se definieron varios métodos para obtener distintos tipos de datos respecto a un \ac{SMS}.
+
+\begin{itemize}
+	\item El método \cfm{getType} se utiliza para obtener el tipo de mensaje \ac{SMS}, si se trata de uno entrante, uno saliente, o uno interno para transmitir datos entre clases de la aplicación\footnote{Los mensajes internos de la aplicación son denominados ``mensajes de protocolo''.} como se encuentran definidos en las constantes \cf{Type\_INCOMING}, \cf{Type\_OUTGOING} y \cf{Type\_PROTOCOL}.
+	\item \cfm{getID} consiste en un método que permite obtener el índice creado por la aplicación que identifica a los mensajes entrantes y a los salientes.
+	\item \cfm{getMemIndex} devuelve un valor entero que consiste en el índide de memoria del \ac{TC} donde esta almacenado el \ac{SMS}.
+	\item \cfm{getDate} devuelve la fecha del mensaje. Para mensajes entrantes, la fecha de envío desde el origen. Para mensajes salientes, la fecha de creación.
+	\item \cfm{getText} devuelve el texto del mensaje en código \ac{ASCII}.
+	\item \cfm{getHexText} devuelve el texto del mensaje en formato hexadecimal.
+	\item \cfm{getMessageEncoding} devuelve un valor entero que representa el método de codificación del \ac{SMS}. Los valores se encuentran definidos por las constantes \cf{MESSAGE\_ENCODING\_7BIT}, \cf{MESSAGE\_ENCODING\_8BIT} y \cf{MESSAGE\_ENCODING\_UNICODE}.
+\end{itemize}
+
+Además de estos métodos, se encuentran otros para setear datos.
+
+\begin{itemize}
+	\item \cfm{setID} setea el identificador del \ac{SMS}.
+	\item \cfm{setText} almacena el texto en la variable \cf{text}.
+	\item \cfm{setDate} almacena la fecha del mensaje.
+	\item \cfm{setMessageEncoding} setea la codificación del mensaje por medio de las constantes que definen los tipos de codificación.
+\end{itemize}
+
+El método \cfm{toString} devuelve un string que contiene los valores de cada una de las variables que almacenan los distintos datos del mensaje \ac{SMS}.
+
+\subsection{Archivo \cfa{CIncomingMessage.java}}
+\label{sec:Clase.CIncomingMessage}
+
+Esta archivo contiene la clase que representa un mensaje \ac{SMS} recibido\footnote{Mensaje enviado por algún usuario al dispositivo \ac{GSM}}. La clase tiene 2 constructores, uno de acceso público y otro de acceso protegido. El constructor público recibe por parámetros la fecha en que fue creado el mensaje, el número de telefono del originador, el texto del mensaje y el índice de memoria del dispositivo \ac{GSM} donde se encuentra almacenado. El constructor protegido toma como parámetros un string que contiene el mensaje \ac{SMS} en formato \ac{PDU}, un valor entero que indica el índice de memoria donde se encuentra almacenado el mensaje en el \ac{TC} y el ultimo parámetro es otro valor entero que representa un identificador que se le agrega al mensaje para que la aplicación lo pueda identificar en otras clases que lo utilizen. El constructor de acceso protegido es el utilizado en el objeto \cfobj{srv} perteneciente a la clase \cfa{CService}.
+
+Este índice creado por la aplicación se incrementa a medida que ingresan los mensajes entrantes. En los mensajes salientes, también se le agrega a cada uno un identificador único el cual no tiene relación alguna con el identificador de los \ac{SMS} entrantes. Estos identificadores de mensajes se crearon para evitar el uso de los índices de memoria del \ac{TC}. La forma en que el \ac{TC} utilizado en el proyecto almacena los mensajes en memoria no genera una correcta secuencia del índice para los mensajes entrantes. Esto se debe a que el índice de memoria aumenta su valor tanto en mensajes entrantes como en los salientes. Además, al borrar un mensaje en la memoria del \ac{TC}, esa posición de memoria queda vacía y se volverá a utilizar cuando se reciba o se envíe un nuevo mensaje \ac{SMS}.
+
+El \ac{TC} tiene una capacidad total de memoria para guardar 200 mensajes \ac{SMS}, tanto entrantes como salientes. Supongamos la situación en que la memoria esta vacía y recibo 3 nuevos mensajes, estos se almacenarán con el índice 1, 2 y 3 de acuerdo al orden en el que se recibieron estos mensajes. Luego, si genero un mensaje y lo envío, este se almacenará en la memoria con el índice número 4, y si después de enviarlo, recibo otro mensaje, este último se almacenará con el número 5. Ahora, Supongamos que queramos borrar el 2 mensaje recibido del grupo de los 3 primeros mensajes que llegaron. Al borrar, el índice número 2 queda vacío (disponible) y se utilizará para el próximo mensaje entrante o saliente. Esto da como resultado que, al querer tomar una lectura de los mensajes entrantes en el dispositivo \ac{GSM} y querer lograr ordenarlos de acuerdo al orden en que estos mensajes fueron recibidos tomando en cuenta a el índice de memoria, esto generaría un ordenamiento erróneo de los mensajes. Es por eso que la aplicación del servidor implementa un índice propio para identificar los mensajes \ac{SMS} que se reciben y otro índice para los que se envian.
+
+Cuando se crea un objeto de la clase \cfa{CIncomingMessage}, el constructor protegido recibe un string que contiene la \ac{PDU} del mensaje. Este string se desglosa en partes que se almacenan en diferentes variables. Cada una de estas partes contienen valores hexadecimales que se convierten a caracteres \ac{ASCII} utilizando el método \cfm{pduToText} y los métodos descriptos en la clase \cfa{CGSMAlphabets}. Los valores finales que se obtienen son el número de telefono del originador del \ac{SMS}, la fecha de creación y el texto del mensaje \ac{SMS}.
+
+\subsection{Archivo \cfa{COutgoingMessage.java}}
+\label{sec:Clase.COutgoingMessage}
+
+Esta archivo representa la clase de un mensaje \ac{SMS} saliente que será enviado a la red \ac{GSM} a través del \ac{TC}. El constructor toma como parámetros el número de teléfono destino a donde se enviará el \ac{SMS} y el texto que contendrá información del servidor. El número de teléfono se encuentra representado en formato internacional. Este formato esta compuesto por el signo ``+'' seguido del ``código de país'' más ``código del área'' y por el ``número de celular sin los primeros dos dígitos 15''.
+
+Esta clase también contiene dos constructores, pero en este caso los dos son de acceso público. El primero no recibe datos por parámetro y solamente llama al constructor de la superclase \cfa{CMessage} informandole que quiere crear un objeto que represente un mensaje a enviar con la fecha de creación del objeto y todas sus demás variables nulas.
+
+El segundo constructor recibe el número de teléfono, el texto, y el identificador de mensaje saliente. Luego, llama al constructor de la superclase \cfa{CMessage} enviandole el tipo de mensaje (saliente), la fecha de creación (momento en el cual se crea el objeto), el teléfono de destino, el texto que incluye el \ac{SMS}, y el identificador de mensaje. Por defecto, el mensaje es codificado en el alfabeto de 7 bits. Si se desea cambiar la codificación, se puede hacerlo mediante el método \cfm{setMessageEncoding} del \cfa{CMessage}. Las otras codificaciones soportadas para generar mensajes son la codificación de 8 bits y la codificación Unicode.
+
+Esta clase trabaja con el método \cfm{getPDU} que permite generar la \ac{PDU} del \ac{SMS}. Toma un valor por parámetro que representa al número que corresponde al \ac{SMSC}. A medida que genera la \ac{PDU} utiliza el método \cfm{textToPDU} para convertir texto en código \ac{ASCII} en el formato \ac{PDU}. La conversión de los números telefonicos al formato BCD del \ac{SMSC} y del destino los realiza el método \cfm{toBCDFormat}.
+
+\subsection{Archivo \cfa{CUtils.java}}
+\label{sec:Clase.CUtils}
+
+La clase \cfa{CUtils} contiene unicamente el método \cfm{substituteSymbol} que modifica ciertos caracteres de un string por otros. Se lo utiliza cada vez que se quiere modificar algún valor relacionado con un comando AT que se va a ejecutar. Suponiendo que se quiera ejecutar el comando \cf{AT+CPIN} para ingresar un número de pin que permita desbloquear el acceso a datos de un \ac{SIM} que tenga un pin almacenado. Como la clase \cfa{CATCommands} contiene solamente la sintaxis sin ningún pin, \cfm{substituteSymbol} permite crear un string que contendrá la sintaxis del comando y el número de pin, de esta manera el comando queda armado para ejecutarse y evitar asi una respuesta de error por parte del módem interno del \ac{TC}. En el caso de este \ac{TFC}, el \ac{SIM} del \ac{TC} se encuentra sin número de pin, pero de todas formas, el acceso a los datos de los mensajes \ac{SMS} es a través de la memoria interna del dispositivo y no de la memoria que tiene el \ac{SIM}.
+ 
+\subsection{Archivo \cfa{CSerialDriver.java}}
+\label{sec:Clase.CSerialDriver}
+
+La clase \cfa{CSerialDriver} maneja las operaciones con el puerto serie. Contiene todas las funciones de bajo nivel necesarias para manejar el paquete de comunicaciones \textbf{\cfa{comm.jar}} (ver sección \ref{sec:implementacion}) que se encuentra instalado como una extensión a los paquetes de clases Java y que es contiene todas las clases necesarias para lograr la comunicación serial con el dispositivo \ac{GSM}.
+
+Se definen tres constantes utilizadas por la clase. La primera \cf{RECV\_TIMEOUT} consiste en el tiempo\footnote{Las unidades de tiempo en el código de la aplicación se encuentran en milisegundos} máximo de espera para recibir un dato de respuesta del \ac{TC} a la \ac{API}. La segunda \cf{BUFFER\_SIZE} es el tamaño del \textsl{buffer} de entrada/salida que se utiliza para la comunicación serial. La tercera \cf{DELAY\_BETWEEN\_CHARS} consiste en un \textsl{delay} o espera después del envío de un carácter al \ac{TC}. Algunos \ac{TC} pueden recibir los datos fuera de sincronismo si esta espera no se tiene en cuenta, aun cuando se establezca una comunicación de baja velocidad.
+
+El constructor de la clase permite setear el puerto de comunicaciones y la velocidad de transmisión definidos en la ventana de configuración de la \ac{GUI} de la aplicación. También se crea un log que mantiene información actualizada sobre algunos valores referentes a la conexión establecida.
+
+Los métodos \cfm{open} y \cfm{close} abren y cierran el puerto de comunicaciones antes y después de enviar datos al \ac{TC}. El envío de datos se realiza a través del objeto \cfobj{outStream} de la clase Java \cfa{OutputStream} que contiene un stream de bytes a enviar. Los datos recibidos se obtienen del objeto \cfobj{inStream} de la clase Java \cfa{InputStream}.
+
+\section{Implementación de la \ac{API} en el \ac{TFC}}
+\label{sec:implementacion}
+
+La comunicación entre la \ac{API} \textsl{JSMSEngine} y el dispositivo \ac{GSM} se realiza en tres niveles por separado:
+
+El escalón de mayor nivel es implementado por la clase \cfa{CService}.
+
+El escalón de menor nivel es implementado por la clase \cfa{CserialDriver}, dónde la interfaz es implementada a lo largo de los métodos de escritura y lectura. Esta clase sirve como clase prototipo y como un \textsl{driver} genérico para todos los dispositivos \ac{GSM} que no poseen uno específico. Contiene todos los comandos AT necesarios usados por las librerías. Esta clase debería ser compatible con todos los teléfonos, pero sin embargo esto no es siempre posible. Algunas veces, hay pequeñas o grandes diferencias en la implementación de los comandos AT \ac{3GPP}. Algunos teléfonos pueden requerir diferentes comandos o un manejo diferente para los mismos comandos.
+
+Puede haber un \textsl{driver} específico para un fabricante (por ejemplo Nokia) o un \textsl{driver} específico para un modelo en particular de un fabricante (por ejemplo para Nokia 6210 solamente). En este \ac{TFC} no hubo problemas de compatibilidad con las clases que manejan la comunicación con el \ac{TC}. Unicamente se debió cambiar los valores que tenían algunos comandos AT para que sean los adecuados valores que el \ac{TC} pueda comprender.
+
+Esta \ac{API} debe ser instalada conjuntamente con un paquete de librerías desarrollado por SUN Microsystems\Si{\textregistered} llamada ``SUN Java Comm v2 (Win32)''. Este paquete contiene clases que manejan el puerto de comunicación serial de una \ac{PC}. Debido a que las clases del \textsl{JSMSEngine} llaman a funciones de este paquete, es necesario la instalación del mismo para su correcto funcionamiento.
+
+
+
+

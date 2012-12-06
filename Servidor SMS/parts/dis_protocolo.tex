@@ -1,0 +1,541 @@
+\chapter{Diseño de un protocolo para la comunicación entre la \acs{IH} y el \acs{HOST}}
+\label{sec:pc}
+Para el acceso a los recursos de la \ac{IH} hace falta un medio de comunicación. Dicho medio en este caso es el puerto \ac{UART} visto en la sección \ref{sec:proto}. Ahora bien, para transmitir una variedad de tipos de datos, como ser muestras de audio, actualizaciones de video y mensajes, hace falta de un orden en la transmisión de estos datos. Este orden se establece a través de un protocolo de comunicación. Entonces, la característica principal de este protocolo es la mutiplexación de los siguientes tipos de datos:
+\begin{itemize}
+	\item Mensaje
+	\item Audio
+	\item Video
+\end{itemize}
+Otra característica importante es el nivel de prioridad de los diferentes tipos de datos, de mayor a menor prioridad:
+\begin{itemize}
+	\item Nivel 0
+	\item Nivel 1
+	\item Nivel 2
+\end{itemize}
+Estas dos características se conjugan en un solo identificador, el cual se denomina --en adelante-- simplemente prioridad:
+\begin{itemize}
+	\item P0 (b'00') $\rightarrow$ Mensaje, nivel 0
+	\item P1 (b'01') $\rightarrow$ Audio, nivel 1
+	\item P2 (b'10') $\rightarrow$ Video, nivel 2
+	\item P3 (b'11') $\rightarrow$ Mensaje, nivel 2
+\end{itemize}
+Puede parecer confuso ver que existen 4 prioridades y sólo 3 niveles de prioridad, pero esto significa que a los fines prácticos se agruparon P2 y P3 en un solo nivel de prioridad. Igualmente tiene importancia la diferencia entre P2 y P3 por el hecho de poder distinguir entre video o mensaje.
+
+Debido a que la comunicación entre la \ac{IH} y el \acsu{HOST} es bidireccional se introduce un concepto que determina la dirección del flujo de datos. Este concepto es independiente de si se observa desde la \ac{IH} o el \ac{HOST}. Para ello todos los datos que fluyen desde la \ac{IH} hacia el \ac{HOST} se denominan ``de envío''. Siguiendo esta lógica, todos los datos que fluyen desde el \ac{HOST} hacia la \ac{IH} se denominan ``de retorno''.
+
+Los diferentes tipos de datos se transmiten en un conjunto secuencial de datos denominado trama. Debido a una compatibilidad con el medio de comunicación y por fines prácticos se diseñó este protocolo con una longitud de trama múltiplo de 8\un{bits}.
+
+Para el procesamiento de los niveles de prioridad se utiliza un esquema de colas de prioridades. Esto significa que hacen falta 3 colas de prioridades de envío y 3 colas de prioridades de retorno.
+
+Por último, la implementación de este protocolo es mediante el desarrollo de un multiplexor/demultiplexor por software (\textsl{softswitch}), con capacidad de priorizar los datos.
+\figuraoo{Flujo de datos del \textsl{softswitch}}{fig:pc.flujodatos}{}{pc-flujodatos}{!h}
+Como se observa en la figura \ref{fig:pc.flujodatos} el flujo de datos para el video es en una sola dirección. Esto es porque el video se trata de la representación de imágenes en el \ac{LCD} y no de la transmisión de video desde la \ac{IH}. Entonces no hace falta referirse al video como ``video de envío'' o ``video de retorno''. No así es el caso del audio, que es bidireccional, teniendo audio de envío y audio de retorno. También los mensajes son bidirecionales, porque pueden tratarse de mensajes de retorno que solicita el envío de respuestas, de mensajes sin respuesta o de mensajes generado por eventos asincrónicos (sin solicitud). Los mensajes, al tener identificador P0 son ``mensajes de alta prioridad'' (mensajes urgentes) y al tener identificador P3 son ``mensajes de baja prioridad'' (mensajes comunes).
+
+
+
+
+
+
+\section{Sincronismo}
+\label{sec:pc.sincro}
+El sincronismo es una de las partes más importantes para la transmisión de una secuencia de datos en un protocolo. En este caso el sincronismo lo da una secuencia de 8\un{bits}. Éste es el ``sincronismo absoluto'' e indica que el próximo byte representa la cabecera de una trama. Una ventaja del sincronismo absoluto es la de interrumpir la transmisión de una trama de menor prioridad con una de mayor prioridad.
+
+También existe otro tipo de sincronismo implícito llamado ``sincronismo relativo'' el cual existe al conocer la longitud de cada trama que fluye por el canal. La utilización del sincronismo relativo reduce notablemente el \textsl{overhead} para tramas muy cortas pero se corre el riesgo de perder el sincronismo tras la perdida de algún dato.
+
+Ahora hace falta definir cual es la secuencia de 8\un{bits} a utilizar. Para ello hace falta hacer un análisis de los datos a transmitir en cada una de las tramas. Para el caso del audio --el cual tiene la tasa mayoritaria-- se transmiten muestras con valores ente -127 a 127, quedando libre el valor -128 que también es equivalente en 8\un{bits} al valor 128. Para el caso de los mensajes haría falta evitar utilizar el valor 128, lo cual no es ningún inconveniente, pero puede ocurrir que sea necesario transmitir indefectiblemente el valor 128 junto con el mensaje. Lo mismo puede suceder con el video. Entonces, como el valor 128 no puede ser evitado entre los datos a transmitir, hace falta un mecanismo para enmascararlo. Entonces, para que no sea interpretado como un sincronismo absoluto se introduce el concepto de ``sincronismo falso''. En definitiva, se optó el valor 128 para la secuencia de sincronismo absoluto, que en 8\un{bits} se representa como \mbox{b'10000000'}.
+
+
+Al sincronismo falso se lo interpreta en función de dos bytes, donde el primero es el valor 128. Entonces, al ser el segundo byte el valor ``1'' representa que no se trata de un sincronismo, sino sólo de un valor 128. Pero, si el segundo byte es el valor ``2'' también representa un sincronismo falso, pero en este caso interpretándose como 2 bytes de valor 128. En síntesis, la interpretación es la que se observa en la tabla \ref{tab:pc.sincfalso}.
+\begin{tablao}{Sincronismo falso}{tab:pc.sincfalso}{!h}
+	\begin{tabular}{l@{}c@{}l}
+		\textbf{Secuencia} & & \textbf{Interpretación} \\
+		\hline
+		10000000 00000001 &$\rightarrow$& 10000000  \\
+		10000000 00000010 &$\rightarrow$& 10000000 10000000  \\
+		\hline
+	\end{tabular}\\[5mm]
+\end{tablao}
+La ventaja de tener estas dos opciones es la de no duplicar la carga en el canal para el caso de transmitir secuencias prolongadas de valores 128 consecutivos.
+
+Más adelante, en la sección \ref{sec:pc.msg} se puede ver como los valores ``1'' y ``2'' que siguen al valor de sincronismo ``128'' son simplemente mensajes de alta prioridad. Otro mensaje importante en esta sección es el mensaje de ``pedido de sincronismo'' con el valor ``3'' como segundo byte y el mensaje ``NOP'' (operación nula) con el valor ``0'' como segundo byte.
+
+El pedido de sincronismo indica al otro extremo que intente insertar el sincronismo absoluto (IIS) inmediatamente o luego de la finalización de la trama que aún esté transmitiendo.
+
+El mensaje NOP sirve para el caso de querer transmitir un sincronismo absoluto junto con un mensaje que no implique una operación.
+
+
+\section{Estructura de las tramas}
+\label{sec:pc.tramas}
+Las tramas son los contenedores de los diferentes tipos de datos a transmitir por el canal, pero comparten una parte de la estructura que es común a todas. Esta parte es el identificador de prioridad visto en la sección \ref{sec:pc}. Este identificador es representado solamente por los 2\un{MSb} (bit 7 y bit 6) de la cabecera de la trama, como se observa en la tabla \ref{tab:pc.trama.id}.
+
+\begin{tablao}{Identificador de trama en su cabecera}{tab:pc.trama.id}{!h}
+	\begin{tabular}[h]{|c|c|ccl}
+		%\multicolumn{5}{c}{}\\
+		\cline{1-3}
+		0 & 0 & \dots & $\rightarrow$ & Mensaje de alta prioridad\\
+		\cline{1-3}
+		\multicolumn{5}{c}{}\\
+		\cline{1-3}
+		0 & 1 & \dots & $\rightarrow$ & Audio\\
+		\cline{1-3}
+		\multicolumn{5}{c}{}\\
+		\cline{1-3}
+		1 & 0 & \dots & $\rightarrow$ & Video\\
+		\cline{1-3}
+		\multicolumn{5}{c}{}\\
+		\cline{1-3}
+		1 & 1 & \dots & $\rightarrow$ & Mensaje de baja prioridad\\
+		\cline{1-3}
+	\end{tabular}\\[5mm]
+\end{tablao}
+
+Para el caso de los mensajes (ver tabla \ref{tab:pc.trama.msg}),
+\begin{tablao}{Cabecera de la trama de mensaje}{tab:pc.trama.msg}{!b}
+	\tablaochobitsin
+			{\bp{ID1}}	{\bp{ID0}}	{\bp{M5}}	{\bp{M4}}	{\bp{M3}}	{\bp{M2}}	{\bp{M1}}	{\bp{M0}}
+\begin{description}
+	\item[7:6] \bp{ID1:ID0}: Identificador de trama (valor fijo)\\
+		00 = Mensaje de alta prioridad\\
+		11 = Mensaje de baja prioridad
+	
+	\item[5:0] \bp{M5:M0}: Identificador de mensaje\\
+		Ver tablas \ref{tab:pc.MR} y \ref{tab:pc.ME}.
+\end{description}
+\end{tablao}
+en la cabecera de la trama restan 6\un{bits} (\bp{M5:M0}) que se utilizan para identificar un total de 64 mensajes de retorno y 64 mensajes de envío como máximo. Esto significa que un mismo código de mensaje puede tener un significado diferente cuando se trata de un mensaje de retorno o un mensaje de envío. En primera instancia las tramas de mensajes sólo tiene una longitud de un byte, pero esto no es tan así debido a que existen mensajes que agregan uno o hasta dos paramentos más. Es decir que, las tramas de mensajes pueden medir entre 1 a 3 bytes de longitud. Entonces, parece ser una incertidumbre el saber el momento del sincronismo relativo al no saber con certeza la longitud de la trama de mensaje. Pero esto no es así, porque la longitud de la trama de mensaje está implícita en el código del mensaje como se verá en la sección \ref{sec:pc.msg}.
+
+Para el caso de la trama de audio (ver tabla \ref{tab:pc.trama.audio})
+\begin{tablao}{Cabecera de la trama de audio}{tab:pc.trama.audio}{!h}
+	\tablaochobitsin
+			{\bp{ID1}}	{\bp{ID0}}	{\bp{L5}}	{\bp{L4}}	{\bp{L3}}	{\bp{L2}}	{\bp{L1}}	{\bp{L0}}
+\begin{description}
+	\item[7:6] \bp{ID1:ID0}: Identificador de trama (valor fijo).\\
+		01 = Trama de audio.
+	
+	\item[5:0] \bp{L5:L0}: Longitud de la carga útil de la trama.\\
+		000000 = 0 muestras.\\
+		000001 = 1 muestra.\\
+		~\vdots\\
+		111111 = 63 muestras.\\
+\end{description}
+\end{tablao}
+los 6\un{LSb} de la cabecera representan la cantidad de muestras ($n$) que se transmiten en la trama. El valor $n$ puede ser un valor ente 0 a 63. Luego de la cabecera de la trama siguen $n$ muestras de audio. Entonces, la longitud total de la trama de audio es de $n+1$ bytes.
+
+
+Para el caso de la trama de video los 6\un{LSb} de la cabecera se utilizan como se observa en la tabla \ref{tab:pc.trama.video}.
+\begin{tablaot}{Cabecera de la trama de video}{tab:pc.trama.video}{!t}
+	\tablaochobitsin
+			{\bp{ID1}}	{\bp{ID0}}	{\bp{R}}	{\bpn{D}{C}}	{\bp{L3}}	{\bp{L2}}	{\bp{L1}}	{\bp{L0}}
+\begin{description}
+	\item[7:6] \bp{ID1:ID0}: Identificador de trama (valor fijo).\\
+		10 = Trama de video.
+	
+	\item[5] \bp{R}: Bit reservado a `1' para evitar la posible formación de la secuencia de sincronismo.
+	
+	\item[4] \bpn{D}{C}: Bit de selección de datos o comandos.\\
+		1 = La carga útil de la trama será entregada como datos al LCD.\\
+		0 = La carga útil de la trama será entregada como comandos al LCD.
+	
+	\item[3:0] \bp{L3:L0}: Longitud de la carga útil de la trama.\\
+		0001 = 1 dato útil.\\
+		~\vdots\\
+		1111 = 15 datos útiles.\\
+		0000 = 16 datos útiles.
+\end{description}
+\end{tablaot}
+Entonces, la longitud total de la trama de video es de $n+1$ siendo $n$ la cantidad de datos útiles y $1$ la longitud de la cabecera. El bit \bp{R} está puesto a `1' intencionalmente para que al enviar 16 datos útiles para ser entregados como comandos al \ac{LCD}, no se produzca la combinación b'10000000' que se mal interpretaría como un sincronismo absoluto. En vez de esto se genera, gracias a $\bpf{R}=1$, la combinación b'10100000'. El bit \bpn{D}{C} es el que fija el pin también llamado \bpn{D}{C} del \ac{LCD} que se ha visto en la sección \ref{sec:des.LCD}, que determina que los datos enviados al \ac{LCD} son par ser interpretados como ``comandos o instrucciones'' o como ``píxeles en la pantalla''.
+
+
+
+
+
+\section{Mensajes}
+\label{sec:pc.msg}
+Los mensajes son estructuras de datos versátiles debido a la variedad de funciones que otorgan. Entre éstas están: la inicialización y la interrupción del \textsl{streaming} de audio, el control del \ac{LED} indicador y del backlight del \ac{LCD}, el envío del evento de presionar o soltar alguna tecla, etc.
+
+Como se ha visto al comienzo de la sección \ref{sec:pc} existen ``mensajes de retorno'' y ``mensajes de envío''. Entre los mensajes de retorno se encuentran los ``mensajes sin respuesta'' como por ejemplo el control del \ac{LED} indicador. También se encuentran los ``mensajes con respuesta (mensajes sincrónicos)'' como por ejemplo la lectura del estado actual del teclado. Entre los mensajes de envío se encuentran los ``mensajes de respuesta a una solicitud'' como por ejemplo la respuesta a un ``ping''. También entre los mismos se encuentran los ``mensajes generados por eventos (mensajes asincrónicos)'' como por ejemplo el colgar o descolgar el tubo telefónico. Cada uno de estos mensajes es enviado en una trama de mensaje como se ha visto en la sección \ref{sec:pc.tramas}.
+
+Existen cuatro mensajes especiales, que se han nombrado en la sección \ref{sec:pc.sincro}, que tienen el mismo código y significado tanto para mensajes de retorno como de envío. Estos mensajes son los codificados del 0 al 3 como se verá en las tablas \ref{tab:pc.MR} y \ref{tab:pc.ME}. Son mensajes especiales debido a que se procesan a más bajo nivel que el resto. Esto es a nivel del \textsl{softswitch} y no del intérprete de mensajes como se verá en la sección \ref{sec:pc.alg.proto}.
+
+
+
+\subsection{Lista de Mensajes de retorno (\acs{MR})}
+Los mensajes de retorno son los mensajes que se dirigen desde el \acsu{HOST} hacia la \ac{IH}. La lista de estos mensajes se observa en la tabla \ref{tab:pc.MR}. En ésta se observa una columna denominada \textbf{Rel.} que se refiere a ``mensaje relativo''. Este mensaje relativo puede ser tanto la respuesta al mensaje de retorno como algún vínculo de control al mismo. Sirve para tener noción de las relaciones que existen entre los mensajes.
+
+Para el caso de los mensajes de un solo byte de longitud, basta con transmitir el byte con el código especificado en la columna \textbf{Hex}. Ahora, para los mensajes con parámetros adicionales se transmite la secuencia de bytes (byte 0, byte 1 y byte 2) como se observa en la tabla \ref{tab:pc.MR.23}.
+\begin{tablao}{Mensajes de retorno con parámetros adicionales}{tab:pc.MR.23}{!h}
+	\begin{tabular}{|r|c|c|c|}
+		\hline
+		\multicolumn{1}{|c|}{\textbf{ID}} & \textbf{0} &	\textbf{1} & \textbf{2}\\
+		\hline\hline
+R6 & \ttfamily{0x06} & A8 & D8\\\hline
+R7 & \ttfamily{0x07} & A8 & --\\\hline
+R12 & \ttfamily{0x0C} & D[0-10] & --\\\hline
+R13 & \ttfamily{0x0D} & D[0-10] & --\\\hline
+R20 & \ttfamily{0x14} & D8 & --\\\hline
+R27 & \ttfamily{0x1B} & D[0-63] & --\\\hline
+R28 & \ttfamily{0x1C} & D8 & --\\\hline
+R29 & \ttfamily{0x1D} & 40 & 40\\\hline
+		\end{tabular}
+\small		
+\begin{description}
+	\item[A8] Dirección de 8\un{bits}.
+	\item[D8] Dato de 8\un{bits}.
+	\item[{D[i-j]}] Dato que puede variar entre i a j inclusive (números en decimal).
+	\item[40] Valor fijo en decimal.
+	\item[--] No se usa el byte 2.
+\end{description}
+\normalsize
+\end{tablao}
+Los mensaje que tiene el símbolo ``--'' en la columna de byte 2, son sólo de 2\un{bytes} de longitud y no de 3\un{bytes}.
+
+\begin{tablaot}{Mensajes de retorno}{tab:pc.MR}{!t}
+	\small
+	\begin{tabular}{|r|l|c|c|r|}
+		\hline\hline
+		\textbf{ID} & \textbf{Descripción} &	\textbf{L} & \textbf{Rel.} & \textbf{Hex}\\
+		\hline\hline
+R0 & NOP & 1 & & \ttfamily{0x00}\\\hline
+R1 & Sincronismo falso, se trata de un byte ``128'' & 1 & & \ttfamily{0x01}\\\hline
+R2 & Sincronismo falso, se trata de 2 bytes ``128'' & 1 & & \ttfamily{0x02}\\\hline
+R3 & Pedido de sincronismo & 1 & & \ttfamily{0x03}\\\hline
+R4 & Pedido para entrar al modo programación & 1 & E4 & \ttfamily{0x04}\\\hline
+R5 & Estoy seguro de entrar al modo programación & 1 & E4, E5 & \ttfamily{0x05}\\\hline
+R6 & Grabar posición de memoria RAM & 3 & &  \ttfamily{0x06}\\\hline
+R7 & Leer posición de memoria RAM & 2 & E6 & \ttfamily{0x07}\\\hline
+R8 & Audio \textsl{streaming} off & 1 & & \ttfamily{0x08}\\\hline
+R9 & Audio \textsl{streaming} on & 1 & & \ttfamily{0x09}\\\hline
+R10 & Seleccionar auricular & 1 &  & \ttfamily{0x0A}\\\hline
+R11 & Seleccionar altavoz & 1 &  & \ttfamily{0x0B}\\\hline
+R12 & Fijar PWM del BackLight & 2 &  & \ttfamily{0x0C}\\\hline
+R13 & Fijar PWM del LED & 2 &  & \ttfamily{0x0D}\\\hline
+R14 & Desactivar eventos del teclado & 1 & E7, E8 & \ttfamily{0x0E}\\\hline
+R15 & Activar eventos del teclado & 1 & E7, E8 & \ttfamily{0x0F}\\\hline
+R16 & Desactivar eventos de orquilla & 1 & E9, E10 & \ttfamily{0x10}\\\hline
+R17 & Activar eventos de orquilla & 1 & E9, E10 & \ttfamily{0x11}\\\hline
+R18 & Leer estado teclado & 1 & E11 & \ttfamily{0x12}\\\hline
+R19 & Leer estado del orquilla & 1 & E12, E13 & \ttfamily{0x13}\\\hline
+R20 & Fijar intervalo de IIS & 2 &  & \ttfamily{0x14}\\\hline
+R21 & Desactivar IIS & 1 &  & \ttfamily{0x15}\\\hline
+R22 & Activar IIS & 1 &  & \ttfamily{0x16}\\\hline
+R23 & Leer estado de \textsl{overflow} de colas & 1 & E17 & \ttfamily{0x17}\\\hline
+R24 & Resetear estado de \textsl{overflow} de colas & 1 &  & \ttfamily{0x18}\\\hline
+R25 & Leer estado de \textsl{underflow} de colas & 1 & E18 & \ttfamily{0x19}\\\hline
+R26 & Resetear estado de \textsl{underflow} de colas & 1 &  & \ttfamily{0x1A}\\\hline
+R27 & Muestras por trama de envío de audio & 2 &  & \ttfamily{0x1B}\\\hline
+R28 & Ping & 2 & E19 & \ttfamily{0x1C}\\\hline
+R29 & Reset & 3 & & \ttfamily{0x1D}\\\hline
+	\end{tabular}
+\small
+\begin{description}
+	\item[ID] Identificador para el mensaje.
+	\item[L] Longitud total de la trama en bytes.
+	\item[Rel.] Mensaje relativo próximo, relativo anterior o relacionado.
+	\item[Hex] Codificación en hexadecimal del mensaje (M5:M0).
+\end{description}
+\normalsize
+\end{tablaot}
+
+
+A continuación se detalla la interpretación de los parámetros para los mensajes de retorno de la tabla \ref{tab:pc.MR.23}:
+\begin{description}
+	\item[R6] Este mensaje escribe el dato \textsl{D8} en la posición de memoria de datos \textsl{A8} del \ac{uC}
+	\item[R7] Lee de la posición de memoria de datos \textsl{A8} del \ac{uC} y devuelve su valor con el mensaje de envío E6
+	\item[R12] Establece el \ac{PWM} del backlight con un valor ente 0 a 10 (0\% a 100\% respectivamente)
+	\item[R13] Establece el \ac{PWM} del \ac{LED} indicador con un valor ente 0 a 10 (0\% a 100\% respectivamente)
+	\item[R20] Establece el intervalo de IIS (Intentar Insertar Sincronismo absoluto) con \textsl{D8}, dando el siguiente período de tiempo 
+	\[ T_{IIS}=\frac{4\cdot65536}{20\un{MHz}}\cdot {D8} \]
+	\item[R27] Establece, con un valor entre 0 a 63, la cantidad de muestras por trama de audio de envío que se pretende recibir desde la \ac{IH}.
+	\item[R28] Es un mensaje tipo ``ping'' para hacer pruebas de respuesta por parte de la \ac{IH}. El parámetro \textsl{D8} es un valor de 8\un{bits} que es devuelto en la respuesta por el mensaje de envío E19.
+	\item[R29] Produce la reinicialización de la \ac{IH}. Es necesario transmitir los 2 parámetros de valor decimal ``40'' para que el mensaje tenga efecto. Esta secuencia más larga disminuye la probabilidad de interpretar como valido un mensaje erróneo.
+\end{description}
+
+
+
+\subsection{Lista de Mensajes de envío (\acs{ME})}
+\label{sec:pc.ME}
+Los mensajes de envío son los mensajes que se dirigen desde la \ac{IH} hacia el \acsu{HOST}. La lista de estos mensajes se observa en la tabla \ref{tab:pc.ME}.
+\begin{tablaot}{Mensajes de envío}{tab:pc.ME}{!p}
+	\begin{tabular}{|r|l|c|c|r|}
+		\hline\hline
+		\textbf{ID} & \textbf{Descripción} &	\textbf{L} & \textbf{Rel.} & \textbf{Hex}\\
+		\hline\hline
+E0 & NOP & 1 &  & \ttfamily{0x00}\\\hline
+E1 & Sincronismo falso, se trata de un byte ``128'' & 1 &  & \ttfamily{0x01}\\\hline
+E2 & Sincronismo falso, se trata de 2 bytes ``128'' & 1 &  & \ttfamily{0x02}\\\hline
+E3 & Pedido de sincronismo & 1 &  & \ttfamily{0x03}\\\hline
+E4 & Está seguro de entrar al modo programación? & 1 & R4, R5 & \ttfamily{0x04}\\\hline
+E5 & Yendo al modo programación & 1 & R5 & \ttfamily{0x05}\\\hline
+E6 & Lectura de posición de memoria RAM & 3 & R7 & \ttfamily{0x06}\\\hline
+E7 & Se presionó la tecla & 2 & R14, R15 & \ttfamily{0x07}\\\hline
+E8 & Se liberó la tecla & 2 & R14, R15 & \ttfamily{0x08}\\\hline
+E9 & Se colgó & 1 & R16, R17 & \ttfamily{0x09}\\\hline
+E10 & Se descolgó & 1 & R16, R17 & \ttfamily{0x0A}\\\hline
+E11 & Estado teclado 4x4 en 4bits*4 & 3 & R18 & \ttfamily{0x0B}\\\hline
+E12 & Tubo colgado & 1 & R19 & \ttfamily{0x0C}\\\hline
+E13 & Tubo descolgado & 1 & R19 & \ttfamily{0x0D}\\\hline
+E14 & El FIFO\si{01RX} contiene n muestras & 2 &  & \ttfamily{0x0E}\\\hline
+E15 & \textsl{Underflow} en FIFO\si{01RX} & 1 &  & \ttfamily{0x0F}\\\hline
+E16 & \textsl{Overflow} en FIFO\si{01RX} & 1 &  & \ttfamily{0x10}\\\hline
+E17 & Lectura del estado de \textsl{overflow} de los FIFOs & 2 & R25 & \ttfamily{0x11}\\\hline
+E18 & Lectura del estado de \textsl{underflow} de los FIFOs & 2 & R27 & \ttfamily{0x12}\\\hline
+E19 & Pong & 2 & R30 & \ttfamily{0x13}\\\hline
+		\end{tabular}
+\small
+\begin{description}
+	\item[ID] Identificador para el mensaje.
+	\item[L] Longitud total de la trama en bytes.
+	\item[Rel.] Mensaje relativo próximo, relativo anterior o relacionado.
+	\item[Hex] Codificación en hexadecimal del mensaje (M5:M0).
+\end{description}
+\normalsize
+\end{tablaot}
+En ésta se observa una columna denominada \textbf{Rel.} que se refiere a ``mensaje relativo''. Este mensaje relativo puede ser el cual provoca a este mensaje de envío (relativo anterior), puede ser el mensaje que se esperaría luego de este mensaje de envío (relativo próximo) o puede ser el que controla la habilitación de este mensaje de envío (relacionado). En fin, sirve para tener noción de las relaciones que existen entre los mensajes.
+
+A continuación se describe la interpretación de los parámetros de los mensajes de envío de la tabla \ref{tab:pc.ME.23}:
+\begin{tablaot}{Mensajes de envío con parámetros adicionales}{tab:pc.ME.23}{!t}
+	\begin{tabular}[c]{|r|c|c|c|}
+		\hline
+		\multicolumn{1}{|c|}{\textbf{ID}} & \textbf{0} &	\textbf{1} & \textbf{2}\\
+		\hline\hline
+E6 & \ttfamily{0x06} & A8 & D8\\\hline
+E7 & \ttfamily{0x07} & D8 & --\\\hline
+E8 & \ttfamily{0x08} & D8 & --\\\hline
+E11 & \ttfamily{0x0B} & D8\si{1}& D8\si{2}\\\hline
+E14 & \ttfamily{0x0E} & D[0-192] & --\\\hline
+E17 & \ttfamily{0x11} & D8 & --\\\hline
+E18 & \ttfamily{0x12} & D8 & --\\\hline
+E19 & \ttfamily{0x13} & D8 & --\\\hline
+		\end{tabular}\\[4mm]
+\small
+\begin{description}
+	\item[A8] Dirección de 8\un{bits}
+	\item[D8] Dato de 8\un{bits}
+	\item[{D[i-j]}] Dato que puede variar entre i a j inclusive (números en decimal)
+	\item[--] No se usa el byte 2
+\end{description}
+\normalsize
+\end{tablaot}
+\begin{description}
+	\item[E6] Respuesta al mensaje de retorno R7 con el valor de la posición de memoria de datos \textsl{A8} del \ac{uC} y con el dato \textsl{D8} correspondiente.
+	\item[E7] Mensaje generado al presionar una tecla. La tecla se identifica por el valor \textsl{D8} que se interpreta como $fila=4\un{MSb}$ (un valor entre 0 a 3 de arriba hacia abajo) y  $columna=4\un{LSb}$ (un valor entre 0 a 3 de izquierda a derecha).
+	\item[E8] Mensaje generado al liberar de un tecla. La tecla se identifica de la misma manera que con E7.
+	\item[E11] Respuesta al mensaje de retorno R18 con el estado completo del teclado.
+	Concatenando D8\si{1} con D8\si{2} como el byte menos significativo y el byte más significativo respectivamente, se obtienen 16\un{bits} (bit\si{0} al bit\si{15}). Cada uno de estos bits corresponde a una tecla. La relación entre el número de bit y la tecla se observa en la figura \ref{fig:pc.teclado.bits}.
+\figuraos{Relación entre teclas y bits}{fig:pc.teclado.bits}{}{Teclado-bits}{!p}
+Un bit en `1' indica que esa tecla se encuentra presionada y un bit en `0' que se encuentra liberada.
+	\item[E14] Mensaje generado por la \ac{IH} luego de la recepción completa de una trama de audio de retorno. El valor \textsl{D8} indica el estado de carga del FIFO\si{01RX} de la \ac{IH} (ver figura \ref{fig:ss.ih.flujo})
+\begin{tablaob}{Relación entre número de bit y FIFO correspondiente}{tab:pc.bit.fifo}{!b}
+	\begin{tabular}{cc}
+		\hline\hline
+		\textbf{Bit} & \textbf{FIFO}\\
+		\hline
+		0 & FIFO\si{00TX}\\
+		1 & FIFO\si{01TX}\\
+		2 & FIFO\si{11TX}\\
+		3 & FIFO\si{00RX}\\
+		4 & FIFO\si{01RX}\\
+		5 & FIFO\si{11RX}\\
+		\hline\hline		
+	\end{tabular}\\[5mm]
+\end{tablaob}
+al momento de la inserción de la última muestra de la trama.
+	\item[E17] Respuesta al mensaje de retorno R25 con el estado de \textsl{overflow} (en \textsl{D8}) de los FIFOs de la \ac{IH}. Un bit en `1' indica que ha ocurrido \textsl{overflow} en dicho \acs{FIFO} y un bit en `0' que no. La relación entre los bits y los FIFOs se observa en la tabla \ref{tab:pc.bit.fifo}.
+	\item[E18] Respuesta al mensaje de retorno R27 con el estado de \textsl{underflow} (en \textsl{D8}) de los FIFOs de la \ac{IH}. La estructura de los bits es la misma que para E17 (ver tabla \ref{tab:pc.bit.fifo}).
+	\item[E19] Respuesta (pong) al mensaje de retorno R30 con el mismo valor \textsl{D8}.
+\end{description}
+
+
+
+
+
+
+
+\section{Diagramas en bloques del \textsl{softswitch}}
+\label{sec:pc.diag}
+En este caso el \textsl{softswitch} es una manera de referirse al multiplexor y al demultiplexor, con capacidad de manejar colas de prioridades, sea del lado de la \ac{IH} como del lado del \acsu{HOST}. En una visión general se observa en la figura \ref{fig:Host.IH.TxRx}
+\figuraoo{Interconexión serial entre el HOST y la IH}{fig:Host.IH.TxRx}{}{Host-IH-TxRx}{!h}
+la relación que existe entre el \acs{HOST} y la \ac{IH}. Además, se puede ver que la salida serial (T\si{X}) del \acs{HOST} se conecta con la entrada serial (R\si{X}) de la \ac{IH}. Así mismo, la salida serial (T\si{X}) de la \ac{IH} se conecta con la entrada serial (R\si{X}) del \ac{HOST}. A este concepto hay que tenerlo claro para poder entender la interconexión entre los diagramas de flujo de datos que se verán en las figuras \ref{fig:ss.ih.flujo} y \ref{fig:ss.host.flujo}, los cuales son detalles --en mayor profundidad-- de la \ac{IH} y del \acs{HOST} respectivamente. Dichos diagramas son similares pero tienen diferencias debido a que, por ejemplo, el video sólo se transmite desde el \acs{HOST} hacia la \ac{IH} y no en sentido inverso. Otro aspecto a tener en cuenta --como se ha visto al comienzo de la sección \ref{sec:pc}-- es que existen, de los 3 tipo de datos, 4 tipos de tramas y sólo 3 niveles de prioridad. Los 4 tipos de tramas son:
+\begin{itemize}
+	\item P0 (b'00') $\rightarrow$ Mensaje de alta prioridad
+	\item P1 (b'01') $\rightarrow$ Audio
+	\item P2 (b'10') $\rightarrow$ Video
+	\item P3 (b'11') $\rightarrow$ Mensaje de baja prioridad
+\end{itemize}
+A los niveles de prioridad representados por el identificador P\si{X} en los diagramas de flujo de datos se lo expresa en binario. Como sólo son 3 niveles de prioridad, que se encuentran representados por los FIFOs, existe un FIFO que encola tanto tramas tipo ``video'' como tramas tipo ``mensaje de baja prioridad''. En consecuencia surge el subíndice ``1X'', el cual se refiere tanto a b'10' como a b'11'.
+
+
+
+\subsection{En la \acs{IH}}
+\label{sec:pc.diag.ih}
+Comenzando por el lado de la \ac{IH} (ver figura \ref{fig:ss.ih.flujo}),
+\figuraoo{Diagrama de flujo de datos del \textsl{softswitch} en la IH}{fig:ss.ih.flujo}{}{ss-ih-flujo}{!h}
+MUX es el encargado de insertar el sincronismo absoluto cuando sea pertinente y de enmascarar con sincronismos falsos los datos ``128'' (ver sección \ref{sec:pc.sincro}).
+
+
+Los FIFOs son estructuras de datos tipo \textsl{buffer} circular de un determinado tamaño.
+
+El FIFO\si{00TX} (referido al FIFO\si{00} en la transmisión, o sea a la entrada del MUX) tiene un tamaño de 16 bytes y es contenedor de todos los byte de la trama de mensaje (incluida la cabecera).
+%Otra característica es que, para no perder mensajes, bloquea al proceso que intenta cargarlo en caso de estar lleno.
+Otra característica es que en caso de estar llena preserva los mensajes previamente cargados pero pierde el nuevo mensaje a cargar. En este caso se activa una bandera de \textsl{overflow} para indicar la perdida.
+
+El FIFO\si{01TX} tiene un tamaño de 48\un{bytes}, los cuales equivalen a 48 muestras de audio y tiene la característica de descartar la muestra menos reciente en caso de sobrecarga. En este FIFO la cabecera de la trama de audio aún no existe en el FIFO\si{01TX}, sino que es agregada --por el MUX-- al momento de transmitir una trama de audio. Es decir, el FIFO\si{01TX} es puramente de muestras de audio. 
+
+El FIFO\si{11TX} tiene las mismas características que el FIFO\si{00TX}.
+% exceptuando que al estar lleno no bloquea al proceso que lo carga. En este caso se descarta el mensaje más antiguo para que ingrese el más nuevo. Esta diferencia es importante ya que en el caso del FIFO\si{11TX}, hay que tomar alguna medida para afrontar la sobrecarga de este \textsl{buffer}. No así es el caso de FIFO\si{00TX} que no pierde ningún mensaje. Esto es porque, aunque bloquee al proceso que lo carga, no bloquea su descarga, que por ser de la prioridad más alta va a ser el primero en descargarse.
+
+El FIFO\si{00RX} es un \textsl{buffer} pequeño que se utiliza para la recepción de sólo un mensaje. Su tamaño se estableció en 4\un{bytes} y no en 3\un{bytes}, por un lado para tener un margen de 1\un{byte} para un parámetro adicional más y por otro lado porque al ser 4 un valor múltiplo de $2^n$ simplifica algunas cuestiones de implementación. La no necesidad de un \textsl{buffer} más grande es porque al recibir el último byte de la trama de un mensaje, el mensaje es procesado de forma inmediata. Esto también determina que no ocurrirá sobrecarga del \textsl{buffer}.
+
+El FIFO\si{01RX} es un \textsl{buffer} con las mismas características que el FIFO\si{01TX} pero de un tamaño de 192\un{bytes}. El mayor tamaño de este \textsl{buffer} con respecto a los demás es para poder amortiguar el \textsl{jitter} producido por la transmisión no sincrónica de las tramas de audio desde el \acs{HOST}.
+
+El video no utiliza un FIFO debido a que cada dato útil recibido es inmediatamente entregado al \ac{LCD}. Además, la transmisión de datos entre el \ac{uC} y el \ac{LCD} es al menos 13 veces más rápida que entre el \ac{HOST} y la \ac{IH} (ver secciones \ref{sec:conf.MSSP} y \ref{sec:conf.UART}).
+
+El FIFO\si{11RX} es un \textsl{buffer} de las mismas características que FIFO\si{00RX}. Inclusive, el mensaje recibido se procesa inmediatamente aunque éste se trate de un mensaje de baja prioridad. Esto es porque quien envía el mensaje establece la urgencia de éste (en este caso, el \ac{HOST}), pero es importante saber con qué prioridad fue recibido para --en el caso de ser necesario-- enviar la respuesta con la misma prioridad. También surge la pregunta: \textquestiondown Por qué la necesidad de utilizar dos FIFOs para los mensajes si éstos son atendidos inmediatamente? La respuesta es: --Porque puede ocurrir que se comience a recibir un mensaje de alta prioridad aún cuando no se ha recibido completamente un mensaje de baja prioridad previo--.
+
+%Corregido ortograficamente hasta acá (14-02-2007)
+
+\subsection{En el \acs{HOST}}
+\label{sec:pc.diag.host}
+Ahora del lado del \ac{HOST} (ver figura \ref{fig:ss.host.flujo}), es MUX también el encargado de insertar el sincronismo absoluto cuando sea pertinente y de enmascarar con sincronismos falsos los datos ``128'' (ver sección \ref{sec:pc.sincro}).
+
+\figuraot{Diagrama de flujo de datos del \textsl{softswitch} en el HOST}{fig:ss.host.flujo}{}{ss-host-flujo}{!t}
+
+Antes de comenzar con la descripción de los FIFOs se tiene en cuenta que, como el \acs{HOST} se trata de un \acl{HOST}, cuenta con más memoria para datos que la \ac{IH}. Otro detalle a tener en cuenta es no confundir ``retorno'' con ``entrada'', ya que retorno hace referencia a los datos que viajan desde el \ac{HOST} hacia la \ac{IH}.
+
+El FIFO\si{00TX} es el \textsl{buffer} para los mensajes de retorno de alta prioridad. Éste tiene una capacidad para 100 tramas de mensajes, pero el manejo de la excepción por sobrecarga del \textsl{buffer} queda por parte del software de aplicación.
+
+El FIFO\si{01TX} es el \textsl{buffer} para el audio de retorno y tiene una capacidad para 8 tramas de audio. Teniendo en cuenta que las tramas de audio pueden transportar un máximo de 63 muestras, se optó por defecto trabajar con 40 muestras por trama de audio, que equivalen a 5\un{ms} de audio. Esto significa que el \textsl{buffer} del FIFO\si{01TX} puede contener por defecto 40\un{ms} de audio. Éste es un valor de compromiso entre evitar cortes por valores altos de \textsl{jitter} y evitar introducir un prolongado retardo. Otra característica de este \textsl{buffer} es que maneja automáticamente la excepción por sobrecarga (\textsl{overflow}) descartando la trama más antigua. Esto se planteó así porque un \textsl{buffer} muy grande introduciría mucho retando. Además como se trata principalmente de audio de tiempo real, no son útiles fragmentos de audio con cierta antigüedad.
+
+El FIFO\si{1XTX} es un \textsl{buffer} para tramas de mensajes de retorno de baja prioridad como también para tramas de video. Este FIFO no distingue de forma prioritaria el video o los mensajes, sino que como su descripción lo indica --el primero en entrar es el primero en salir--. Este \textsl{buffer} tiene una capacidad para contener 100 tramas, sean de mensaje o de video. Si se tratan sólo de tramas de video, este \textsl{buffer} puede contener hasta un poco más de 3 actualizaciones de imágenes completas del \ac{LCD}. Esto es porque el \ac{LCD} cuenta con un total de $48\cdot84=4032$\un{píxeles} los cuales equivalen a 4032\un{bits} que se transmiten en tramas de 16\un{bytes} como máximo. Entonces, más precisamente el número de actualizaciones de pantalla que puede contener el \textsl{buffer} es
+\[ n= \frac{100\un{trama}\cdot 16\un{byte/trama}\cdot 8\un{píxel/byte}} {4032\un{píxel}} \approx 3.175 \]
+
+Todas las salidas de DEMUX son sin FIFO. Las tramas de envío recibidas son entregadas de forma demultiplexada al software de aplicación. Los únicos FIFO son el propio del \ac{UART} y el del sistema operativo, en caso de existir.
+
+
+
+\section{Algoritmos de cola}
+\label{sec:pc.alg.cola}
+Los algoritmos de cola son los que, en términos generales, definen las implementaciones de software de la estructura de datos FIFO. Esta estructura define que --el primer dato en entrar en la cola es el primero en salir--. Distintos son los algoritmos de pila, en donde --el primer elemento en entrar en la pila es el último en salir--.
+Para el caso de las colas, los algoritmos a describir son:
+\begin{itemize}
+	\item Inicializar una cola
+	\item Insertar un nuevo elemento en la cola
+	\item Extraer un elemento de la cola
+	\item Calcular la longitud actual de una cola
+\end{itemize}
+La estructura de cola es útil en la implementación de las colas con prioridades porque dentro de una cola se mantiene el orden de los datos que ingresan y salen de la misma.
+
+La forma de implementar un FIFO en una región continua de memoria es mediante la idea de cerrar los extremos de dicha región de forma circular. Esto es, cuando se llega a un extremo de la región se vuelve a comenzar por el otro extremo. Para mostrar el funcionamiento de estos algoritmos, la región viene a estar definida por un arreglo, vector o \textsl{buffer} de elementos $b[]$ para el cual el índice $i$ puede ser $i_{get}$ o $i_{put}$. El índice $i_{get}$ indica en qué posición del \textsl{buffer} $b[]$ se encuentra el primer elemento a ser extraído. Así también el índice $i_{put}$ indica la posición, en caso de no encontrarse el \textsl{buffer} lleno, en donde se puede escribir el nuevo elemento a ingresar. Además, existe una bandera llamada \bp{HayDatos} que indica si hay al menos algún elemento en la cola. Cuando su valor es `No' indica que no existe ningún elemento en la cola, es decir, la cola se encuentra vacía. Cuando su valor es `Sí' indica que existe al menos un elemento en la cola. Que existan más de uno elemento o inclusive que la cola esté llena, implica que la bandera \bp{HayDatos} valga `Sí'.
+
+Otro aspecto que se tuvo en cuenta para diseñar estos algoritmos es que los índices nunca indiquen una posición fuera de la región del \textsl{buffer}. Entonces, a los extremos inclusivos del \textsl{buffer} se los llama ``ini'' y ``ult'', donde ``ini'' indica la posición más baja de la memoria del \textsl{buffer} y ``ult'' indica la posición más alta de la memoria del \textsl{buffer}.
+
+Para inicializar la cola se fijan, la bandera \bp{HayDatos} en `No' y los índices tanto $i_{get}$ como $i_{put}$ en un valor de inicio llamado ``ini'' como se observa en la figura \ref{fig:pc.fifo.init}.
+\figuraot{Algoritmo de inicialización de una cola}{fig:pc.fifo.init}{}{FIFO-Init}{!t}
+Como salidas en los bloques de decisión, las líneas de color azul corresponden a la respuesta ``sí'' y la líneas de color rojo corresponden a la respuesta ``no''.
+
+Para insertar un nuevo elemento en la cola se siguen los pasos del algoritmo de la figura \ref{fig:pc.fifo.put}.
+\figuraot{Algoritmo de inserción de un nuevo elemento en la cola}{fig:pc.fifo.put}{}{FIFO-Put}{!t}
+Lo primero que realiza este algoritmo es comprobar si la cola está completamente llena o no. Esto es, si los índices son iguales y hay datos en la cola, entonces la cola está llena y el algoritmo finaliza con una excepción por \textsl{overflow}. En caso contrario se inserta el elemento en el \textsl{buffer} y se activa la bandera \bp{HayDatos}. Luego se comprueba si el índice $i_{put}$, en donde se insertó el elemento actual, apunta al extremo ``ult''. En caso de apuntar a ``ult'' se cambia el valor de $i_{put}$ al del extremo ``ini'', produciendo así la idea de \textsl{buffer} circular. Al contrario, si $i_{put}$ no apunta actualmente a ``ult'', se lo incrementa.
+
+Para extraer un elemento de la cola se siguen los pasos del algoritmo de la figura \ref{fig:pc.fifo.get}.
+\figuraoo{Algoritmo de extracción de un elemento de la cola}{fig:pc.fifo.get}{}{FIFO-Get}{!h}
+Aquí lo primero que se realiza es ver si la cola esta vacía verificando el estado de la bandera \bp{HayDatos}. En el caso que \bp{HayDatos} valga ``No'', la cola está vacía y el algoritmo finaliza con una excepción por \textsl{underflow}. De lo contrario se extrae el elemento del \textsl{buffer} puntado por el índice $i_{get}$. Luego, de forma equivalente a la inserción de elementos en la cola, se verifica si $i_{get}$ se encuentra en el extremo ``ult'' del \textsl{buffer}. En caso de ser cierto, se cambia el valor de $i_{get}$ al del extremo ``ini''. En caso contrario se incrementa el valor de $i_{get}$. Cualquiera sea el caso, $i_{get}$ pasa a apuntar a la posición en donde se encuentra o encontrará el próximo elemento a extraer. Por último, se comprueba si los índices $i_{get}$ e $i_{put}$ apuntan a la misma posición. De ser así, esto indica que no existen más elementos en la cola, lo que determina fijar la bandera \bp{HayDatos} en ``No''.
+
+Para calcular la longitud de la cola, es decir, la cantidad de elementos cargados en ésta, se siguen los pasos del algoritmo de la figura \ref{fig:pc.fifo.len}.
+\figuraoo{Algoritmo para el cálculo de la longitud de la cola}{fig:pc.fifo.len}{}{FIFO-Len}{!h}
+En esta figura se observan dos identificadores nuevos. Uno es \reg{len}, que es en donde se encuentra el resultado del algoritmo luego de finalizado. El otro es \reg{buffer\_size}, que especifica el tamaño total de la cola y además guarda la siguiente relación con los valores ``ini'' y ``ult'':
+\[ \regf{buffer\_size}=\regf{ult}-\regf{ini}+1 \]
+En cuanto al algoritmo, lo primero que se realiza es verificar si existen elementos en la cola. Cuando la bandera \bp{HayDatos} vale ``No'' se asigna el valor $0$ a \reg{len} y el algoritmo finaliza. En cambio si la bandera vale ``Sí'' se asigna la diferencia $i_{put}-i_{get}$ a \reg{len}. Ahora, si el resultado es negativo, se lo corrige adicionándole el valor correspondiente al tamaño del \textsl{buffer} (\reg{buffer\_len}). Esto es así por la idea de interpretar al \textsl{buffer} de manera circular. Por último se finaliza el algoritmo. Pero, si el resultado era positivo, el algoritmo finaliza directamente sin realizar la corrección.
+
+Existe otra forma de obtener la longitud de la cola. Ésta es mediante el uso de un contador, el cual se incrementa siempre que se inserte realmente un nuevo elemento en la cola y se decrementa siempre que se extraiga realmente un elemento de la cola. Se da énfasis a ``realmente'' porque puede ocurrir que se pretenda insertar un elemento en la cola mientras ésta está llena, lo cual no debe incrementar el contador. Así mismo, cuando se intenta extraer un elemento de la cola --la cual se encuentra vacía-- no se debe decrementar el contador. De esta forma, para obtener la longitud actual de la cola sólo basta con leer el valor del contador. Esta forma tiene la desventaja de utilizar una variable más para el conteo, lo cual puede ser significativo al trabajar con varias colas en un entorno reducido como el de un \ac{uC}. Pero la ventaja que tiene es la mayor velocidad para obtener el valor de la longitud actual de la cola. De hecho, en la implementación de software para el \ac{uC}, lo cual se verá en la sección \ref{sec:soft.ih}, se utiliza esta forma para el caso del FIFO\si{01RX}. Convino hacerlo de esta manera ya que el \textsl{buffer} de este FIFO está dividido en dos \textsl{buffers}, lo que complica el cálculo de la longitud en función de los índices. Entonces la utilización de una o la otra forma es válida y sólo depende de la implementación.
+
+
+
+\section{Algoritmos del protocolo}
+\label{sec:pc.alg.proto}
+
+%\begin{tabla}{Medida máxima}{tab:mm}
+%	\rule{125mm}{200mm}
+%\end{tabla}
+
+%\figura{Rutina de interrupción por recepción de nuevos datos}{fig:ih.alg.rx.int}{Rx-Interrupt}
+
+Sin tener en cuenta la implementación específica, sea en la \ac{IH} o en el \ac{HOST}, se realizaron algoritmos  generales para la recepción y la transmisión de los datos por el puerto \ac{UART}.
+
+En primera instancia se describe el algoritmo que se ejecuta en solicitud de un nuevo byte para ser transmitido por el puerto \ac{UART}. El mismo se encuentra representado por el diagrama de flujo de la figura \ref{fig:pc.tx.general}.
+\figuraot{Algoritmo general en la transmisión de un nuevo byte}{fig:pc.tx.general}{}{pc-tx-general}{!t}
+Como salidas en los bloques de decisión, las líneas de color azul corresponden a la respuesta ``sí'' y la líneas de color rojo corresponden a la respuesta ``no''. A continuación se pasa a describir los diferentes identificadores observados en el diagrama de flujo de la figura \ref{fig:pc.tx.general}:
+\begin{description}
+	\item[GSF2] Variable de estado que indica, con un ``Sí'', que se genere un mensaje de Sincronismo Falso para 2 bytes reservados.
+	\item[GSF1] Variable de estado que indica, con un ``Sí'', que se genere un mensaje de Sincronismo Falso para 1 byte reservado.
+	\item[SF2] Mensaje para la inserción de 2 bytes reservados (ver sección \ref{sec:pc.msg}).
+	\item[SF1] Mensaje para la inserción de 1 byte reservado (ver sección \ref{sec:pc.msg}).
+	\item[C$_i$] Contador de bytes pendientes para la serialización de una trama de tipo $i$. El contador es establecido, por la sentencia ``Fijar C$_i$'', en el valor de la longitud de la trama tipo $i$. Esto se hace de forma implícita o mediante información explícita en su cabecera.
+	\item[BTT$_i$] \textsl{Buffer} de una trama tipo $i$ para su serialización. El valor $i$ se refiere a una entre $1$ hasta $n$ tipos diferentes de tramas.
+	\item[SA] Sincronismo Absoluto. Es el byte reservado (ver sección \ref{sec:pc.sincro}).
+	\item[FIFO$_i$] \textsl{Buffer} con estructura de cola para tramas tipo $i$.
+	\item[P] Cantidad de tipos de tramas pendientes que se encuentran en transmisión.
+	\item[IIS] Intentar insertar sincronismo absoluto.
+	\item[==] Comparación de igualdad.
+	\item[=] Asignación. 
+\end{description}   
+ 
+El valor inicial para las variables del algoritmo de la figura \ref{fig:pc.tx.general} es el siguiente:
+\begin{description}
+	\item[GSF2] Inicialmente se encuentra en \bp{No}. 
+	\item[GSF1] Inicialmente se encuentra en \bp{No}. 
+	\item[C\sm{i}] Inicialmente se encuentra en cero. 
+	\item[P] Inicialmente se encuentra en cero.
+	\item[BTT\sm{i}] Inicialmente se encuentra vacío. 
+	\item[FIFO\sm{i}] Inicialmente se encuentra vacío. 
+	\item[IIS] Inicialmente se encuentra en \bp{Sí}. 
+\end{description}
+Esto significa, en el momento de la inicialización de la \ac{IH} o el \ac{HOST}, que se enviará un sincronismo absoluto para que se establezca la comunicación, en cuanto se transmita la primera trama.
+
+
+Como se observa en la figura \ref{fig:pc.tx.general}, lo primero que se realiza es ver si no está pendiente el envío de un mensaje SF2 mediante la comprobación de GSF2. De ser cierto, se lo entrega al transmisor y se fija la condición GSF2 junto a GSF1 en `No'. Se reinician ambas condiciones y no sólo una, porque GSF2 también supone lo que significa GSF1. De lo contrario se pasa a verificar si está pendiente el envío del mensaje SF1 mediante la comprobación de GSF1. De ser verdad, se lo entrega al transmisor y se fija la condición GSF1 en `No'. Ahora, si ninguna de estas dos condiciones anteriores se cumple, se ingresa al primero de los $n$ bloques A$_i$. El primero es el bloque de mayor prioridad. La salida de este bloque A$_i$ termina pasando al bloque de menor prioridad A$_{i+1}$ y así sucesivamente hasta terminar el bloque A$_n$. Si se pasan todos los $n$ bloques A$_i$, significa que no existen datos para ser transmitidos. En este caso se pasa a la sentencia ``P=0'' que determina que no se encuentran tramas pendientes a transmitir. Además, se detiene la solicitud de entrega de un próximo byte para transmisión, hasta que otro proceso especifique lo contrario. Por ejemplo, cuando se ingrese un nuevo elemento en alguno de los $n$ FIFOs se reactivará la solicitud de entrega.
+
+Lo primero que realiza un bloque cualquiera A$_i$, en la figura \ref{fig:pc.tx.general}, es verificar, mediante C$_i$, si existen bytes pendientes a entregar del \textsl{buffer} BTT$_i$. Esto es una parte de la base del sistema de prioridades de cada bloque A$_i$. La otra parte es, en caso de no tener bytes pendientes, la verificación de si existen más tramas en el FIFO$_i$ para ser serializadas. Si existen, la serialización consiste en extraer una trama de FIFO$_i$ y cargarla temporalmente en el \textsl{buffer} BTT$_i$. Luego, se fija el valor de C$_i$ con el valor de la longitud de la trama cargada en BTT$_i$ y se incrementa P. Ahora, si P vale uno, significa que sólo esta trama se encuentra pendiente a entregar. Pero, si P vale más que uno, significa que además están pendientes a entregar P$-1$ tramas de menor prioridad, lo cual hace que se deba insertar un sincronismo absoluto para dar inicio a esta nueva trama de mayor prioridad. Esto se puede llamar --interrupción por mayor prioridad-- de lo cual se hablará más adelante. Entonces, para la inserción del sincronismo absoluto se entrega el byte reservado SA, se fija en `No' la condición IIS y el algoritmo finaliza a la espera de la solicitud del próximo byte. Sino, de sólo estar pendiente la transmisión de esta trama, se verifica la solicitud del intento de insertar un sincronismo absoluto. De ser verdad, se realiza lo mismo mencionado anteriormente, como se ve en el diagrama. Sino, como todavía se debe entregar un byte, se pasa directamente a la serialización de la trama en BTT$_i$. Este punto es el mismo al que se hubiese pasado si hubieran existido bytes pendientes a ser entregados en el \textsl{buffer} BTT$_i$, como se menciona al comienzo de este párrafo. Prosiguiendo, se decrementa el contador de bytes pendientes a serializar (C$_i$). Se entrega el próximo byte extraído de BTT$_i$, que puede también ser el primero. Además, se verifica si C$_i$ dejó de ser mayor a cero, para lo cual se decrementa P indicando que esta trama ya no se encuentra pendiente. Luego, si el byte entregado no coincide con el byte reservado SA, el algoritmo finaliza. Sino, si el byte entregado coincide con SA, se fija la variable de estado GSF1 en `Sí'. Pero, si además el próximo byte a extraer de BTT$_i$ coincide también con SA, en vez de lo último, se decrementa C$_i$, se extrae este próximo byte de BTT$_i$ y se fija la variable de estado GSF2 en `Sí'. 
+
+La interrupción por mayor prioridad, lo cual quedó pendiente de explicar, se refiere a la capacidad del protocolo de insertar una trama de mayor prioridad en medio de la transmisión de una trama de menor prioridad. Esto significa que la trama de mayor prioridad no tiene que esperar a que se termine de transmitir por completo la de menor prioridad. Sino que deja pendiente la transmisión de la trama de menor prioridad. La ventaja de esto es el bajo retardo de atención por parte del MUX para comenzar a transmitir una trama de mayor prioridad. Este retardo es de uno a dos bytes, teniendo en cuenta la transmisión necesaria del sincronismo absoluto y el byte que se esté transmitiendo en el momento. Otra ventaja es que no se pierde lo ya transmitido de las tramas de menor prioridad. Directamente, el próximo byte luego del último de esta trama de mayor prioridad corresponde al siguiente pendiente de la trama de menor prioridad.
+
+
+Luego de haber descripto el algoritmo utilizado en la transmisión, se describe el algoritmo que se ejecuta al momento de recibir un nuevo byte por el puerto \ac{UART}. El mismo se encuentra representado por el diagrama de flujo de la figura \ref{fig:pc.rx.general}.
+\figuraos{Algoritmo general en la recepción de un nuevo byte}{fig:pc.rx.general}{}{pc-rx-general}{!p}
+Como salidas en los bloques de decisión, las líneas de color azul corresponden a la respuesta ``sí'' y la líneas de color rojo corresponden a la respuesta ``no''. A continuación se pasa a describir los diferentes identificadores observados en el diagrama de flujo de la figura \ref{fig:pc.rx.general}:
+\begin{description}
+	\item[Sincronismo] Evalúa si el byte actual es un byte de sincronismo absoluto o no.
+	\item[Cabecera] Es una variable de estado, dentro de este algoritmo, que indica que el byte actual debe o no interpretarse como una cabecera de trama. Esta variable es controlada por las sentencias ``El próximo byte es una cabecera'' y por ``El próximo byte NO es una cabecera''.
+	\item[NOP] Evalúa si el byte actual es el mensaje \textbf{NOP} (operación nula).
+	\item[SF1] Evalúa si el byte actual es el mensaje \textbf{Sincronismo falso, se trata de un byte ``128''}.
+	\item[SF2] Evalúa si el byte actual es el mensaje \textbf{Sincronismo falso, se trata de dos bytes ``128''}.
+	\item[TT$_i$] Identifica mediante el byte actual si se trata de una cabecera de trama de tipo $i$. El valor $i$ se refiere a una entre $1$ hasta $n$ tipos diferentes de tramas.
+	\item[C$_i$] Es el contador de bytes para la reconstrucción de una trama de tipo $i$. El contador es establecido, por la sentencia ``Fijar C$_i$'', en el valor de la longitud de la trama tipo $i$. Esto se hace de forma implícita o mediante información explícita en su cabecera.
+	\item[Como dos] Es una variable de estado, dentro de este algoritmo, que indica que se tiene que procesar el byte actual dos veces. Esto es de utilidad para cuando se está en presencia de un SF2. A esta variable de estado la establecen las sentencias ``Interpretar como dos'' y ``Como uno''.
+\end{description} 
+
+El valor inicial para las variables de estado del algoritmo de la figura \ref{fig:pc.rx.general} es el siguiente:
+\begin{description}
+	\item[Cabecera] Inicialmente se encuentra en \bp{No}. 
+	\item[Como dos] Inicialmente se encuentra en \bp{No}. 
+\end{description}
+Esto significa, en el momento de la inicialización de la \ac{IH} o el \ac{HOST}, que es necesario que cada extremo envíe un sincronismo absoluto para que se establezca la comunicación.
+
+Como se observa en la figura \ref{fig:pc.rx.general}, la sentencia ``El próximo byte es una cabecera'', que se encuentra en la parte superior del diagrama, corresponde al sincronismo absoluto. En cambio, la misma sentencia, encontrada en la parte inferior del diagrama, corresponde al sincronismo relativo. Para mayor información acerca del sincronismo absoluto o relativo ver la sección \ref{sec:pc.sincro}.
+
+Otro detalle que se observa en la figura \ref{fig:pc.rx.general} son los bloques de diagrama. Estos bloques, separados en ``A'' y ``B'' dan una idea de $n$ bloques ``A'' y $n$ bloques ``B'' en cascada. La cascada que se puede prestar a confusión es la de los bloques B. En este caso son los bloques B\sm{2} a B\sm{n-1} iguales a B\sm{n} y no a B\sm{1}.
+
+Comenzando con el algoritmo, cuando ingresa un nuevo byte lo primero que se realiza es verificar si se trata de un byte de sincronismo. De ser verdad, el próximo byte que ingrese será interpretado como una cabecera de trama. Sino, se verifica si se está en el estado de interpretación del byte actual como una cabecera. El bloque de decisión ``Cabecera'' determina dos grandes ramas, donde la rama de condición verdadera es llamada ``rama de cabecera'' y la de condición falsa es llamada ``rama de colas''. Sobre la rama de cabecera se comienza primero por interpretar si el byte actual es un mensaje NOP. Si es cierto, no se realiza ninguna operación y se establece que el próximo byte es una cabecera de trama. De lo contrario, se verifica si el byte actual es un mensaje SF1. De ser verdad, se altera el valor de byte actual al del valor reservado por el sincronismo absoluto. Éste es el mecanismo para poder transmitir datos de usuario donde un byte coincida con este valor reservado. Continuando, si el byte actual no es un mensaje SF1 se verifica si es un mensaje SF2. De ser verdad, además de cambiar el byte actual al valor reservado se fija la variable de estado ``Como dos'' para la interpretación del mensaje actual como dos byte reservados. Para estos dos últimos casos (SF1 o SF2) se pasa a la rama de colas estableciendo que el próximo byte no es una cabecera. Continuando ahora con el estado falso del SF2, se verifica si el byte actual es un mensaje de pedido de sincronismo (PS). De ser verdad, se establece en ``Sí'' la variable de estado IIS utilizada en el algoritmo de la figura \ref{fig:pc.tx.general}. Esto también se puede interpretar como el mensaje de pedido de sincronismo que enlaza al DEMUX con el MUX en las figuras \ref{fig:ss.ih.flujo} y \ref{fig:ss.host.flujo}. Ahora, si el byte actual tampoco representa un mensaje PS, se ingresa al bloque A\sm{1}. En este bloque se verifica si el byte actual corresponde a una cabecera de trama tipo 1. De ser verdad, se fija el valor del contador C\sm{1} con el valor de la longitud de este tipo de trama. Este valor puede ser un valor implícito preestablecido o un valor que se deduzca de la cabecera de esta trama. Ahora, si se desea incluir a la cabecera como parte de la reconstrucción de la trama, se pasa directamente a la rama de colas. Sino, aquí finalizaría esta rama. En ambos casos se establece que el próximo byte no es una cabecera. También hay que tener en cuenta que el valor cargado en el contador C\sm{1} debe incluir o no a la cabecera. Ahora, de no tratarse de una trama tipo 1, lo primero que se hace antes de pasar al bloque A\sm{2} es reiniciar a cero el contador C\sm{1}. Esto es importante hacer para que la transmisión explícita de una trama de menor prioridad anule por completo a todas las tramas en transcurso de mayor prioridad que ésta. Esto se puede interpretar como una violación de prioridades y se hace para dar estabilidad funcional al DEMUX por si se han perdido datos. Como se suele decir --El cliente siempre tiene la razón-- aquí, para este servidor, el sincronismo absoluto siempre tiene la razón, sin importar la prioridad de la trama que se comienza a recibir. Para el resto de los bloques, del bloque A\sm{2} a A\sm{n}, el proceso es el mismo.
+
+
+En la rama de colas se comienza por el bloque de diagrama B\sm{1}, en el cual la condición de no pasar al siguiente bloque es que el contador C\sm{1} sea mayor a cero. Esto indica que aún existen bytes a ser procesados para reconstruir la trama tipo 1. Para ello, primero se decrementa el contador C\sm{1} y luego se agrega el byte actual al final de la trama a reconstruir. A continuación, se verifica nuevamente si el contador C\sm{1} no ha llegado a cero. En el caso en que aún no haya llegado a cero se sale de los bloques B\sm{i} para pasar directamente al bloque de decisión ``Como dos''. En cambio, en el caso de ser igual a cero significa que se reconstruyó por completo la trama tipo 1. Entonces, se descarga el reconstructor pasando esta trama tipo 1 a la cola FIFO\sm{1}. Finalizando el bloque B\sm{1}, se pasa a una secuencia de comprobación. La comprobación consiste en que si los contadores C\sm{i+1} a C\sm{n} valen cero, siendo C\sm{i} el actual, entonces el próximo byte a recibir será --por sincronismo relativo-- una cabecera. Si esto es cierto, además de establecer que el próximo byte a recibir será una cabecera se desactiva la interpretación ``Como dos'' y se finaliza. Esto se hace de esta manera debido a como están constituidas las cabeceras de las tramas, ya que no existe ninguna cabecera con el valor reservado, y dejar activado ``Como dos'' podría general una perdida de sincronismo.
+
+Si no se ha definido --para el próximo byte-- la condición de cabecera, se pasa al bloque de decisión ``Como dos'', en el cual se evalúa si el byte actual debe ser procesado dos veces. En caso que la decisión sea procesarlo dos veces, se fija el estado de ``Como dos'' en ``Como uno'' para que no se procese más de dos veces. Entonces, se repite una vez más la rama de colas.
+
+En caso que el bloque B\sm{1} no tenga byte pendientes para reconstruir la trama tipo 1 se pasa al bloque B\sm{2} y así sucesivamente hasta el bloque B\sm{n}. Por último, si se llegó a este punto y no existen byte pendientes para ningún tipo de trama se está en presencia de una falta o perdida de sincronismo. Por ejemplo, esto ocurre en el momento inicial, en donde el byte recibido --de no ser un sincronismo absoluto-- es descartado. Luego de esto, se realiza internamente la generación de un mensaje de pedido de sincronismo.
+
+El pasaje del bloque de proceso ``Pedido de sincronismo'' al bloque de decisión ``Como dos'', en vez de la finalización directa, es necesario para que el valor de la variable de estado ``Como dos'' sea reiniciada. Esto evita que el próximo byte sincronizado que ingrese, sea procesado dos veces en caso de no tener que serlo. Además, de esta manera no se rompe la estructura lógica del algoritmo.
+
+Finalizando esta sección, la implementación particular de estos algoritmos, para la \ac{IH} y para el \ac{HOST}, se tratará en la sección \ref{sec:soft}.
+
+
