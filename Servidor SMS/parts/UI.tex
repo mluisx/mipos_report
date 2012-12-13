@@ -1,0 +1,96 @@
+\chapter{La \acf{UI}}
+\label{sec:ui}
+
+Las principales ventanas que componen la \ac{UI} son las siguientes:
+
+\begin{enumerate}
+\item Acceso a a la aplicaci\'n (login).
+\item Menu principal. 
+\item Abrir caja.
+\item Agregar venta.
+\item Listado de clientes.
+\item Opciones.
+\item Administraci\'n de stocks.
+\item Estad\'isticas.
+\item Cierre de caja.
+\end{enumerate}
+
+\section{Acceso a a la aplicaci\'n (login)}
+\label{sec:ui.login}
+
+Al iniciar la aplicaci\'on, la primer ventana o actividad (activity) que se puede ver es la del acceso a la misma. Con un usuario y password se procede a ingresar al sistema.
+
+MAURIX
+
+\section{Menu principal}
+\label{sec:ui.mainmenu}
+
+En el men\'u principal podemos ver una serie de botones con las distintas opciones que la aplicaci\'on nos brinda. Todas las opciones son descritas a continuaci\'on.
+
+MAURIX
+
+\section{Abrir caja}
+\label{sec:ui.newcash}
+
+Como primera actividad diaria en un local comercial, es necesario realizar la apertura de caja del d\'ia. Para poder hacerlo, el sistema muestra la fecha correspondiente al momento de realizar una nueva apertura y la posibilidad de ingresar un monto que corresponde al efectivo con la que la caja va a disponer para luego realizar los intercambios de billetes necesarios al generar ventas con pagos en efectivo.
+
+MAURIX
+
+\section{Agregar venta}
+\label{sec:ui.addsale}
+
+Esta es una de las m\'as importantes funciones que la aplicaci\'on ofrece, ya que aqu\'i es donde se realizan los ingresos de ventas que corresponden al local durante todo un ciclo diario de caja. El ciclo que desarrolla un ingreso de venta en la aplicaci\'on se puede apreciar en la figura MAURIX y consisten de las siguientes ventanas:
+
+\begin{enumerate}
+\item Ingreso de datos de los productos a vender.
+\item Ingreso de pagos, cliente y vendedor.
+\item Ingreso de datos de tarjeta de cr\'edito.
+\item Realizaci\'on de pago mediante la \ac{API} de MercadoPago.
+\item Lectura y escritura de datos mediante dispositivo \ac{NFC}.
+\item Generaci\'on de ticket.
+\item Marketing via Tweeter.
+\end{enumerate}
+
+\subsection{Ingreso de datos de los productos a vender}
+\label{subsec:ui.addsale.products}
+
+En esta ventana se ingresan los c\'odigos de los productos que el cliente quiere comprar. Al ingresar el c\'odigo, el sistema muestra el precio del mismo y la disponibilidad de stock actual que el producto tenga mediante una b\'usqueda de la informaci\'on en la base SQLite interna de la aplicaci\'on.
+
+Al ingresar los productos la ventana muestra una lista con todos los productos y sus precios, as\'i como tambi\'en el total de lo que ser\'ia la venta a generar.
+
+MAURIX
+
+\subsection{Ingreso de pagos, cliente y vendedor}
+\label{subsec:ui.addsale.payments}
+
+El objetivo de esta ventana es la de poder ingresar la forma de pago sobre la compra del cliente, brindando la flexibilidad al comprador de optar por distintas formas de pagos para una misma compra.
+
+Para ello, el sistema permite elegir m\'as de un m\'etodo de pago y los montos los cuales el cliente quiera para cada uno de los m\'etodos de pagos elegidos.
+
+En esta parte del ingreso de datos de la venta se puede asociar la venta a un cliente cuyos datos pueden estar cargados en el sistema o en el caso de ser un cliente nuevo, este pueda ser incorporado al sistema mediante el ingreso de sus datos en una nueva ventana de clientes.
+
+Un listado de los vendedores se puede observar en la parte inferior de la ventana para poder asociar el vendedor a la venta y poder utilizar esa informaci\'on al momento de generar el ticket de la venta.
+
+Las siguientes ventanas corresponden a las que se visualizan de acuerdo a las distintas formas de pago que el cliente haya elegido para pagar.
+
+MAURIX
+
+\subsection{Ingreso de datos de tarjeta de cr\'edito}
+\label{subsec:ui.addsale.creditcard}
+
+Aqu\'i es donde...
+
+\section{Listado de clientes}
+\label{sec:ui.clientlist}
+
+\section{Opciones}
+\label{sec:ui.options}
+
+\section{Administraci\'n de stocks}
+\label{sec:ui.stocks}
+
+\section{Estad\'isticas}
+\label{sec:ui.statistics}
+
+\section{Cierre de caja}
+\label{sec:ui.closecash}
