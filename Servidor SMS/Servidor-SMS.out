@@ -35,23 +35,36 @@
 \BOOKMARK [1][-]{section.2.8}{El LogCat}{chapter.2}% 35
 \BOOKMARK [0][-]{chapter.3}{El Terminal de Punto de Venta \(TPV\)}{part.3}% 36
 \BOOKMARK [1][-]{section.3.1}{Los paquetes que contienen la aplicaci\363n:}{chapter.3}% 37
-\BOOKMARK [1][-]{section.3.2}{La User Interface \(Interfaz de Usuario\) \(UI\)}{chapter.3}% 38
-\BOOKMARK [1][-]{section.3.3}{Las librer\355as utilizadas}{chapter.3}% 39
-\BOOKMARK [1][-]{section.3.4}{El QR}{chapter.3}% 40
-\BOOKMARK [1][-]{section.3.5}{El uso de la c\341mara \363ptica}{chapter.3}% 41
-\BOOKMARK [1][-]{section.3.6}{La BD SQLite}{chapter.3}% 42
-\BOOKMARK [1][-]{section.3.7}{El LTM}{chapter.3}% 43
+\BOOKMARK [1][-]{section.3.2}{Las librer\355as utilizadas}{chapter.3}% 38
+\BOOKMARK [1][-]{section.3.3}{El QR}{chapter.3}% 39
+\BOOKMARK [1][-]{section.3.4}{El uso de la c\341mara \363ptica}{chapter.3}% 40
+\BOOKMARK [1][-]{section.3.5}{La BD SQLite}{chapter.3}% 41
+\BOOKMARK [1][-]{section.3.6}{El LTM}{chapter.3}% 42
+\BOOKMARK [1][-]{section.3.7}{La tecnolog\355a NFC}{chapter.3}% 43
 \BOOKMARK [1][-]{section.3.8}{Los gr\341ficos estad\355sticos}{chapter.3}% 44
-\BOOKMARK [0][-]{chapter.4}{La Terminal de Ingreso de Datos \(TID\)}{part.3}% 45
-\BOOKMARK [1][-]{section.4.1}{Lectura de un codigo unidimensional utilizando el foco automatico de la camara}{chapter.4}% 46
-\BOOKMARK [1][-]{section.4.2}{Firma Digital}{chapter.4}% 47
-\BOOKMARK [1][-]{section.4.3}{Comunicacion Bluetooth}{chapter.4}% 48
-\BOOKMARK [0][-]{chapter.5}{Diseï¿½o del un bootloader para la IH!}{part.3}% 49
-\BOOKMARK [1][-]{section.5.1}{El formato HEX de Intel}{chapter.5}% 50
-\BOOKMARK [0][-]{chapter.6}{Diseï¿½o del un bootloader para la IH!}{part.3}% 51
-\BOOKMARK [1][-]{section.6.1}{El formato HEX de Intel}{chapter.6}% 52
-\BOOKMARK [-1][-]{part.4}{Conclusi\363n}{}% 53
-\BOOKMARK [-1][-]{part.5}{Ap\351ndice}{}% 54
-\BOOKMARK [0][-]{appendix.Alph1}{Siglas y acr\363nimos}{part.5}% 55
-\BOOKMARK [0][-]{appendix.Alph2}{Glosario}{part.5}% 56
-\BOOKMARK [-1][-]{part.6}{Bibliografía}{}% 57
+\BOOKMARK [0][-]{chapter.4}{La User Interface \(Interfaz de Usuario\) \(UI\)}{part.3}% 45
+\BOOKMARK [1][-]{section.4.1}{Acceso a a la aplicaci\363n \(login\)}{chapter.4}% 46
+\BOOKMARK [1][-]{section.4.2}{Menu principal}{chapter.4}% 47
+\BOOKMARK [1][-]{section.4.3}{Abrir caja}{chapter.4}% 48
+\BOOKMARK [1][-]{section.4.4}{Agregar venta}{chapter.4}% 49
+\BOOKMARK [2][-]{subsection.4.4.1}{Ingreso de datos de los productos a vender}{section.4.4}% 50
+\BOOKMARK [2][-]{subsection.4.4.2}{Ingreso de pagos, cliente y vendedor}{section.4.4}% 51
+\BOOKMARK [2][-]{subsection.4.4.3}{Ingreso de datos de tarjeta de cr\351dito}{section.4.4}% 52
+\BOOKMARK [1][-]{section.4.5}{Listado de clientes}{chapter.4}% 53
+\BOOKMARK [1][-]{section.4.6}{Opciones}{chapter.4}% 54
+\BOOKMARK [1][-]{section.4.7}{Administracin de stocks}{chapter.4}% 55
+\BOOKMARK [1][-]{section.4.8}{Estad\355sticas}{chapter.4}% 56
+\BOOKMARK [1][-]{section.4.9}{Cierre de caja}{chapter.4}% 57
+\BOOKMARK [0][-]{chapter.5}{La Terminal de Ingreso de Datos \(TID\)}{part.3}% 58
+\BOOKMARK [1][-]{section.5.1}{Lectura de un codigo unidimensional utilizando el foco automatico de la camara}{chapter.5}% 59
+\BOOKMARK [1][-]{section.5.2}{Firma Digital}{chapter.5}% 60
+\BOOKMARK [1][-]{section.5.3}{Comunicacion Bluetooth}{chapter.5}% 61
+\BOOKMARK [0][-]{chapter.6}{Diseï¿½o del un bootloader para la IH!}{part.3}% 62
+\BOOKMARK [1][-]{section.6.1}{El formato HEX de Intel}{chapter.6}% 63
+\BOOKMARK [0][-]{chapter.7}{Diseï¿½o del un bootloader para la IH!}{part.3}% 64
+\BOOKMARK [1][-]{section.7.1}{El formato HEX de Intel}{chapter.7}% 65
+\BOOKMARK [-1][-]{part.4}{Conclusi\363n}{}% 66
+\BOOKMARK [-1][-]{part.5}{Ap\351ndice}{}% 67
+\BOOKMARK [0][-]{appendix.Alph1}{Siglas y acr\363nimos}{part.5}% 68
+\BOOKMARK [0][-]{appendix.Alph2}{Glosario}{part.5}% 69
+\BOOKMARK [-1][-]{part.6}{Bibliografía}{}% 70

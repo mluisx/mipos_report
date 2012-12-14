@@ -1,9 +1,20 @@
 \select@language {spanish}
+\contentsline {figure}{\numberline {1}{\ignorespaces Apple Store en New York City, USA}}{1}{figure.0.1}
+\contentsline {figure}{\numberline {2}{\ignorespaces Dispositivo utilizado para cobrar a los clientes en las tiendas de Apple}}{2}{figure.0.2}
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {1.1}{\ignorespaces Pantalla inicial de Android 4.1 (Jelly Bean) ejecut\'andose en un Galaxy Nexus}}{9}{figure.1.1}
-\contentsline {figure}{\numberline {1.2}{\ignorespaces Distribuci\'on de las distintas versiones de Android de acuerdo a un an\'alisis de datos recolectados en un per\'iodo de 14 d\'ias finalizando el 1 de Noviembre de 2012}}{10}{figure.1.2}
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Pantalla inicial de Android 4.1 (Jelly Bean) ejecut\'andose en un Galaxy Nexus}}{10}{figure.1.1}
+\contentsline {figure}{\numberline {1.2}{\ignorespaces Distribuci\'on de las distintas versiones de Android de acuerdo a un an\'alisis de datos recolectados en un per\'iodo de 14 d\'ias finalizando el 1 de Noviembre de 2012}}{11}{figure.1.2}
 \addvspace {10\p@ }
 \addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Mapa de la \ac {UI} con sus activities y relaciones entre las mismas}}{26}{figure.4.1}
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Mapa de la \ac {UI} (continuaci\'on)}}{27}{figure.4.2}
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Activity de acceso a la aplicaci\'on}}{28}{figure.4.3}
+\contentsline {figure}{\numberline {4.4}{\ignorespaces El men\'u principal}}{29}{figure.4.4}
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Activity de apertura de caja}}{31}{figure.4.5}
+\contentsline {figure}{\numberline {4.6}{\ignorespaces Mapa de la \ac {UI} con las distintas variantes de pagos}}{32}{figure.4.6}
+\contentsline {figure}{\numberline {4.7}{\ignorespaces Activity de ingreso de productos para la venta}}{33}{figure.4.7}
+\contentsline {figure}{\numberline {4.8}{\ignorespaces Activity de ingreso de m\'etodos de pagos, cliente y vendedor.}}{34}{figure.4.8}
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
