@@ -1,33 +1,36 @@
 \chapter{El desarrollo en Android}
 \label{cpt:android.dev}
 
-En este cap\'itulo se describen las distintas partes que componen una aplicaci\'on Android y como la plataforma se encuentra estructurada para poder soportar y manejar estas aplicaciones.
+En este cap\'itulo se describen las distintas partes que componen una aplicaci\'on Android y como la plataforma se encuentra estructurada para poder dar soporte y manejo a las mismas.
 
 \section{La \ac{DVM}}
 \label{sec:dvm}
 
-Dalvik es la m\'aquina virtual que utiliza la plataforma para dispositivos m\'oviles Android. Dalvik ha sido diseñada por Dan Bornstein con contribuciones de otros ingenieros de Google.
+Dalvik es la m\'aquina virtual que utiliza la plataforma para dispositivos m\'oviles Android. El dise\~no fue realizado por Dan Bornstein con contribuciones de otros ingenieros de Google.
 
-Dalvik est\'a optimizada para requerir poca memoria y est\'a diseñada para permitir ejecutar varias instancias de la m\'aquina virtual simult\'aneamente, delegando en el sistema operativo subyacente el soporte de aislamiento de procesos, gesti\'on de memoria e hilos.
+Dalvik est\'a optimizada para requerir poca memoria y est\'a diseñada para permitir la ejecuci\'on de varias instancias de la m\'aquina virtual simult\'aneamente, delegando en el sistema operativo subyacente el soporte de aislamiento de procesos, gesti\'on de memoria e hilos.
 
-A menudo Dalvik es nombrada como una m\'aquina virtual Java, pero esto no es estrictamente correcto, ya que el bytecode con el que opera no es Java bytecode. Sin embargo, la herramienta dx incluida en el \ac{SDK} de Android permite transformar los archivos Class de Java compilados por un compilador Java al formato de archivos Dex.
+A menudo, Dalvik es nombrada como una m\'aquina virtual Java, pero esto no es estrictamente correcto, ya que el bytecode con el que opera no es Java bytecode. Sin embargo, la herramienta dx incluida en el \ac{SDK} de Android permite transformar los archivos \texttt{.class} de Java compilados por un compilador Java al formato de archivos \texttt{.dex}.
 
 El nombre de Dalvik fue elegido por Bornstein en honor a Dalvík, un pueblo de Islandia donde vivieron antepasados suyos.~\cite{wiki.dvm}
 
 \section{La arquitectura Android}
 \label{sec:arq}
 
-Basicamente, Android tiene las siguientes capas:
+La arquitectura del sistema operativo esta compuesto por las siguientes caracter\'isticas (ver figura \ref{fig:android.architecture}):
 
 \figuraot{La arquitectura Android}{fig:android.architecture}{width=\textwidth}{Android-system-architecture}{!h}
 
 \begin{itemize}
-\item Aplicaciones (escritas en Java, ejecutadas en Dalvik)
-\item Librer\'ias y servicios del framework (escritas en su mayoria en Java)
-\subitem Las aplicaciones y la mayor parte del c\'odigo del framework se ejecutan en una m\'aquina virtual. 
-\item Librerias nativas, daemons y servicios (escritos en C o C++)
-\item El kernel de linux, que incluye
-\subitem drivers para hardware, redes, sistema de acceso a archivos e \ac{IPC}.
+\item Aplicaciones (escritas en Java, ejecutadas en Dalvik).
+\item Librer\'ias y servicios del framework (escritas en su mayoria en Java).
+\subitem Las aplicaciones y la mayor parte del c\'odigo del framework ejecutadas en la m\'aquina virtual. 
+\item Librerias nativas, daemons y servicios (escritos en C o C++).
+\item El kernel de linux, que incluye drivers para:
+\subitem hardware
+\subitem redes
+\subitem sistema de acceso a archivos
+\subitem \ac{IPC}
 \end{itemize}
 
 \section{Partes que componen un proyecto de desarrollo Android}
@@ -35,88 +38,96 @@ Basicamente, Android tiene las siguientes capas:
 
 En esta secci\'on se presentan las distintas clases, vistas y recursos. Como interactuan cada uno de ellos y cual es el prop\'osito de cada uno.
 
-\subsection{Las Activities}
+\subsection{Las activities}
 \label{subsec:dev.activities}
 
-Es una pantalla dentro de una aplicaci\'on.
+Una activity conforma las siguientes caracter\'isticas:
 
-Una aplicaci\'on puede contener una o m\'as Activities.
+\begin{itemize}
+\item Consiste en una pantalla dentro de una aplicaci\'on.
+\item Una aplicaci\'on puede contener una o m\'as Activities.
+\item Pueden ser invocadas desde otras aplicaciones.
+\item Cada activity es independiente de las dem\'as.
+\item Todas las Activities extienden de la clase Activity.
+\item Cada Activity tiene una ventana en la cual mostrarse.
+\item Normalmente ocupa toda la pantalla.
+\item Puede utilizar ventanas adicionales como dialogs.
+\item Se muestra utilizando un \'arbol de vistas que extienden de la clase view.
+\item El ra\'iz del \'arbol se define llamando al m\'etodo \texttt{setContentView}.
+\end{itemize}
 
-Pueden ser invocadas desde otras aplicaciones.
-
-Cada activity es independiente de las dem\'as.
-
-Todas las Activities extienden de la clase Activity.
-
-Cada Activity tiene una ventana en la cual mostrarse.
-
-Normalmente ocupa toda la pantalla.
-
-Puede utilizar ventanas adicionales como Dialogs.
-
-Se muestra utilizando un \'arbol de vistas que extienden de la clase View.
-
-El ra\'iz del \'arbol se define llamando al m\'etodo Activity.setContentView().
-
-\subsection{El Manifest}
-\label{subsec:dev.manifest}
-
-Es el xml donde cada aplicación de describe y declara sus  componentes.
-
-Cada app tiene su manifest que se incluirá en el apk.
-
-\subsection{El ciclo de vida de una Activitiy}
+\subsection{El ciclo de vida de una activity}
 \label{subsec:dev.activity.lifecycle}
 
-Tiene tres estados principales:
+Una activity tiene tres estados principales:
 
-Active, actualmente en pantalla con foco.
+\begin{numerate}
+\item Active, actualmente en pantalla con foco.
+\item Paused, perdi\'o foco, contin\'ua parcialmente visible.
+\item Stopped, fue tapado por otra Activity.
+\end{numerate}
 
-Paused, perdi\'o foco, contin\'ua parcialmente visible.
+Las transiciones de estado son notificadas al activity por una serie de m\'etodos protegidos. Se deber\'a mantener una llamada al m\'etodo original en la clase padre al sobreescribir cualquiera de estos m\'etodos.
 
-Stopped, fue tapado por otra Activity.
+Los siete m\'etodos del ciclo de vida (figura \ref{fig:android.activity.lifecycle}) pueden ser utilizados para monitorear los siguientes subciclos.
 
-Las transiciones de estado son notificadas al Activity por una serie de m\'etodos protegidos.
+\begin{itemize}
+\item Tiempo de vida, usado para liberar recursos en el \texttt{onDestroy} que fueron creados en el \texttt{onCreate}.
+\item Visibilidad, para mantener recursos que afecten la UI.
+\item Primer plano, para mantener la interactividad con el usuario.
+\end{itemize}
 
-Se deber\'a mantener una llamada al m\'etodo original en la clase padre al sobreescribir uno de estos m\'etodos.
+\figuraot{Ciclo de vida de una activity}{fig:android.activity.lifecycle}{width=\textwidth}{activity_lifecycle}{!h}
 
-Los siete m\'etodos del ciclo de vida pueden ser utilizados para monitorear los siguientes subciclos.
-
-Tiempo de vida, usado para liberar recursos en el onDestroy() que fueron creados en el onCreate().
-
-Visibilidad, mantener recursos que afecten la UI.
-
-Primer plano, mantener la interactividad con el usuario.
-
-figuraoo().
-
-\subsection{El Stack de Activities}
+\subsection{El back stack de activities}
 \label{subsec:dev.activity.stack}
 
-http://developer.android.com/guide/components/tasks-and-back-stack.html
+Las activities son administradas mediante una pila denominada back stack en el orden en el cual cada una de estas activities se va creando.
 
-\figuraot{Diagrama del stack de activities}{fig:android.stackActivities}{width=\textwidth}{diagram_backstack}{!h}
+Cuando una activity en pantalla inicia otra, la nueva activity se coloca al tope del back stack y toma el foco de la pantalla. La actividad anterior se mantiene en el back stack, pero se detiene. Cuando se ingresa al estado de stop, el sistema retiene el estado actual de su \ac{UI}.
+
+En el momento en el que el usuario presiona el bot\'on de retroceso del dispositivo, la actividad actual se destruye y la anterior a esta ejecuta el m\'etodo \texttt{resume} para volver recuperar su estado y pueda ser visualizado en pantalla.
+
+De ninguna forma las activities pueden cambiar su posici\'on dentro del back stack, ya que justamente se opera como una pila de \'ultimo en entrar, primero en salir. La figura \ref{fig:android.activity.lifecycle} visualiza el comportamiento en el tiempo mostrando el progreso entre las distintas activities y como el back stack se encuentra formado en las distintas etapas.
+
+\figuraot{Diagrama del back stack de activities}{fig:android.stackActivities}{width=\textwidth}{diagram_backstack}{!h}
 
 \subsection{Los Intents}
 \label{subsec:dev.intents}
 
-Un intent puede referenciar un componente.
+Un intent es una descripci\'on abstracta de una operaci\'on a ser ejecutada. Puede ser utilizado con el me\'todo \texttt{startActivity} para transferir informaci\'on entre distintas activities, como una de las funciones m\'as importantes, entre otras m\'as.
 
-Si la referencia no es explícita android buscará el componente  que mejor responda.
+Por medio de un intent, se hace disponible realizar late binding en tiempo de ejecuci\'on entre el c\'odigo en diferentes aplicaciones. Basicamente consiste en una estructura de datos pasiva conteniendo una descripci\'on abstracta de una acci\'on a ser realizada.
 
-\subsection{Los Layouts}
+Un intent puede referenciar un componente, y si la referencia no es expl\'icita Android buscar\'a el componente que mejor responda.
+
+\subsection{El Manifest}
+\label{subsec:dev.manifest}
+
+El manifest consiste en un archivo en formato \texttt{.xml} donde cada aplicaci\'on describe y declara todos sus componentes, sus permisos que requerira para acceder a partes protegidas de la \ac{API} y su interacci\'on con otras aplicaciones, su nivel m\'inimo de \ac{API} Android requerido y todas las librer\'ias a las que la aplicaci\'on hace uso.
+
+Cada aplicaci\'on tiene su manifest que se incluir\'a en el archivo \texttt{.apk}.
+
+\subsection{Los layouts}
 \label{subsec:dev.layouts}
 
-El layout define la distribuci\'on de las vistas y contenedores.
+El layout define la distribuci\'on de las vistas y contenedores, como la \ac{UI} de una activity on una aplicaci\'on tipo widget.
 
-Los layouts pueden definirse en XML o instanciarse program\'aticamente.
+Los layouts pueden definirse:
 
-Tipos: FrameLayout , LinearLayout, RelativeLayout, TableLayout.
+\begin{itemize}
+\item en el formato \texttt{.xml}: brindando un vocabulario que corresponde a las clases y subclases de View, aquellos los cuales est\'an definidos para layouts y widgets.
+\item instanciando los elementos en tiempo de ejecuci\'on: la aplicaci\'on puede crear objetos del tipo View y ViewGroup (y manipular sus propiedades) programaticamente.
+\end{itemize}
 
-figuraoo()
+Cada tipo de layout se encuentra ubicado en una jerarqu\'ia de vistas (views) (figura \ref{}) con par\'ametros de layout asociados a cada una de estas vistas. 
+
+\figuraot{Jerarqu\'ia de vistas y layouts}{fig:android.layouts}{width=\textwidth}{layoutparams}{!h}
 
 \subsection{Los eventos de \ac{UI}}
 \label{subsec:dev.ui.events}
+
+MAURIX!!!
 
 View permite registrar distintos listeners para los siguientes  eventos.
 
