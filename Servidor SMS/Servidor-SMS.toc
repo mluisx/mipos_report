@@ -1,74 +1,77 @@
 \select@language {spanish}
 \contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Introducci\'on}{1}{part.1}
-\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Metodolog\'ia}{5}{part.2}
-\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Resultados y Discusi\'on}{7}{part.3}
+\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Objetivos}{3}{part.2}
+\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Metodolog\'ia}{4}{part.3}
+\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Resultados y Discusi\'on}{7}{part.4}
 \contentsline {chapter}{\numberline {1}El \ac {OS} Android}{8}{chapter.1}
 \contentsline {section}{\numberline {1.1}Inicios y evoluci\'on}{8}{section.1.1}
 \contentsline {section}{\numberline {1.2}Versiones}{9}{section.1.2}
 \contentsline {section}{\numberline {1.3}?`Qu\'e se necesita tener en cuenta para poder comenzar a crear una aplicaci\'on en Android?}{11}{section.1.3}
 \contentsline {section}{\numberline {1.4}Las herramientas para trabajar con la plataforma}{12}{section.1.4}
 \contentsline {subsection}{\numberline {1.4.1}Ejemplos de algunas herramientas para el desarrollo de aplicaciones}{13}{subsection.1.4.1}
-\contentsline {subsubsection}{El \acf {ADT} de Eclipse}{13}{section*.63}
-\contentsline {subsubsection}{El Android Emulator}{14}{section*.64}
-\contentsline {subsubsection}{\acf {AVD}}{14}{section*.65}
-\contentsline {chapter}{\numberline {2}El desarrollo en Android}{15}{chapter.2}
-\contentsline {section}{\numberline {2.1}La \ac {DVM}}{15}{section.2.1}
-\contentsline {section}{\numberline {2.2}La arquitectura Android}{15}{section.2.2}
-\contentsline {section}{\numberline {2.3}Partes que componen un proyecto de desarrollo Android}{16}{section.2.3}
-\contentsline {subsection}{\numberline {2.3.1}Las Activities}{16}{subsection.2.3.1}
-\contentsline {subsection}{\numberline {2.3.2}El Manifest}{16}{subsection.2.3.2}
-\contentsline {subsection}{\numberline {2.3.3}El ciclo de vida de una Activitiy}{16}{subsection.2.3.3}
-\contentsline {subsection}{\numberline {2.3.4}El Stack de Activities}{17}{subsection.2.3.4}
-\contentsline {subsection}{\numberline {2.3.5}Los Intents}{17}{subsection.2.3.5}
-\contentsline {subsection}{\numberline {2.3.6}Los Layouts}{17}{subsection.2.3.6}
-\contentsline {subsection}{\numberline {2.3.7}Los eventos de \ac {UI}}{17}{subsection.2.3.7}
-\contentsline {subsection}{\numberline {2.3.8}El Style}{17}{subsection.2.3.8}
-\contentsline {subsection}{\numberline {2.3.9}El Theme}{17}{subsection.2.3.9}
-\contentsline {subsection}{\numberline {2.3.10}El AdapterView}{17}{subsection.2.3.10}
-\contentsline {subsection}{\numberline {2.3.11}Los men\'ues}{18}{subsection.2.3.11}
-\contentsline {subsection}{\numberline {2.3.12}Los Dialogs}{18}{subsection.2.3.12}
-\contentsline {subsection}{\numberline {2.3.13}Los Resources}{18}{subsection.2.3.13}
-\contentsline {subsection}{\numberline {2.3.14}El ASyncTask}{18}{subsection.2.3.14}
-\contentsline {subsection}{\numberline {2.3.15}El Content Provider}{18}{subsection.2.3.15}
-\contentsline {section}{\numberline {2.4}Los Servicios}{19}{section.2.4}
-\contentsline {section}{\numberline {2.5}Los secretos de performance}{19}{section.2.5}
-\contentsline {subsection}{\numberline {2.5.1}Mitos de performance}{20}{subsection.2.5.1}
-\contentsline {subsection}{\numberline {2.5.2}Siempre medir}{21}{subsection.2.5.2}
-\contentsline {section}{\numberline {2.6}La interacción con servicios remotos}{21}{section.2.6}
-\contentsline {section}{\numberline {2.7}El \ac {DDMS}}{21}{section.2.7}
-\contentsline {section}{\numberline {2.8}El LogCat}{21}{section.2.8}
-\contentsline {chapter}{\numberline {3}El \acf {TPV}}{22}{chapter.3}
-\contentsline {section}{\numberline {3.1}Los paquetes que contienen la aplicaci\'on:}{22}{section.3.1}
-\contentsline {section}{\numberline {3.2}Las librer\'ias utilizadas}{22}{section.3.2}
-\contentsline {section}{\numberline {3.3}El \ac {QR}}{22}{section.3.3}
-\contentsline {section}{\numberline {3.4}El uso de la c\'amara \'optica}{23}{section.3.4}
-\contentsline {section}{\numberline {3.5}La \ac {BD} SQLite}{23}{section.3.5}
-\contentsline {section}{\numberline {3.6}El \ac {LTM}}{23}{section.3.6}
-\contentsline {section}{\numberline {3.7}La tecnolog\'ia \ac {NFC}}{24}{section.3.7}
-\contentsline {section}{\numberline {3.8}Los gr\'aficos estad\'isticos}{24}{section.3.8}
-\contentsline {chapter}{\numberline {4}La \acf {UI}}{25}{chapter.4}
-\contentsline {section}{\numberline {4.1}Acceso a a la aplicaci\'on (login)}{25}{section.4.1}
-\contentsline {section}{\numberline {4.2}Menu principal}{25}{section.4.2}
-\contentsline {section}{\numberline {4.3}Abrir caja}{30}{section.4.3}
-\contentsline {section}{\numberline {4.4}Agregar venta}{30}{section.4.4}
-\contentsline {subsection}{\numberline {4.4.1}Ingreso de datos de los productos a vender}{30}{subsection.4.4.1}
-\contentsline {subsection}{\numberline {4.4.2}Ingreso de pagos, cliente y vendedor}{32}{subsection.4.4.2}
-\contentsline {subsection}{\numberline {4.4.3}Ingreso de datos de tarjeta de cr\'edito}{35}{subsection.4.4.3}
-\contentsline {section}{\numberline {4.5}Listado de clientes}{35}{section.4.5}
-\contentsline {section}{\numberline {4.6}Opciones}{35}{section.4.6}
-\contentsline {section}{\numberline {4.7}Administraci\'n de stocks}{35}{section.4.7}
-\contentsline {section}{\numberline {4.8}Estad\'isticas}{35}{section.4.8}
-\contentsline {section}{\numberline {4.9}Cierre de caja}{35}{section.4.9}
-\contentsline {chapter}{\numberline {5}La \acf {TID}}{36}{chapter.5}
-\contentsline {section}{\numberline {5.1}Lectura de un codigo unidimensional utilizando el foco automatico de la camara}{36}{section.5.1}
-\contentsline {section}{\numberline {5.2}Firma Digital}{36}{section.5.2}
-\contentsline {section}{\numberline {5.3}Comunicacion Bluetooth}{36}{section.5.3}
-\contentsline {chapter}{\numberline {6}Dise�o del un \textsl {bootloader} para la \acs {IH}}{37}{chapter.6}
-\contentsline {section}{\numberline {6.1}El formato HEX de Intel}{37}{section.6.1}
-\contentsline {chapter}{\numberline {7}Dise�o del un \textsl {bootloader} para la \acs {IH}}{38}{chapter.7}
-\contentsline {section}{\numberline {7.1}El formato HEX de Intel}{38}{section.7.1}
-\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Conclusi\'on}{39}{part.4}
-\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Ap\'endice}{40}{part.5}
-\contentsline {chapter}{\numberline {A}Siglas y acr\'onimos}{41}{appendix.Alph1}
-\contentsline {chapter}{\numberline {B}Glosario}{43}{appendix.Alph2}
-\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Bibliograf�a}{45}{part.6}
+\contentsline {subsubsection}{El \acf {ADT} de Eclipse}{14}{section*.54}
+\contentsline {subsubsection}{El Android Emulator}{14}{section*.55}
+\contentsline {subsubsection}{\acf {AVD}}{14}{section*.56}
+\contentsline {chapter}{\numberline {2}El desarrollo en Android}{16}{chapter.2}
+\contentsline {section}{\numberline {2.1}La \ac {DVM}}{16}{section.2.1}
+\contentsline {section}{\numberline {2.2}La arquitectura Android}{16}{section.2.2}
+\contentsline {section}{\numberline {2.3}Partes que componen un proyecto de desarrollo Android}{17}{section.2.3}
+\contentsline {subsection}{\numberline {2.3.1}Las Activities}{17}{subsection.2.3.1}
+\contentsline {subsection}{\numberline {2.3.2}El Manifest}{18}{subsection.2.3.2}
+\contentsline {subsection}{\numberline {2.3.3}El ciclo de vida de una Activitiy}{18}{subsection.2.3.3}
+\contentsline {subsection}{\numberline {2.3.4}El Stack de Activities}{18}{subsection.2.3.4}
+\contentsline {subsection}{\numberline {2.3.5}Los Intents}{19}{subsection.2.3.5}
+\contentsline {subsection}{\numberline {2.3.6}Los Layouts}{19}{subsection.2.3.6}
+\contentsline {subsection}{\numberline {2.3.7}Los eventos de \ac {UI}}{19}{subsection.2.3.7}
+\contentsline {subsection}{\numberline {2.3.8}El Style}{19}{subsection.2.3.8}
+\contentsline {subsection}{\numberline {2.3.9}El Theme}{19}{subsection.2.3.9}
+\contentsline {subsection}{\numberline {2.3.10}El AdapterView}{19}{subsection.2.3.10}
+\contentsline {subsection}{\numberline {2.3.11}Los men\'ues}{19}{subsection.2.3.11}
+\contentsline {subsection}{\numberline {2.3.12}Los Dialogs}{20}{subsection.2.3.12}
+\contentsline {subsection}{\numberline {2.3.13}Los Resources}{20}{subsection.2.3.13}
+\contentsline {subsection}{\numberline {2.3.14}El ASyncTask}{20}{subsection.2.3.14}
+\contentsline {subsection}{\numberline {2.3.15}El Content Provider}{20}{subsection.2.3.15}
+\contentsline {section}{\numberline {2.4}Los Servicios}{21}{section.2.4}
+\contentsline {section}{\numberline {2.5}Los secretos de performance}{21}{section.2.5}
+\contentsline {subsection}{\numberline {2.5.1}Mitos de performance}{22}{subsection.2.5.1}
+\contentsline {subsection}{\numberline {2.5.2}Siempre medir}{22}{subsection.2.5.2}
+\contentsline {section}{\numberline {2.6}La interacción con servicios remotos}{23}{section.2.6}
+\contentsline {section}{\numberline {2.7}El \ac {DDMS}}{23}{section.2.7}
+\contentsline {section}{\numberline {2.8}El LogCat}{23}{section.2.8}
+\contentsline {chapter}{\numberline {3}El \acf {TPV}}{24}{chapter.3}
+\contentsline {section}{\numberline {3.1}El codigo fuente y paquetes que componene el proyecto}{24}{section.3.1}
+\contentsline {section}{\numberline {3.2}Las librer\'ias utilizadas}{24}{section.3.2}
+\contentsline {section}{\numberline {3.3}El \ac {QR}}{24}{section.3.3}
+\contentsline {section}{\numberline {3.4}El uso de la c\'amara \'optica}{26}{section.3.4}
+\contentsline {section}{\numberline {3.5}La \ac {BD} SQLite}{26}{section.3.5}
+\contentsline {section}{\numberline {3.6}El \ac {LTM}}{27}{section.3.6}
+\contentsline {section}{\numberline {3.7}La tecnolog\'ia \ac {NFC}}{27}{section.3.7}
+\contentsline {section}{\numberline {3.8}Los gr\'aficos estad\'isticos}{27}{section.3.8}
+\contentsline {chapter}{\numberline {4}El \acf {SIG}}{29}{chapter.4}
+\contentsline {section}{\numberline {4.1}Descripci\'on de los archivos que componen el proyecto en Eclipse}{29}{section.4.1}
+\contentsline {section}{\numberline {4.2}Librerias utilizadas para el \ac {SIG}}{29}{section.4.2}
+\contentsline {chapter}{\numberline {5}La \acf {UI}}{32}{chapter.5}
+\contentsline {section}{\numberline {5.1}Acceso a a la aplicaci\'on (login)}{32}{section.5.1}
+\contentsline {section}{\numberline {5.2}Menu principal}{32}{section.5.2}
+\contentsline {section}{\numberline {5.3}Abrir caja}{37}{section.5.3}
+\contentsline {section}{\numberline {5.4}Agregar venta}{37}{section.5.4}
+\contentsline {subsection}{\numberline {5.4.1}Ingreso de datos de los productos a vender}{37}{subsection.5.4.1}
+\contentsline {subsection}{\numberline {5.4.2}Ingreso de pagos, cliente y vendedor}{39}{subsection.5.4.2}
+\contentsline {subsection}{\numberline {5.4.3}Ingreso de datos de tarjeta de cr\'edito}{42}{subsection.5.4.3}
+\contentsline {subsection}{\numberline {5.4.4}Firma digital}{42}{subsection.5.4.4}
+\contentsline {subsection}{\numberline {5.4.5}Realizaci\'on de pago mediante la \ac {API} de MercadoPago}{42}{subsection.5.4.5}
+\contentsline {subsection}{\numberline {5.4.6}Lectura y escritura de datos mediante dispositivo \ac {NFC}}{45}{subsection.5.4.6}
+\contentsline {subsection}{\numberline {5.4.7}Generaci\'on de ticket}{45}{subsection.5.4.7}
+\contentsline {subsection}{\numberline {5.4.8}Marketing a trav\'es de la red social Twitter}{49}{subsection.5.4.8}
+\contentsline {section}{\numberline {5.5}Listado de clientes}{49}{section.5.5}
+\contentsline {section}{\numberline {5.6}Opciones}{49}{section.5.6}
+\contentsline {section}{\numberline {5.7}Administraci\'on de stocks}{56}{section.5.7}
+\contentsline {section}{\numberline {5.8}Estad\'isticas}{56}{section.5.8}
+\contentsline {section}{\numberline {5.9}Cierre de caja}{56}{section.5.9}
+\contentsline {chapter}{\numberline {6}Testing Unitario y Funcional de la aplicaci\'on}{60}{chapter.6}
+\contentsline {section}{\numberline {6.1}Testing Unitario en Android}{60}{section.6.1}
+\contentsline {section}{\numberline {6.2}Testing Funcional}{60}{section.6.2}
+\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Conclusi\'on}{61}{part.5}
+\contentsline {part}{\relax \fontsize {14.4}{18}\selectfont Ap\'endice}{62}{part.6}
+\contentsline {chapter}{\numberline {A}Siglas y acr\'onimos}{63}{appendix.Alph1}
+\contentsline {chapter}{\numberline {B}Glosario}{65}{appendix.Alph2}

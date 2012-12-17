@@ -53,10 +53,11 @@ Esta es una de las m\'as importantes funciones que la aplicaci\'on ofrece, ya qu
 \item Ingreso de datos de los productos a vender.
 \item Ingreso de pagos, cliente y vendedor.
 \item Ingreso de datos de tarjeta de cr\'edito.
+\item Firma digital.
 \item Realizaci\'on de pago mediante la \ac{API} de MercadoPago.
 \item Lectura y escritura de datos mediante dispositivo \ac{NFC}.
 \item Generaci\'on de ticket.
-\item Marketing via Tweeter.
+\item Marketing a trav\'es de la red social Twitter.
 \end{enumerate}
 
 \figuraot{Mapa de la \ac{UI} con las distintas variantes de pagos}{fig:uimap3}{width=\textwidth}{MapaUI(3)}{!t}
@@ -88,19 +89,124 @@ Las siguientes ventanas corresponden a las que se visualizan de acuerdo a las di
 \subsection{Ingreso de datos de tarjeta de cr\'edito}
 \label{subsec:ui.addsale.creditcard}
 
-Aqu\'i es donde...
+En esta parte de la aplicaci\'on se se ingresa el n\'umero, fecha de vencimiento y c\'odigo de seguridad de la tarjeta de cr\'edito del comprador. Es aqu\'i donde la aplicaci\'on puede utilizar como dispositivo de entrada de datos al \ac{LTM} mediante la entrada de audio del \ac{DPT}.
+
+De acuerdo a las pruebas realizadas se pudo obtener como resultado que por cuestiones de hardware el \ac{LTM} conectado al \ac{DPT} tiene problemas en la parte de la captaci\'on del audio, tanto el generado por la tarjeta como el del ambiente donde se encuentra el dispositivo. En cambio, en el \ac{DTC} el lector, junto a la libreria necesaria para hacerlo funcionar, realiza las lecturas correctas de las tarjetas de cr\'edito.
+
+Se defini\'o realizar una aplicaci\'on instalada en el \ac{DTC} y que por comunicaci\'on bluetooth pueda establecer un v\'inculo con el \ac{TPV} para poder hacer la lectura en el dispositivo donde funciona el lector y poder enviarlo al \ac{TPV} para su almacenamiento.
+
+El usuario de la aplicaci\'on puede pasar la tarjeta por el \ac{LTM} y todo el audio captado por el micr\'ofono interno que incorpora el lector es procesado por el \ac{DTC} para que luego el n\'umero de la tarjeta de cr\'edito aparezca en pantalla.
+
+En el caso de no poder realizar la lectura, la entrada de datos manual a trav\'es del teclado virtual en pantalla es posible.
+
+Una vez que los datos fueron ingresados se procede a realizar la transacci\'on mediante alg\'un gateway de pago como puede ser el caso de authorize.net o braintreepayments.com (estos gateways no fueron probados en el desarrollo de este \ac{TFE}.
+
+\figuraot{Activity para ingresar los datos de la tarjeta de cr\'edito.}{fig:addCreditCard}{width=\textwidth}{creditCard}{!p}
+
+\subsection{Firma digital}
+\label{subsec:ui.addsale.signature}
+
+Una vez realizado la carga de datos de la tarjeta de cr\'edito, se presenta la pantalla de la figura \ref{fig:signatureActivity} que habilita al cliente poder generar una firma que quedar\'a registrado en el sistema como comprobante de que el cliente efectivamente hizo la compra y que tambi\'en ser\'a impreso en el ticket luego de la venta generada.
+
+\figuraot{Activity para registar la firma del cliente}{fig:signatureActivity}{width=\textwidth}{signature}{!p}
+
+\subsection{Realizaci\'on de pago mediante la \ac{API} de MercadoPago}
+\label{subsec:ui.addsale.nfc}
+
+Una de las alternativas de pago que esta aplicaci\'on presenta es la de poder utilizar el servicio que ofrece MercadoPago. La figura \ref{fig:mercadoPagoActivity} muestra la pantalla de acceso al sistema mercadoPago, implementado con un componente de \ac{UI} de Android llamado WebView, el cual permite interpretar c\'odigo HTML para visualizarlo en pantalla teniendo como motor de renderizado al del navegador Google Chrome que el dispositivo contiene.
+
+Para poder realizar pruebas con este medio de pago se generaron usuarios de pruebas, uno para comprador y otro para vendedor. Mediante la \ac{SDK} de MercadoPago se logra generar un cobro a partir de los datos relacionados a la compra a realizar y es el cual se visualiza en pantalla luego de que el usuario ingreso al sistema, permitiendo as\'i visualizar el monto a pagar y las tarjetas que el sistema tenga registrado de acuerdo a los datos del cliente (datos propiamente internos de MercadoPago).
+
+Al obtener una transacci\'on satisfactoria, el bot\'on ``salir'' se habilita para poder continuar con la impresi\'on del ticket de compra.
+
+\figuraot{Ingreso al sistema de MercadoPago para poder realizar el cobro de la venta}{fig:mercadoPagoActivity}{width=\textwidth}{mercadoPago}{!p}
+
+\subsection{Lectura y escritura de datos mediante dispositivo \ac{NFC}}
+\label{subsec:ui.addsale.nfc}
+
+Cuando el usuario selecciona la opci\'on de pagar mediante \ac{NFC} se activa el dispositivo \ac{NFC} que se encuentra detr\'as del \ac{DPT} para tomar la informaci\'on de una etiqueta o tag (figura \ref{fig:nfcScanActivity}).
+
+Esta etiqueta contiene una memoria que se utiliza para almacenar el saldo del cliente. En primer lugar se realiza la lectura del mismo y se obtiene el saldo correspondiente para luego verificar con el monto a pagar. Si el monto supera al valor del saldo se produce el resultado que muestra la figura \ref{fig:nfcWriteActivity}, donde indica que la transacci\'on no puede realizarse y que la compra con esta etiqueta no puede efectuarse.
+
+Si el caso de que el saldo supere al valor de la compra, se informa que la transacci\'on fue aprobada y se procede a almancenar los datos de la venta en la base de datos y a generar el ticket para el cliente.
+
+\figuraot{Pantalla que indica la activaci\'on del dispositivo \ac{NFC} para realizar la lectura y escritura de datos}{fig:nfcScanActivity}{width=\textwidth}{NFCReader}{!p}
+
+\figuraot{Pantalla que surge de una transacci\'on no aprobada}{fig:nfcWriteActivity}{width=\textwidth}{NFCWriter}{!p}
+
+\subsection{Generaci\'on de ticket}
+\label{subsec:ui.addsale.ticket}
+
+Al finalizar el pago de la compra, la aplicaci\'on genera, mediante una libreria de creaci\'on de archivos con formato PDF, el ticket que ser\'a entregado al cliente.
+
+Este archivo PDF se almacena en la memoria interna del \ac{DPT} y se procede a mostrar la pantalla de la figura \ref{fig:ticketGeneratorActivity} donde entre las opciones que muestra se puede enviar el ticket por mail utilizando el cliente de mail instalado en el \ac{DPT}, visualizar el ticket mediante una aplicaci\'on de visualizaci\'on de archivos PDF, o \'unicamente finalizar la venta y volver al men\'u principal o a un Activity que permite enviar un mensaje a trav\'es de la red Twitter para promocionar el local comercial y de esa forma obtener un descuento en futuras compras, recibir un regalo extra o cualquier otro beneficio para el cliente, generando as\'i una publicidad de tipo viral y en forma electr\'onica por medio de la red Twitter.
+
+Cuando la opci\'on seleccionada es la de enviar el ticket por mail, se abre el cliente de correo y se visualiza un mail con el cuerpo del mensaje ya redactado y con el ticket en formato PDF como un archivo adjunto al mismo (figura \ref{fig:ticketByMail}). Esto permite que solamente se tenga que ingresar la direcci\'on de mail del cliente y presionar el bot\'on para enviar para que de esta forma f\'acil se pueda lograr el env\'io del ticket.
+
+Si el caso es la de querer visualizar el ticket para su posterior impresi\'on, el visualizador muestra el ticket generado (figura \ref{fig:printedTicket}) donde se pueden observar todos los datos de la venta realizada (nombre del cliente, vendedor, detalle de los productos, totales, formas de pago, direcci\'on y nombre del local, etc).
+
+\figuraot{}{fig:ticketGeneratorActivity}{width=\textwidth}{ticketGenerator}{!p}
+
+\figuraot{}{fig:ticketByMail}{width=\textwidth}{ticketByMail}{!p}
+
+\figuraot{}{fig:printedTicket}{width=\textwidth}{printedTicket}{!p}
+
+\subsection{Marketing a trav\'es de la red social Twitter}
+\label{subsec:ui.addsale.twitter}
+
+En la figura \ref{fig:twitter} se puede apreciar una conexi\'on establecida a la red social Twitter para el en\'io de un mensaje publicitario sobre la compra realizada. El comprador debe ingresar a su cuenta de Twitter y permitir el uso de la aplicaci\'on del \ac{TPV} para que se pueda enviar el mensaje a trav\'es de la aplicaci\'on y lograr que esto, al ser publicado, genere una atracci\'on a futuros clientes.
+
+\figuraot{La aplicaci\'on brinda la posibilidad de enviar mensajes a trav\'es de la \ac{API} de Twitter}{fig:twitter}{width=\textwidth}{twitter}{!p}
 
 \section{Listado de clientes}
 \label{sec:ui.clientlist}
 
+El \ac{TPV} permite visualizar un listado de todas las compras que fueron realizadas por un cliente en particular. Al abrir esta opci\'on desde el men\'u principal, se despliega una lista de todos los clientes registrados donde uno puede verificar su historial al presionar en el nombre del que se desea conocer.
+
+\figuraot{Listado de compras de un cliente registrado en el sistema}{fig:clientHistoryActivity}{width=\textwidth}{clientHistory}{!p}
+
 \section{Opciones}
 \label{sec:ui.options}
 
-\section{Administraci\'n de stocks}
+En la figura \ref{fig:optionsActivity} se puede observar las opciones de configuraci\'on del sistema. Entre estas podemos encontrar:
+
+\begin{itemize}
+\item Protocolo: el utilizado para conectar al \ac{SIG}.
+\item \ac{URL}: la direcci\'on IP del \ac{SIG}.
+\item Puerto: al funcionar con un servidor tomcat, se utiliza el puerto por defecto 8080.
+\item Protocolo: el utilizado para conectar al \ac{SIG}.
+\item Dispositivo conectado por Bluetooth: aqu\'i es donde al presionar el bot\'on ``Conectar con dispositivo'' permite, una vez que la conexi\'on fue exitosa, visualizar el nombre del dispositivo con el cual se conect\'o.
+\item Texto a enviar: se permite enviar un texto de prueba hacia el dispositivo con el cual se realiz\'o la conexi\'on. Mediante una aplicaci\'on en el otro dispositivo, se puede visualizar el texto y responder al \ac{TPV}.
+\item Texto de respuesta: se puede recibir un texto desde el otro dispositivo conectado y visualizarlo aqu\'i para comprobar que la comunicaci\'on funcione correctamente.
+\end{itemize}
+
+\figuraot{Las opciones de configuraci\'on}{fig:optionsActivity}{width=\textwidth}{options}{!p}
+
+\section{Administraci\'on de stocks}
 \label{sec:ui.stocks}
+
+La figura \ref{fig:stockActivity} describe las distintas caracter\'isticas que ofrece la aplicaci\'on para poder ingresar un producto a la base de datos del sistema.
+
+La lectura de un c\'odigo \ac{QR} puede realizarse a trav\'es del bot\'on que permite habilitar la c\'amara del dispositivo para realizar la lectura del mismo.
+
+Se debe ingresar el dato del precio, la descripi\'on, la cantidad y la categor\'ia del producto. Es posible tambi\'en asociar a todos los datos del producto una foto del mismo.
+
+Si el producto no contiene impreso un c\'odigo el cual se tuvo que ingresar a mano en la aplicaci\'on, se encuentra disponible la opci\'on de generar el c\'odigo \ac{QR} para que luego de que los datos se almacenen en la base, se pueda visualizar el c\'odigo \ac{QR} del producto y se pueda realizar una impresi\'n del mismo para colocarlo junto al producto y as\'i poder utilizarlo en futuras lecturas en el \ac{TPV}.
+
+\figuraot{El activity para la administraci\'on del stock del comercio}{fig:stockActivity}{width=\textwidth}{stock}{!p}
 
 \section{Estad\'isticas}
 \label{sec:ui.statistics}
 
+Debido a la necesidad de tener un an\'alisis de como van surgiendo las ventas a medida que transcurre el tiempo, la aplicaci\'on brinda la caracter\'istica de poder generar distintos gr\'aficos (figura \ref{fig:statsActivity}) tomando como fuentes diversos datos que el sistema va almacenando a medida las ventas van surgiendo.
+
+Para poder utilizarse en la toma de decisiones respecto al negocio en el cual esta aplicaci\'on funciona, estos gr\'aficos son importantes para poder realizar alguna acci\'on determinada que permita mejoras a\'un m\'as las ventas y las ganancias.
+
+\figuraot{Gr\'afico estad\'istico generado a partir de los datos almacenados en el sistema}{fig:statsActivity}{width=\textwidth}{stats}{!p}
+
 \section{Cierre de caja}
 \label{sec:ui.closecash}
+
+La \'ultima activity de la figura \ref{fig:closecashActivity} toma los datos de la caja y visualiza sus totales para ser verificados previo al cierre de la caja. Una vez que la caja fue cerrada no se pueden volver a ingresar ventas hasta que una nueva caja sea abierta.
+
+\figuraot{Activity para mostrar los distintos totales de la caja abierta previo al cierre}{fig:closecashActivity}{width=\textwidth}{closeCash}{!p}

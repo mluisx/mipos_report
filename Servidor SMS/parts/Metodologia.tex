@@ -1,11 +1,37 @@
 % Usar tiempo pasado
+Para este \ac{TFE}\footnote{A lo largo de todo el presente desarrollo escrito se utilizaron distintas abreviaciones y acr\'onimos donde sus significados pueden encontrarse en la parte final de este trabajo, en la secci\'on ``Siglas y acr\'onimos'' (ver p\'agina \pageref{sec:acronimos}).} se utilizaron dispositivos con sistemas operativos Android\Si{\texttrademark}. Se desarrollaron aplicaciones en la plataforma Eclipse\Si{\texttrademark} con el \ac{SDK} de Android\Si{\texttrademark} y se llev\'o a cabo la investigaci\'on y utilizaci\'on de distintas librer\'ias para cumplir los objetivos planteados y requeridos para un \ac{SIG}.
+
+\begin{quote}
+Denominamos \ac{SIG} a toda la plataforma de venta, en donde el funcionamiento de cada una de sus partes y sus interacciones entre estas permite cumplir la finalidad propuesta para este \ac{TFE} la cual es generar un sistema que pueda cumplir con lo que un sistema de gesti\'on actual pueda brindar.
+\end{quote}
+
+El \ac{SIG} se encuentra desarrollado en tres partes:
+
+\begin{enumerate}
+\item El \ac{TPV} que se encuentra representado por una aplicaci\'on que funciona en un \ac{DPT} de la marca \textbf{\textit{ASUS}}. Esta aplicaci\'on permite realizar las actividades de aperturas y cierres de caja, almacena datos de las ventas realizadas, permite generar las transacciones correspondientes de acuerdo a la forma de pago del cliente, genera los tickets requeridos, lista el historial de un cliente en particular, entre otras. El objetivo de esta parte del \ac{SIG} es brindar al vendedor una plataforma de cobro y para el administrador, una herramienta de gesti\'on.
+
+Se analizaron 4 formas posibles de poder realizar un pago utilizando este \ac{TPV}:
+
+\begin{enumerate}
+\item Pago en efectivo: se recibe dinero por el monto a pagar de la compra y se ingresa la informaci\'on en el \ac{TPV} a trav\'es del vendedor.
+\item Pago en tarjeta de cr\'edito: el cliente pasa su tarjeta por el \ac{LTM} y los datos se env\'ian a un gateway de pagos para autenticar los datos de la tarjeta y autorizar la transacci\'on del mismo.
+\item Pago con un dispositivo con tecnolog\'ia \ac{NFC}: se procede a acercar el dispositivo del cliente a un lector \ac{NFC} para que este pueda tomar lectura y una vez autorizada la transacci\'on, almacenar la informaci\'on en el dispositivo nuevamente.
+\item Pago utilizando el sistema de cobro MercadoPago\Si{\texttrademark}: a trav\'es de la implementac\'ion del \ac{SDK} que se ofrece en forma gratuita, se permite la posibilidad de realizar pagos utilizando una cuenta de MercadoPago\Si{\texttrademark}, permitiendo as\'i ofrecer otra opci\'on m\'as a los clientes.
+\end{enumerate}
+
+\item La \ac{TID} constituido por un \ac{DTC} con Android\Si{\texttrademark} conectado a un \ac{LTM} que consiste en un dispositivo que se conecta a la entrada de audio de 3.5 mil\'imetros y actua como un sensor de sonido que permite decodificar los datos almacenados en una tarjeta de cr\'edito para utilizarlos en el \ac{TPV}. 
+
+\item Un \textbf{\textit{back-end}} elaborado por media de una aplicaci\'on \textbf{\textit{Java}} que permite funcionar como un \ac{SMD}, recibiendo y enviando datos al \ac{TPV} las cuales son persistidos mediante la implementaci\'on de una base de datos \textbf{\textit{MySQL}} y cuyo servidor que contiene a la aplicaci\'on corresponde a un \textbf{\textit{Tomcat}}.
+\end{enumerate}
+
+Las distintas etapas de elaboraci\'on de este \ac{TFE} consisten en las siguientes:
 
 \begin{itemize}
 	\item \textbf{Desarrollo de una aplicaci\'on Android\Si{\texttrademark} que representa a un \ac{TPV} sobre un \ac{DPT}}\\
-	  La primera actividad consisti\'o en el desarroll\'o la \ac{UI} del \ac{TPV}. Luego se codific\'o la l\'ogica de la aplicaci\'on utilizando datos de prueba, o sea, simulando la interacci\'on con el \ac{SMD}. A esta aplicaci\'on se agreg\'o una librer\'ia para poder generar y leer c\'odigos \ac{QR} a trav\'es de la c\'amara \'optica del dispositivo. El uso de la c\'amara tambi\'en se implemento para la toma de fotos de los productos que ingresan en el stock del local y para la toma de im\'agenes de los clientes al ser dados de alta.
+	  La primera actividad consisti\'o en el desarroll\'o de la \ac{UI} del \ac{TPV}. Luego se codific\'o la l\'ogica de la aplicaci\'on utilizando datos de prueba, simulando la interacci\'on con el \ac{SMD}. A esta aplicaci\'on se agregaron distintas librerias tanto para el uso de la c\'amara del dispositivo, la lectura y generaci\'on de c\'odigos \ac{QR}, la generaci\'on de documentos PDF, entre otras. El uso de la c\'amara, adem\'as de utilizarse como lector de c\'odigos tambi\'en se implemento para la toma de fotos de los productos que ingresan en el stock del local.
 	
 	\item \textbf{Primeras pruebas de comunicaci\'on entre dispositivos}\\
-  	Se realiz\'o una aplicaci\'on de prueba en el \ac{DTC} que solamente conten\'ia desarrollado la comunicaci\'on v\'a Bluetooth\Si{\texttrademark}. Una vez que se pudo comunicar satisfactoriamente esta aplicaci\'on con el \ac{TPV}, se procedi\'o a desarrollar las funciones que permiten el ingreso de datos por parte del cliente que realiza la compra en el local, dando por nombre a esta parte del sistema el de una \ac{TID}.
+  	Se realiz\'o una aplicaci\'on de prueba en el \ac{DTC} que solamente conten\'ia desarrollado la comunicaci\'on v\'a Bluetooth\Si{\texttrademark}. Una vez que se pudo comunicar satisfactoriamente esta aplicaci\'on con el \ac{TPV}, se procedi\'o a desarrollar las funciones que permiten el ingreso de datos por parte de un \ac{LTM}, dando por nombre a esta parte del sistema el de una \ac{TID}.
 	
 	\item \textbf{Implementaci\'on de un servidor web para manejar peticiones \textbf{\textit{JSON}}}\\
 		Para el siguiente paso, se codific\'o una aplicaci\'on \textbf{\textit{Java}} con las librer\'ias adecuadas para poder manejar objetos \textbf{\textit{JSON}} y que esta pueda correr en un servidor de aplicaciones \textbf{\textit{Tomcat}}. Esta aplicaci\'on, conectada a una base de datos \textbf{\textit{MySQL}}, permite almacenar y obtener informaci\'on que luego se env\'ia a trav\'es del servicio web al \ac{TPV}. La base de datos se configur\'o y luego se crearon las tablas y se almacenaron datos para poder utilizarlos en las distintas pruebas de funcionamiento del \ac{SIG}.
@@ -17,12 +43,11 @@
 	  Se anex\'o el \ac{LTM} en el \ac{DTC} y se implement\'o una librer\'ia para poder hacer uso del mismo y que pueda realizar la lectura de los datos de las tarjetas de cr\'edito y d\'ebito. Estos datos se env\'ian a el \ac{TPV} para que este pueda ejecutar el pedido de autorizaci\'on correspondiente para la transacci\'on de compra que se quiera llevar a cabo.
 
 	\item \textbf{Incorporaci\'on del uso de la tecnolog\'ia \ac{NFC}}\\
-		Para poder utilizar la tecnolog\'ia \ac{NFC} y poder sacar provecho del lector incorporado que trae el \ac{DPT} modelo \textbf{\textit{Nexus}} de marca \textbf{\textit{ASUS}}, se agrego en la aplicaci\'on del \ac{TPV} un m\'odulo que permite hacer lectura y escritura de otros dispositivos que contengan \ac{NFC}. Las pruebas se realizaron mediante unas etiquetas \ac{NFC} que contienen una memoria interna en donde se pudieron almacenar y obtener datos para simular transacciones de compras.
+		Para poder utilizar la tecnolog\'ia \ac{NFC} y poder sacar provecho del lector incorporado que trae el \ac{DPT} modelo \textbf{\textit{Nexus}} de marca \textbf{\textit{ASUS}}, se agrego en la aplicaci\'on del \ac{TPV} un m\'odulo que permite hacer lectura y escritura de etiquetas \ac{NFC}. Las pruebas se realizaron mediante una etiqueta que contiene informaci\'on de una cuenta para simular transacciones de compras.
 	
 	\item \textbf{Proveer al usuario final el an\'alisis de los datos que se manejan diariamente en el \ac{SIG}}\\
-		Los gr\'aficos estadi\'isticos se anexaron al \ac{TPV} mediante el uso de una librer\'ia de Google\Si{\texttrademark} que permite, a partir de una serie de datos y unos datos extras, generar im\'agenes que permiten mostrar la evoluci\'on de distintas variables de importancia para el vendedor en un cierto tiempo transcurrido.
+		Los gr\'aficos estadi\'isticos se anexaron al \ac{TPV} mediante el uso de una librer\'ia de Google\Si{\texttrademark} que permite, a partir de una serie de datos, generar im\'agenes que permiten mostrar la evoluci\'on de distintas variables de importancia para el vendedor en un cierto tiempo transcurrido.
 	
 	\item \textbf{Aprovechar la utilizaci\'on de redes sociales como un canal de marketing}\\
-    Por \'ultimo, se incorpor\'o la utilizaci\'on de las \ac{APIs} de Facebook\Si{\texttrademark}, Twitter\Si{\texttrademark} y Foursquare\Si{\texttrademark} en la \ac{TID} para poder brindar al cliente la posibilidad de que pueda ingresar con su cuenta a cualquiera de estas redes sociales y env\'ie un mensaje relacionado con el local a todos sus contactos para que se pueda generar una publicidad viral y que de esta forma pueda servir este \ac{SIG} como una herramienta de marketing.
-    	
+    Por \'ultimo, se incorpor\'o la utilizaci\'on de la \ac{API} de Twitter\Si{\texttrademark} para poder brindar al cliente la posibilidad de que pueda ingresar con su cuenta y env\'ie un mensaje relacionado a la venta a todos sus contactos para que se pueda generar una publicidad viral y de esta manera utilizar al \ac{SIG} como una herramienta de marketing.   	
 \end{itemize}

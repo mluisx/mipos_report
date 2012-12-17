@@ -1,6 +1,6 @@
 \chapter{El \ac{OS} Android}
 
-Primeramente, para poder llegar al desarrollo propuesto en este \ac{TFE}, se realizar\'a un breve descripci\'on del sistema operativo para dispositivos m\'oviles que es parte fundamental para la implementaci\'on de las distintas aplicaciones desarrolladas.
+En primer lugar, para poder llegar al desarrollo propuesto en este \ac{TFE}, se realizar\'a un breve descripci\'on del sistema operativo para dispositivos m\'oviles que es parte fundamental para la implementaci\'on de las distintas aplicaciones desarrolladas.
 
 \section{Inicios y evoluci\'on}
 \label{sec:android.history.1}
@@ -22,25 +22,34 @@ Android se encuentra instalado en cientos de millones de dispositivos m\'oviles 
 \section{Versiones}
 \label{sec:android.versions.1}
 
-Las versiones de Android reciben el nombre de postres en ingl\'es. En cada versión el postre elegido empieza por una letra distinta siguiendo un orden alfab\'etico~\cite{and.dev.versions}.:
+Las versiones de Android reciben el nombre de postres americanos. En cada versión el postre elegido empieza por una letra distinta siguiendo un orden alfab\'etico~\cite{and.dev.versions}:
 
-\begin{enumerate}
-\item A: Apple Pie (v1.0), Tarta de manzana
-\item B: Banana Bread (v1.1), Pan de pl\'atano
-\item C: Cupcake (v1.5), Magdalena glaseada.
-\item D: Donut (v1.6), Rosquilla.
-\item E: Eclair (v2.0/v2.1), pastel franc\'es conocido en Espa\~na como pepito, petis\'u, suso o canuto.
-\item F: Froyo (v2.2), (Abreviatura de «Frozen Yogurt») Yogur Helado.
-\item G: Gingerbread (v2.3), Pan de jengibre.
-\item H: Honeycomb (v3.0/v3.1/v3.2), Panal de miel.
-\item I: Ice Cream Sandwich (v4.0), S\'andwich de helado.
-\item J: Jelly Bean (v4.1/v4.1.2/v4.2), Jud\'ia de gelatina.
-\item K: Key Lime Pie (v4.2), Proximamente.
-\end{enumerate}
+\begin{tablaob}{Versiones de Android}{tab:table.versions}{!h}
+     \begin{tabular}{|c|c|c|}
+          \hline
+          \textbf{Nombre}&\textbf{Versi\'on}&\textbf{Traducci\'on}\\
+          \hline\hline
+           Apple Pie & 1.0 & Tarta de manzana\\\hline
+           Banana Bread & 1.1 & Pan de pl\'atano\\\hline
+           Cupcake & 1.5 & Magdalena glaseada\\\hline
+           Donut & 1.6 & Rosquilla\\\hline
+           Eclair & 2.0/2.1 & Tipo de pastel franc\'es\\\hline
+           Froyo & 2.2 & Yogur Helado\\\hline
+           Gingerbread & 2.3 & Pan de jengibre \\\hline
+           Honeycomb & 3.0/3.1/3.2 & Panal de miel\\\hline
+           Ice Cream Sandwich & 4.0 & S\'andwich de helado\\\hline
+           Jelly Bean & 4.1/4.1.2/4.2 & Jud\'ia de gelatina\\\hline
+           Key Lime Pie & 5.0 & Pastel de lima\\\hline
+     \end{tabular}\\[5mm]
+\end{tablaob}
 
-\figuraot{Distribuci\'on de las distintas versiones de Android de acuerdo a un an\'alisis de datos recolectados en un per\'iodo de 14 d\'ias finalizando el 1 de Noviembre de 2012}{fig:android.versions.fig}{width=\textwidth}{android_versions_chart}{!h}
+\figuraot{Las versiones de Android en el tiempo}{fig:android.versions.time}{width=\textwidth}{versions}{!h}
+
+\figuraob{Distribuci\'on de las distintas versiones de Android de acuerdo a un an\'alisis de datos recolectados en un per\'iodo de 14 d\'ias finalizando el 1 de Noviembre de 2012}{fig:android.versions.fig}{width=\textwidth}{android_versions_chart}{!b}
 
 Cada versi\'on de Android tiene un n\'umero de \ac{API} relacionado. Para el caso del \ac{DPT} utilizado para el \ac{TPV}, el dispositivo contiene la versi\'on 4.2 \ac{JB} de Android que funciona con desarrollos realizados con la \ac{API} 17 y el \ac{DTC} contiene la versi\'on 4.0.4 \ac{ICS} cuya \ac{API} es la n\'umero 15.
+
+\figuraot{Crecimiento de dispositivos Android}{fig:android.devices}{width=\textwidth}{growth-chart}{!h}
 
 \section{?`Qu\'e se necesita tener en cuenta para poder comenzar a crear una aplicaci\'on en Android?}
 \label{sec:android.whatYouNeed.1}
