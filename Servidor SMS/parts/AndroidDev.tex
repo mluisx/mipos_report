@@ -61,11 +61,11 @@ Una activity conforma las siguientes caracter\'isticas:
 
 Una activity tiene tres estados principales:
 
-\begin{numerate}
+\begin{enumerate}
 \item Active, actualmente en pantalla con foco.
 \item Paused, perdi\'o foco, contin\'ua parcialmente visible.
 \item Stopped, fue tapado por otra Activity.
-\end{numerate}
+\end{enumerate}
 
 Las transiciones de estado son notificadas al activity por una serie de m\'etodos protegidos. Se deber\'a mantener una llamada al m\'etodo original en la clase padre al sobreescribir cualquiera de estos m\'etodos.
 
@@ -90,7 +90,7 @@ En el momento en el que el usuario presiona el bot\'on de retroceso del disposit
 
 De ninguna forma las activities pueden cambiar su posici\'on dentro del back stack, ya que justamente se opera como una pila de \'ultimo en entrar, primero en salir. La figura \ref{fig:android.activity.lifecycle} visualiza el comportamiento en el tiempo mostrando el progreso entre las distintas activities y como el back stack se encuentra formado en las distintas etapas.
 
-\figuraot{Diagrama del back stack de activities}{fig:android.stackActivities}{width=\textwidth}{diagram_backstack}{!h}
+\figuraoo{Diagrama del back stack de activities}{fig:android.stackActivities}{width=\textwidth}{diagram_backstack}{!h}
 
 \subsection{Los Intents}
 \label{subsec:dev.intents}
@@ -120,23 +120,25 @@ Los layouts pueden definirse:
 \item instanciando los elementos en tiempo de ejecuci\'on: la aplicaci\'on puede crear objetos del tipo View y ViewGroup (y manipular sus propiedades) programaticamente.
 \end{itemize}
 
-Cada tipo de layout se encuentra ubicado en una jerarqu\'ia de vistas (views) (figura \ref{}) con par\'ametros de layout asociados a cada una de estas vistas. 
+Cada tipo de layout se encuentra ubicado en una jerarqu\'ia de vistas (views) (figura \ref{fig:android.layouts}) con par\'ametros de layout asociados a cada una de estas vistas. 
 
-\figuraot{Jerarqu\'ia de vistas y layouts}{fig:android.layouts}{width=\textwidth}{layoutparams}{!h}
+\figuraoo{Jerarqu\'ia de vistas y layouts}{fig:android.layouts}{width=\textwidth}{layoutparams}{!h}
 
 \subsection{Los eventos de \ac{UI}}
 \label{subsec:dev.ui.events}
 
-MAURIX!!!
+Son interfaces en la clase \texttt{View} para registrar distintos listeners para los siguientes eventos:
 
-View permite registrar distintos listeners para los siguientes  eventos.
-
-onClick()
-onLongCick()
-onFocusChange()
-onKey()
-onTouch()
-onCreateContextMenu()
+\begin{itemize}
+\item \texttt{onClick}:
+\item \texttt{onLongClick}:
+\item \texttt{onFocusChange}:
+\item \texttt{onKey}:
+\item \texttt{onTouch}:
+\item \texttt{onCreateContextMenu}:
+\end{itemize}
+MAURIX
+http://developer.android.com/guide/topics/ui/ui-events.html
 
 \subsection{El Style}
 \label{subsec:dev.style}

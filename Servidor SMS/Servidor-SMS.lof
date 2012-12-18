@@ -6,40 +6,43 @@
 \contentsline {figure}{\numberline {1.2}{\ignorespaces Las versiones de Android en el tiempo}}{11}{figure.1.2}
 \contentsline {figure}{\numberline {1.3}{\ignorespaces Distribuci\'on de las distintas versiones de Android de acuerdo a un an\'alisis de datos recolectados en un per\'iodo de 14 d\'ias finalizando el 1 de Noviembre de 2012}}{11}{figure.1.3}
 \contentsline {figure}{\numberline {1.4}{\ignorespaces Crecimiento de dispositivos Android}}{12}{figure.1.4}
+\contentsline {figure}{\numberline {1.5}{\ignorespaces La tienda de aplicaciones Google Play}}{16}{figure.1.5}
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces La arquitectura Android}}{17}{figure.2.1}
-\contentsline {figure}{\numberline {2.2}{\ignorespaces Diagrama del stack de activities}}{18}{figure.2.2}
+\contentsline {figure}{\numberline {2.1}{\ignorespaces La arquitectura Android}}{18}{figure.2.1}
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Ciclo de vida de una activity}}{20}{figure.2.2}
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Diagrama del back stack de activities}}{21}{figure.2.3}
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Jerarqu\'ia de vistas y layouts}}{22}{figure.2.4}
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Paquetes y archivos que componen el proyecto MiPos en el entorno Eclipse}}{25}{figure.3.1}
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Paquete de librerias utilizadas para el proyecto MiPos}}{26}{figure.3.2}
-\contentsline {figure}{\numberline {3.3}{\ignorespaces El \ac {LTM}}}{28}{figure.3.3}
-\contentsline {figure}{\numberline {3.4}{\ignorespaces La etiqueta \ac {NFC}}}{28}{figure.3.4}
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Paquetes y archivos que componen el proyecto MiPos en el entorno Eclipse}}{29}{figure.3.1}
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Paquete de librerias utilizadas para el proyecto MiPos}}{30}{figure.3.2}
+\contentsline {figure}{\numberline {3.3}{\ignorespaces El \ac {LTM}}}{32}{figure.3.3}
+\contentsline {figure}{\numberline {3.4}{\ignorespaces La etiqueta \ac {NFC}}}{32}{figure.3.4}
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Paquetes y archivos que componen el \ac {SIG} en el entorno Eclipse}}{30}{figure.4.1}
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Librerias utilizadas para el \ac {SIG}}}{31}{figure.4.2}
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Paquetes y archivos que componen el \ac {SIG} en el entorno Eclipse}}{34}{figure.4.1}
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Librerias utilizadas para el \ac {SIG}}}{35}{figure.4.2}
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {5.1}{\ignorespaces Mapa de la \ac {UI} con sus activities y relaciones entre las mismas}}{33}{figure.5.1}
-\contentsline {figure}{\numberline {5.2}{\ignorespaces Mapa de la \ac {UI} (continuaci\'on)}}{34}{figure.5.2}
-\contentsline {figure}{\numberline {5.3}{\ignorespaces Activity de acceso a la aplicaci\'on}}{35}{figure.5.3}
-\contentsline {figure}{\numberline {5.4}{\ignorespaces El men\'u principal}}{36}{figure.5.4}
-\contentsline {figure}{\numberline {5.5}{\ignorespaces Activity de apertura de caja}}{38}{figure.5.5}
-\contentsline {figure}{\numberline {5.6}{\ignorespaces Mapa de la \ac {UI} con las distintas variantes de pagos}}{39}{figure.5.6}
-\contentsline {figure}{\numberline {5.7}{\ignorespaces Activity de ingreso de productos para la venta}}{40}{figure.5.7}
-\contentsline {figure}{\numberline {5.8}{\ignorespaces Activity de ingreso de m\'etodos de pagos, cliente y vendedor.}}{41}{figure.5.8}
-\contentsline {figure}{\numberline {5.9}{\ignorespaces Activity para ingresar los datos de la tarjeta de cr\'edito.}}{43}{figure.5.9}
-\contentsline {figure}{\numberline {5.10}{\ignorespaces Activity para registar la firma del cliente}}{44}{figure.5.10}
-\contentsline {figure}{\numberline {5.11}{\ignorespaces Ingreso al sistema de MercadoPago para poder realizar el cobro de la venta}}{46}{figure.5.11}
-\contentsline {figure}{\numberline {5.12}{\ignorespaces Pantalla que indica la activaci\'on del dispositivo \ac {NFC} para realizar la lectura y escritura de datos}}{47}{figure.5.12}
-\contentsline {figure}{\numberline {5.13}{\ignorespaces Pantalla que surge de una transacci\'on no aprobada}}{48}{figure.5.13}
-\contentsline {figure}{\numberline {5.14}{\ignorespaces }}{50}{figure.5.14}
-\contentsline {figure}{\numberline {5.15}{\ignorespaces }}{51}{figure.5.15}
-\contentsline {figure}{\numberline {5.16}{\ignorespaces }}{52}{figure.5.16}
-\contentsline {figure}{\numberline {5.17}{\ignorespaces La aplicaci\'on brinda la posibilidad de enviar mensajes a trav\'es de la \ac {API} de Twitter}}{53}{figure.5.17}
-\contentsline {figure}{\numberline {5.18}{\ignorespaces Listado de compras de un cliente registrado en el sistema}}{54}{figure.5.18}
-\contentsline {figure}{\numberline {5.19}{\ignorespaces Las opciones de configuraci\'on}}{55}{figure.5.19}
-\contentsline {figure}{\numberline {5.20}{\ignorespaces El activity para la administraci\'on del stock del comercio}}{57}{figure.5.20}
-\contentsline {figure}{\numberline {5.21}{\ignorespaces Gr\'afico estad\'istico generado a partir de los datos almacenados en el sistema}}{58}{figure.5.21}
-\contentsline {figure}{\numberline {5.22}{\ignorespaces Activity para mostrar los distintos totales de la caja abierta previo al cierre}}{59}{figure.5.22}
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Mapa de la \ac {UI} con sus activities y relaciones entre las mismas}}{37}{figure.5.1}
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Mapa de la \ac {UI} (continuaci\'on)}}{38}{figure.5.2}
+\contentsline {figure}{\numberline {5.3}{\ignorespaces Activity de acceso a la aplicaci\'on}}{39}{figure.5.3}
+\contentsline {figure}{\numberline {5.4}{\ignorespaces El men\'u principal}}{40}{figure.5.4}
+\contentsline {figure}{\numberline {5.5}{\ignorespaces Activity de apertura de caja}}{42}{figure.5.5}
+\contentsline {figure}{\numberline {5.6}{\ignorespaces Mapa de la \ac {UI} con las distintas variantes de pagos}}{43}{figure.5.6}
+\contentsline {figure}{\numberline {5.7}{\ignorespaces Activity de ingreso de productos para la venta}}{44}{figure.5.7}
+\contentsline {figure}{\numberline {5.8}{\ignorespaces Activity de ingreso de m\'etodos de pagos, cliente y vendedor.}}{45}{figure.5.8}
+\contentsline {figure}{\numberline {5.9}{\ignorespaces Activity para ingresar los datos de la tarjeta de cr\'edito.}}{47}{figure.5.9}
+\contentsline {figure}{\numberline {5.10}{\ignorespaces Activity para registar la firma del cliente}}{48}{figure.5.10}
+\contentsline {figure}{\numberline {5.11}{\ignorespaces Ingreso al sistema de MercadoPago para poder realizar el cobro de la venta}}{50}{figure.5.11}
+\contentsline {figure}{\numberline {5.12}{\ignorespaces Pantalla que indica la activaci\'on del dispositivo \ac {NFC} para realizar la lectura y escritura de datos}}{51}{figure.5.12}
+\contentsline {figure}{\numberline {5.13}{\ignorespaces Pantalla que surge de una transacci\'on no aprobada}}{52}{figure.5.13}
+\contentsline {figure}{\numberline {5.14}{\ignorespaces }}{54}{figure.5.14}
+\contentsline {figure}{\numberline {5.15}{\ignorespaces }}{55}{figure.5.15}
+\contentsline {figure}{\numberline {5.16}{\ignorespaces }}{56}{figure.5.16}
+\contentsline {figure}{\numberline {5.17}{\ignorespaces La aplicaci\'on brinda la posibilidad de enviar mensajes a trav\'es de la \ac {API} de Twitter}}{57}{figure.5.17}
+\contentsline {figure}{\numberline {5.18}{\ignorespaces Listado de compras de un cliente registrado en el sistema}}{58}{figure.5.18}
+\contentsline {figure}{\numberline {5.19}{\ignorespaces Las opciones de configuraci\'on}}{59}{figure.5.19}
+\contentsline {figure}{\numberline {5.20}{\ignorespaces El activity para la administraci\'on del stock del comercio}}{61}{figure.5.20}
+\contentsline {figure}{\numberline {5.21}{\ignorespaces Gr\'afico estad\'istico generado a partir de los datos almacenados en el sistema}}{62}{figure.5.21}
+\contentsline {figure}{\numberline {5.22}{\ignorespaces Activity para mostrar los distintos totales de la caja abierta previo al cierre}}{63}{figure.5.22}
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

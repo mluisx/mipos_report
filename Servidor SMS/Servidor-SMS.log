@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  17 DEC 2012 02:52
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  18 DEC 2012 01:33
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -534,7 +534,7 @@ LaTeX Info: Redefining \% on input line 1.
 
 ]
 (./parts/Introduccion.tex
-<images/AppleStore.jpg, id=597, 312.41719pt x 263.48438pt>
+<images/AppleStore.jpg, id=603, 312.41719pt x 263.48438pt>
 File: images/AppleStore.jpg Graphic file (type jpg)
 
 <use images/AppleStore.jpg>
@@ -549,7 +549,7 @@ l.13
 
 
  <./images/AppleStore.jpg>]
-<images/AppleCheckoutDevice.png, id=601, 610.28pt x 415.5525pt>
+<images/AppleCheckoutDevice.png, id=607, 610.28pt x 415.5525pt>
 File: images/AppleCheckoutDevice.png Graphic file (type png)
 
 <use images/AppleCheckoutDevice.png>
@@ -590,7 +590,6 @@ Package acronym Info: Label `acro:API' overridden on input line 40.
 ]
 Cap\'{\i }tulo 1.
 Package acronym Info: Label `acro:OS' overridden on input line 1.
-Package acronym Info: Label `acro:TFE' overridden on input line 3.
 [8
 
 ]
@@ -600,7 +599,7 @@ Package acronym Info: Label `acro:API' overridden on input line 16.
 LaTeX Warning: Citation `wiki.android' on page 9 undefined on input line 16.
 
 
-<images/250px-Android_41_on_the_Galaxy_Nexus.jpeg, id=715, 250.9375pt x 445.665
+<images/250px-Android_41_on_the_Galaxy_Nexus.jpeg, id=722, 250.9375pt x 445.665
 pt>
 File: images/250px-Android_41_on_the_Galaxy_Nexus.jpeg Graphic file (type jpg)
  <use images/250px-Android_41_on_the_Galaxy_Nexus.jpeg>
@@ -615,15 +614,13 @@ LaTeX Warning: `!h' float specifier changed to `!ht'.
 LaTeX Warning: Citation `and.dev.versions' on page 9 undefined on input line 25
 .
 
-<images/versions.png, id=716, 726.715pt x 142.5325pt>
+<images/versions.png, id=723, 726.715pt x 142.5325pt>
 File: images/versions.png Graphic file (type png)
 
 <use images/versions.png>
 Package pdftex.def Info: images/versions.png used on input line 46.
 (pdftex.def)             Requested size: 360.0pt x 70.60925pt.
-LaTeX Info: Redefining \. on input line 46.
-LaTeX Info: Redefining \% on input line 46.
- [9]
+
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
@@ -641,8 +638,10 @@ although it is yet undefined on input line 50.
 Package acronym Info: Label `acro:DTC' overridden on input line 50.
 Package acronym Info: Label `acro:ICS' newly defined as it shall be overridden
 although it is yet undefined on input line 50.
-
-<images/growth-chart.png, id=733, 761.84625pt x 447.6725pt>
+LaTeX Info: Redefining \. on input line 51.
+LaTeX Info: Redefining \% on input line 51.
+ [9]
+<images/growth-chart.png, id=742, 761.84625pt x 447.6725pt>
 File: images/growth-chart.png Graphic file (type png)
 
 <use images/growth-chart.png>
@@ -662,67 +661,91 @@ LaTeX Info: Redefining \% on input line 63.
 
 LaTeX Warning: Citation `and.dev.sdk' on page 12 undefined on input line 65.
 
-Package acronym Info: Label `acro:SDK' overridden on input line 70.
+<images/googlePlay.jpg, id=764, 301.125pt x 533.995pt>
+File: images/googlePlay.jpg Graphic file (type jpg)
+
+<use images/googlePlay.jpg>
+Package pdftex.def Info: images/googlePlay.jpg used on input line 67.
+(pdftex.def)             Requested size: 360.0pt x 638.46045pt.
+
+
+LaTeX Warning: Float too large for page by 79.8602pt on input line 67.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+Package acronym Info: Label `acro:SDK' overridden on input line 72.
 Package acronym Info: Label `acro:SDKT' newly defined as it shall be overridden
 
-although it is yet undefined on input line 70.
+although it is yet undefined on input line 72.
 Package acronym Info: Label `acro:PT' newly defined as it shall be overridden
-although it is yet undefined on input line 70.
+although it is yet undefined on input line 72.
+LaTeX Info: Redefining \. on input line 74.
+LaTeX Info: Redefining \% on input line 74.
+[12 <./images/growth-chart.png>]
 Package acronym Info: Label `acro:SDKSP' newly defined as it shall be overridde
 n
-although it is yet undefined on input line 72.
+although it is yet undefined on input line 74.
 Package acronym Info: Label `acro:ASM' newly defined as it shall be overridden
-although it is yet undefined on input line 72.
+although it is yet undefined on input line 74.
 Package acronym Info: Label `acro:AVDM' newly defined as it shall be overridden
 
-although it is yet undefined on input line 72.
-Package acronym Info: Label `acro:DDMS' overridden on input line 72.
-LaTeX Info: Redefining \. on input line 73.
-LaTeX Info: Redefining \% on input line 73.
-[12 <./images/growth-chart.png>]
+although it is yet undefined on input line 74.
+Package acronym Info: Label `acro:DDMS' overridden on input line 74.
 Package acronym Info: Label `acro:IDE' newly defined as it shall be overridden
-although it is yet undefined on input line 76.
+although it is yet undefined on input line 78.
 Package acronym Info: Label `acro:ADT' newly defined as it shall be overridden
-although it is yet undefined on input line 76.
+although it is yet undefined on input line 78.
+Package acronym Info: Label `acro:JDK' newly defined as it shall be overridden
+although it is yet undefined on input line 78.
 
 
-LaTeX Warning: Citation `wiki.sdk' on page 13 undefined on input line 76.
+LaTeX Warning: Citation `wiki.sdk' on page 13 undefined on input line 78.
 
+LaTeX Font Info:    Try loading font information for T1+pcr on input line 80.
+(/usr/local/texlive/2012/texmf-dist/tex/latex/psnfss/t1pcr.fd
+File: t1pcr.fd 2001/06/04 font definitions for T1/pcr.
+)
+Package acronym Info: Label `acro:APK' newly defined as it shall be overridden
+although it is yet undefined on input line 80.
 Package acronym Info: Label `acro:AVD' newly defined as it shall be overridden
-although it is yet undefined on input line 84.
+although it is yet undefined on input line 86.
 Package acronym Info: Label `acro:SD' newly defined as it shall be overridden
-although it is yet undefined on input line 87.
-LaTeX Info: Redefining \. on input line 88.
-LaTeX Info: Redefining \% on input line 88.
-[13]
-Package acronym Info: Label `acro:ADB' newly defined as it shall be overridden
 although it is yet undefined on input line 89.
+LaTeX Info: Redefining \. on input line 90.
+LaTeX Info: Redefining \% on input line 90.
+ [13]
+Package acronym Info: Label `acro:ADB' newly defined as it shall be overridden
+although it is yet undefined on input line 91.
 
 
-LaTeX Warning: Citation `and.dev.adt' on page 14 undefined on input line 99.
+LaTeX Warning: Citation `and.dev.adt' on page 14 undefined on input line 101.
 
 
 LaTeX Warning: Citation `and.dev.emulator' on page 14 undefined on input line 1
-04.
+06.
 
-LaTeX Info: Redefining \. on input line 118.
-LaTeX Info: Redefining \% on input line 118.
+LaTeX Info: Redefining \. on input line 120.
+LaTeX Info: Redefining \% on input line 120.
 [14]
 
-LaTeX Warning: Citation `and.dev.avd' on page 15 undefined on input line 121.
+LaTeX Warning: Citation `and.dev.avd' on page 15 undefined on input line 123.
 
 ) (./parts/AndroidDev.tex
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
 Package acronym Info: Label `acro:OS' overridden on input line 1.
  [15]
+LaTeX Info: Redefining \. on input line 1.
+LaTeX Info: Redefining \% on input line 1.
+ [16 <./images/googlePlay.jpg>]
 Cap\'{\i }tulo 2.
 Package acronym Info: Label `acro:DVM' overridden on input line 6.
 Package acronym Info: Label `acro:SDK' overridden on input line 13.
 
-LaTeX Warning: Citation `wiki.dvm' on page 16 undefined on input line 15.
+LaTeX Warning: Citation `wiki.dvm' on page 17 undefined on input line 15.
 
-<images/Android-system-architecture.jpg, id=849, 725.75366pt x 521.15831pt>
+<images/Android-system-architecture.jpg, id=870, 725.75366pt x 521.15831pt>
 File: images/Android-system-architecture.jpg Graphic file (type jpg)
 
 <use images/Android-system-architecture.jpg>
@@ -733,54 +756,80 @@ ine 22.
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-[16
+[17
 
 ]
 Package acronym Info: Label `acro:IPC' newly defined as it shall be overridden
-although it is yet undefined on input line 30.
-LaTeX Info: Redefining \. on input line 59.
-LaTeX Info: Redefining \% on input line 59.
- [17 <./images/Android-system-architecture.jpg>]
-<images/diagram_backstack.png, id=864, 619.31375pt x 195.73125pt>
+although it is yet undefined on input line 33.
+LaTeX Info: Redefining \. on input line 49.
+LaTeX Info: Redefining \% on input line 49.
+ [18 <./images/Android-system-architecture.jpg>]
+<images/activity_lifecycle.png, id=886, 514.92375pt x 665.48625pt>
+File: images/activity_lifecycle.png Graphic file (type png)
+
+<use images/activity_lifecycle.png>
+Package pdftex.def Info: images/activity_lifecycle.png used on input line 80.
+(pdftex.def)             Requested size: 360.0pt x 465.26854pt.
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+Package acronym Info: Label `acro:UI' overridden on input line 87.
+LaTeX Info: Redefining \. on input line 91.
+LaTeX Info: Redefining \% on input line 91.
+[19]
+LaTeX Info: Redefining \. on input line 91.
+LaTeX Info: Redefining \% on input line 91.
+ [20 <./images/activity_lifecycle.png>]
+<images/diagram_backstack.png, id=901, 619.31375pt x 195.73125pt>
 File: images/diagram_backstack.png Graphic file (type png)
 
 <use images/diagram_backstack.png>
-Package pdftex.def Info: images/diagram_backstack.png used on input line 98.
+Package pdftex.def Info: images/diagram_backstack.png used on input line 93.
 (pdftex.def)             Requested size: 360.0pt x 113.78104pt.
-LaTeX Info: Redefining \. on input line 105.
-LaTeX Info: Redefining \% on input line 105.
- [18 <./images/diagram_backstack.png>]
-Package acronym Info: Label `acro:UI' overridden on input line 118.
-LaTeX Info: Redefining \. on input line 172.
-LaTeX Info: Redefining \% on input line 172.
+Package acronym Info: Label `acro:API' overridden on input line 107.
+LaTeX Info: Redefining \. on input line 109.
+LaTeX Info: Redefining \% on input line 109.
+ [21 <./images/diagram_backstack.png>]
+<images/layoutparams.png, id=914, 586.19pt x 332.24126pt>
+File: images/layoutparams.png Graphic file (type png)
 
-[19]
-LaTeX Info: Redefining \. on input line 224.
-LaTeX Info: Redefining \% on input line 224.
- [20]
+<use images/layoutparams.png>
+Package pdftex.def Info: images/layoutparams.png used on input line 125.
+(pdftex.def)             Requested size: 360.0pt x 204.04071pt.
+LaTeX Info: Redefining \. on input line 135.
+LaTeX Info: Redefining \% on input line 135.
+ [22 <./images/layoutparams.png>]
+LaTeX Info: Redefining \. on input line 197.
+LaTeX Info: Redefining \% on input line 197.
+ [23]
+LaTeX Info: Redefining \. on input line 240.
+LaTeX Info: Redefining \% on input line 240.
+ [24]
 Package acronym Info: Label `acro:JIT' newly defined as it shall be overridden
-although it is yet undefined on input line 249.
-LaTeX Info: Redefining \. on input line 250.
-LaTeX Info: Redefining \% on input line 250.
- [21]
-LaTeX Info: Redefining \. on input line 276.
-LaTeX Info: Redefining \% on input line 276.
- [22]
-Package acronym Info: Label `acro:DDMS' overridden on input line 278.
+although it is yet undefined on input line 260.
+LaTeX Info: Redefining \. on input line 261.
+LaTeX Info: Redefining \% on input line 261.
+
+[25]
+LaTeX Info: Redefining \. on input line 289.
+LaTeX Info: Redefining \% on input line 289.
+ [26]
+Package acronym Info: Label `acro:DDMS' overridden on input line 289.
 ) (./parts/TPV.tex
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
- [23]
+ [27]
 Cap\'{\i }tulo 3.
 Package acronym Info: Label `acro:TPV' overridden on input line 1.
-<images/MiPos_Sources.png, id=912, 254.9525pt x 666.49pt>
+<images/MiPos_Sources.png, id=961, 254.9525pt x 666.49pt>
 File: images/MiPos_Sources.png Graphic file (type png)
 
 <use images/MiPos_Sources.png>
 Package pdftex.def Info: images/MiPos_Sources.png used on input line 11.
 (pdftex.def)             Requested size: 198.0011pt x 517.63292pt.
 
-<images/MiPos_Libraries.png, id=913, 268.00125pt x 205.76875pt>
+<images/MiPos_Libraries.png, id=962, 268.00125pt x 205.76875pt>
 File: images/MiPos_Libraries.png Graphic file (type png)
 
 <use images/MiPos_Libraries.png>
@@ -791,19 +840,19 @@ Package pdftex.def Info: images/MiPos_Libraries.png used on input line 18.
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 Package acronym Info: Label `acro:QR' overridden on input line 20.
-[24
+[28
 
 ]
 LaTeX Info: Redefining \. on input line 31.
 LaTeX Info: Redefining \% on input line 31.
- [25 <./images/MiPos_Sources.png>]
+ [29 <./images/MiPos_Sources.png>]
 Package acronym Info: Label `acro:BD' overridden on input line 44.
 LaTeX Info: Redefining \. on input line 52.
 LaTeX Info: Redefining \% on input line 52.
- [26 <./images/MiPos_Libraries.png>]
+ [30 <./images/MiPos_Libraries.png>]
 Package acronym Info: Label `acro:LTM' overridden on input line 61.
 
-<images/SquareReader.jpeg, id=935, 602.25pt x 602.25pt>
+<images/SquareReader.jpeg, id=985, 602.25pt x 602.25pt>
 File: images/SquareReader.jpeg Graphic file (type jpg)
 
 <use images/SquareReader.jpeg>
@@ -814,7 +863,7 @@ Package pdftex.def Info: images/SquareReader.jpeg used on input line 68.
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 Package acronym Info: Label `acro:NFC' overridden on input line 70.
-<images/nfc-tag.jpg, id=938, 70.8246pt x 69.1383pt>
+<images/nfc-tag.jpg, id=988, 70.8246pt x 69.1383pt>
 File: images/nfc-tag.jpg Graphic file (type jpg)
  <use images/nfc-tag.jpg>
 Package pdftex.def Info: images/nfc-tag.jpg used on input line 73.
@@ -822,21 +871,21 @@ Package pdftex.def Info: images/nfc-tag.jpg used on input line 73.
 LaTeX Info: Redefining \. on input line 94.
 LaTeX Info: Redefining \% on input line 94.
 
-[27]) (./parts/SMD.tex
+[31]) (./parts/SMD.tex
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
 Package acronym Info: Label `acro:TPV' overridden on input line 1.
- [28 <./images/SquareReader.jpeg> <./images/nfc-tag.jpg>]
+ [32 <./images/SquareReader.jpeg> <./images/nfc-tag.jpg>]
 Cap\'{\i }tulo 4.
 Package acronym Info: Label `acro:SIG' overridden on input line 1.
-<images/Server_Sources.png, id=956, 314.17375pt x 547.04375pt>
+<images/Server_Sources.png, id=1004, 314.17375pt x 547.04375pt>
 File: images/Server_Sources.png Graphic file (type png)
 
 <use images/Server_Sources.png>
 Package pdftex.def Info: images/Server_Sources.png used on input line 11.
 (pdftex.def)             Requested size: 314.17297pt x 547.0424pt.
 
-<images/Server_Libraries.png, id=959, 284.06125pt x 342.27875pt>
+<images/Server_Libraries.png, id=1007, 284.06125pt x 342.27875pt>
 File: images/Server_Libraries.png Graphic file (type png)
 
 <use images/Server_Libraries.png>
@@ -846,32 +895,32 @@ Package pdftex.def Info: images/Server_Libraries.png used on input line 18.
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-) (./parts/UI.tex [29
+) (./parts/UI.tex [33
 
 ]
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
 Package acronym Info: Label `acro:SIG' overridden on input line 1.
- [30 <./images/Server_Sources.png>]
+ [34 <./images/Server_Sources.png>]
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
- [31 <./images/Server_Libraries.png>]
+ [35 <./images/Server_Libraries.png>]
 Cap\'{\i }tulo 5.
 Package acronym Info: Label `acro:UI' overridden on input line 1.
-<images/MapaUI(1).png, id=980, 508.14844pt x 703.87968pt>
+<images/MapaUI(1).png, id=1029, 508.14844pt x 703.87968pt>
 File: images/MapaUI(1).png Graphic file (type png)
 
 <use images/MapaUI(1).png>
 Package pdftex.def Info: images/MapaUI(1).png used on input line 22.
 (pdftex.def)             Requested size: 360.0pt x 498.68404pt.
 
-<images/MapaUI(2).png, id=982, 504.38437pt x 572.89032pt>
+<images/MapaUI(2).png, id=1031, 504.38437pt x 572.89032pt>
 File: images/MapaUI(2).png Graphic file (type png)
 
 <use images/MapaUI(2).png>
 Package pdftex.def Info: images/MapaUI(2).png used on input line 24.
 (pdftex.def)             Requested size: 360.0pt x 408.89665pt.
- <images/login.png, id=985, 803.0pt x 1284.8pt>
+ <images/login.png, id=1034, 803.0pt x 1284.8pt>
 File: images/login.png Graphic file (type png)
 
 <use images/login.png>
@@ -881,7 +930,7 @@ Package pdftex.def Info: images/login.png used on input line 31.
 
 LaTeX Warning: Float too large for page by 17.41753pt on input line 31.
 
-<images/mainMenu.png, id=987, 803.0pt x 1284.8pt>
+<images/mainMenu.png, id=1036, 803.0pt x 1284.8pt>
 File: images/mainMenu.png Graphic file (type png)
  <use images/mainMenu.png>
 Package pdftex.def Info: images/mainMenu.png used on input line 38.
@@ -890,22 +939,22 @@ Package pdftex.def Info: images/mainMenu.png used on input line 38.
 
 LaTeX Warning: Float too large for page by 17.41753pt on input line 38.
 
-[32
+[36
 
 ]
 LaTeX Info: Redefining \. on input line 44.
 LaTeX Info: Redefining \% on input line 44.
- [33 <./images/MapaUI(1).png (PNG copy)>]
+ [37 <./images/MapaUI(1).png (PNG copy)>]
 LaTeX Info: Redefining \. on input line 44.
 LaTeX Info: Redefining \% on input line 44.
- [34 <./images/MapaUI(2).png (PNG copy)>]
+ [38 <./images/MapaUI(2).png (PNG copy)>]
 LaTeX Info: Redefining \. on input line 44.
 LaTeX Info: Redefining \% on input line 44.
- [35 <./images/login.png>]
+ [39 <./images/login.png>]
 LaTeX Info: Redefining \. on input line 44.
 LaTeX Info: Redefining \% on input line 44.
- [36 <./images/mainMenu.png>]
-<images/openCash.png, id=1024, 803.0pt x 1284.8pt>
+ [40 <./images/mainMenu.png>]
+<images/openCash.png, id=1074, 803.0pt x 1284.8pt>
 File: images/openCash.png Graphic file (type png)
  <use images/openCash.png>
 Package pdftex.def Info: images/openCash.png used on input line 45.
@@ -916,13 +965,13 @@ LaTeX Warning: Float too large for page by 17.41753pt on input line 45.
 
 Package acronym Info: Label `acro:API' overridden on input line 57.
 Package acronym Info: Label `acro:NFC' overridden on input line 58.
-<images/MapaUI(3).png, id=1027, 501.37312pt x 433.62pt>
+<images/MapaUI(3).png, id=1077, 501.37312pt x 433.62pt>
 File: images/MapaUI(3).png Graphic file (type png)
 
 <use images/MapaUI(3).png>
 Package pdftex.def Info: images/MapaUI(3).png used on input line 63.
 (pdftex.def)             Requested size: 360.0pt x 311.36586pt.
- <images/addSale.png, id=1030, 803.0pt x 1284.8pt>
+ <images/addSale.png, id=1080, 803.0pt x 1284.8pt>
 File: images/addSale.png Graphic file (type png)
 
 <use images/addSale.png>
@@ -934,11 +983,11 @@ LaTeX Warning: Float too large for page by 17.41753pt on input line 72.
 
 LaTeX Info: Redefining \. on input line 79.
 LaTeX Info: Redefining \% on input line 79.
-[37]
+[41]
 LaTeX Info: Redefining \. on input line 79.
 LaTeX Info: Redefining \% on input line 79.
- [38 <./images/openCash.png>]
-<images/addPayment.png, id=1051, 803.0pt x 1284.8pt>
+ [42 <./images/openCash.png>]
+<images/addPayment.png, id=1101, 803.0pt x 1284.8pt>
 File: images/addPayment.png Graphic file (type png)
 
 <use images/addPayment.png>
@@ -952,17 +1001,17 @@ Package acronym Info: Label `acro:LTM' overridden on input line 92.
 Package acronym Info: Label `acro:DPT' overridden on input line 92.
 LaTeX Info: Redefining \. on input line 93.
 LaTeX Info: Redefining \% on input line 93.
-[39 <./images/MapaUI(3).png (PNG copy)>]
+[43 <./images/MapaUI(3).png (PNG copy)>]
 LaTeX Info: Redefining \. on input line 93.
 LaTeX Info: Redefining \% on input line 93.
- [40 <./images/addSale.png>]
+ [44 <./images/addSale.png>]
 LaTeX Info: Redefining \. on input line 93.
 LaTeX Info: Redefining \% on input line 93.
- [41 <./images/addPayment.png>]
+ [45 <./images/addPayment.png>]
 Package acronym Info: Label `acro:DTC' overridden on input line 94.
 Package acronym Info: Label `acro:TPV' overridden on input line 96.
 Package acronym Info: Label `acro:TFE' overridden on input line 102.
- <images/creditCard.png, id=1080, 803.0pt x 1284.8pt>
+ <images/creditCard.png, id=1129, 803.0pt x 1284.8pt>
 File: images/creditCard.png Graphic file (type png)
 
 <use images/creditCard.png>
@@ -972,7 +1021,7 @@ Package pdftex.def Info: images/creditCard.png used on input line 104.
 
 LaTeX Warning: Float too large for page by 17.41753pt on input line 104.
 
-<images/signature.png, id=1082, 803.0pt x 1284.8pt>
+<images/signature.png, id=1131, 803.0pt x 1284.8pt>
 File: images/signature.png Graphic file (type png)
  <use images/signature.png>
 Package pdftex.def Info: images/signature.png used on input line 111.
@@ -984,14 +1033,14 @@ LaTeX Warning: Float too large for page by 17.41753pt on input line 111.
 Package acronym Info: Label `acro:SDK' overridden on input line 118.
 LaTeX Info: Redefining \. on input line 119.
 LaTeX Info: Redefining \% on input line 119.
-[42]
+[46]
 LaTeX Info: Redefining \. on input line 119.
 LaTeX Info: Redefining \% on input line 119.
- [43 <./images/creditCard.png>]
+ [47 <./images/creditCard.png>]
 LaTeX Info: Redefining \. on input line 119.
 LaTeX Info: Redefining \% on input line 119.
- [44 <./images/signature.png>]
-<images/mercadoPago.png, id=1108, 803.0pt x 1284.8pt>
+ [48 <./images/signature.png>]
+<images/mercadoPago.png, id=1157, 803.0pt x 1284.8pt>
 File: images/mercadoPago.png Graphic file (type png)
 
 <use images/mercadoPago.png>
@@ -1001,7 +1050,7 @@ Package pdftex.def Info: images/mercadoPago.png used on input line 122.
 
 LaTeX Warning: Float too large for page by 31.01753pt on input line 122.
 
-<images/NFCReader.png, id=1115, 803.0pt x 1284.8pt>
+<images/NFCReader.png, id=1164, 803.0pt x 1284.8pt>
 File: images/NFCReader.png Graphic file (type png)
  <use images/NFCReader.png>
 Package pdftex.def Info: images/NFCReader.png used on input line 133.
@@ -1010,7 +1059,7 @@ Package pdftex.def Info: images/NFCReader.png used on input line 133.
 
 LaTeX Warning: Float too large for page by 31.01753pt on input line 133.
 
-<images/NFCWriter.png, id=1118, 803.0pt x 1284.8pt>
+<images/NFCWriter.png, id=1167, 803.0pt x 1284.8pt>
 File: images/NFCWriter.png Graphic file (type png)
  <use images/NFCWriter.png>
 Package pdftex.def Info: images/NFCWriter.png used on input line 135.
@@ -1019,7 +1068,7 @@ Package pdftex.def Info: images/NFCWriter.png used on input line 135.
 
 LaTeX Warning: Float too large for page by 17.41753pt on input line 135.
 
-<images/ticketGenerator.png, id=1124, 803.0pt x 1284.8pt>
+<images/ticketGenerator.png, id=1173, 803.0pt x 1284.8pt>
 File: images/ticketGenerator.png Graphic file (type png)
 
 <use images/ticketGenerator.png>
@@ -1031,16 +1080,16 @@ LaTeX Warning: Float too large for page by 17.41753pt on input line 148.
 
 LaTeX Info: Redefining \. on input line 148.
 LaTeX Info: Redefining \% on input line 148.
-[45]
+[49]
 LaTeX Info: Redefining \. on input line 148.
 LaTeX Info: Redefining \% on input line 148.
- [46 <./images/mercadoPago.png>]
+ [50 <./images/mercadoPago.png>]
 LaTeX Info: Redefining \. on input line 148.
 LaTeX Info: Redefining \% on input line 148.
- [47 <./images/NFCReader.png>]
+ [51 <./images/NFCReader.png>]
 LaTeX Info: Redefining \. on input line 148.
 LaTeX Info: Redefining \% on input line 148.
- [48 <./images/NFCWriter.png>] <images/ticketByMail.png, id=1146, 803.0pt x 128
+ [52 <./images/NFCWriter.png>] <images/ticketByMail.png, id=1196, 803.0pt x 128
 4.8pt>
 File: images/ticketByMail.png Graphic file (type png)
 
@@ -1051,7 +1100,7 @@ Package pdftex.def Info: images/ticketByMail.png used on input line 150.
 
 LaTeX Warning: Float too large for page by 17.41753pt on input line 150.
 
-<images/printedTicket.png, id=1147, 803.0pt x 1284.8pt>
+<images/printedTicket.png, id=1197, 803.0pt x 1284.8pt>
 File: images/printedTicket.png Graphic file (type png)
 
 <use images/printedTicket.png>
@@ -1061,7 +1110,7 @@ Package pdftex.def Info: images/printedTicket.png used on input line 152.
 
 LaTeX Warning: Float too large for page by 17.41753pt on input line 152.
 
-<images/twitter.png, id=1150, 803.0pt x 1284.8pt>
+<images/twitter.png, id=1200, 803.0pt x 1284.8pt>
 File: images/twitter.png Graphic file (type png)
  <use images/twitter.png>
 Package pdftex.def Info: images/twitter.png used on input line 159.
@@ -1070,7 +1119,7 @@ Package pdftex.def Info: images/twitter.png used on input line 159.
 
 LaTeX Warning: Float too large for page by 31.01753pt on input line 159.
 
-<images/clientHistory.png, id=1154, 803.0pt x 1284.8pt>
+<images/clientHistory.png, id=1204, 803.0pt x 1284.8pt>
 File: images/clientHistory.png Graphic file (type png)
 
 <use images/clientHistory.png>
@@ -1082,7 +1131,7 @@ LaTeX Warning: Float too large for page by 17.41753pt on input line 166.
 
 Package acronym Info: Label `acro:URL' newly defined as it shall be overridden
 although it is yet undefined on input line 175.
-<images/options.png, id=1161, 803.0pt x 1284.8pt>
+<images/options.png, id=1211, 803.0pt x 1284.8pt>
 File: images/options.png Graphic file (type png)
  <use images/options.png>
 Package pdftex.def Info: images/options.png used on input line 183.
@@ -1093,29 +1142,29 @@ LaTeX Warning: Float too large for page by 17.41753pt on input line 183.
 
 LaTeX Info: Redefining \. on input line 190.
 LaTeX Info: Redefining \% on input line 190.
-[49]
+[53]
 LaTeX Info: Redefining \. on input line 190.
 LaTeX Info: Redefining \% on input line 190.
- [50 <./images/ticketGenerator.png>]
+ [54 <./images/ticketGenerator.png>]
 LaTeX Info: Redefining \. on input line 190.
 LaTeX Info: Redefining \% on input line 190.
- [51 <./images/ticketByMail.png>]
+ [55 <./images/ticketByMail.png>]
 LaTeX Info: Redefining \. on input line 190.
 LaTeX Info: Redefining \% on input line 190.
 
-[52 <./images/printedTicket.png>]
+[56 <./images/printedTicket.png>]
 LaTeX Info: Redefining \. on input line 190.
 LaTeX Info: Redefining \% on input line 190.
- [53 <./images/twitter.png>]
+ [57 <./images/twitter.png>]
 LaTeX Info: Redefining \. on input line 190.
 LaTeX Info: Redefining \% on input line 190.
- [54 <./images/clientHistory.png>]
+ [58 <./images/clientHistory.png>]
 LaTeX Info: Redefining \. on input line 190.
 LaTeX Info: Redefining \% on input line 190.
- [55 <./images/options.png>]
+ [59 <./images/options.png>]
 Package acronym Info: Label `acro:QR' overridden on input line 190.
 
-<images/stock.png, id=1206, 803.0pt x 1284.8pt>
+<images/stock.png, id=1255, 803.0pt x 1284.8pt>
 File: images/stock.png Graphic file (type png)
  <use images/stock.png>
 Package pdftex.def Info: images/stock.png used on input line 196.
@@ -1124,7 +1173,7 @@ Package pdftex.def Info: images/stock.png used on input line 196.
 
 LaTeX Warning: Float too large for page by 17.41753pt on input line 196.
 
-<images/stats.png, id=1208, 803.0pt x 1284.8pt>
+<images/stats.png, id=1257, 803.0pt x 1284.8pt>
 File: images/stats.png Graphic file (type png)
  <use images/stats.png>
 Package pdftex.def Info: images/stats.png used on input line 205.
@@ -1133,7 +1182,7 @@ Package pdftex.def Info: images/stats.png used on input line 205.
 
 LaTeX Warning: Float too large for page by 31.01753pt on input line 205.
 
-<images/closeCash.png, id=1210, 803.0pt x 1284.8pt>
+<images/closeCash.png, id=1259, 803.0pt x 1284.8pt>
 File: images/closeCash.png Graphic file (type png)
  <use images/closeCash.png>
 Package pdftex.def Info: images/closeCash.png used on input line 212.
@@ -1146,17 +1195,17 @@ LaTeX Warning: Float too large for page by 31.01753pt on input line 212.
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
 Package acronym Info: Label `acro:UI' overridden on input line 1.
- [56]
+ [60]
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
- [57 <./images/stock.png>]
+ [61 <./images/stock.png>]
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
- [58 <./images/stats.png>]
+ [62 <./images/stats.png>]
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
 
-[59 <./images/closeCash.png>]
+[63 <./images/closeCash.png>]
 Cap\'{\i }tulo 6.
 Package acronym Info: Label `acro:TFE' overridden on input line 9.
 
@@ -1165,13 +1214,13 @@ Overfull \hbox (6.48656pt too wide) in paragraph at lines 9--10
 ajo Fi-nal de Es-pe-cia-li-za-ción ([])[]. 
  []
 
-) [60
+) [64
 
 ] (./parts/conclusion.tex
 Package acronym Info: Label `acro:TFE' overridden on input line 6.
-) [61
+) [65
 
-] (./parts/Acronimos.tex [62
+] (./parts/Acronimos.tex [66
 
 ]
 Ap\'{e}ndice A.
@@ -1182,51 +1231,51 @@ File: t1phv.fd 2001/06/04 scalable font definitions for T1/phv.
 LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <10.95> not available
 (Font)              Font shape `T1/phv/b/n' tried instead on input line 3.
 Package acronym Info: Label `acro:SDK' overridden on input line 24.
- [63
+ [67
 
 ]
-LaTeX Info: Redefining \. on input line 155.
-LaTeX Info: Redefining \% on input line 155.
- [64pdfTeX warning (ext4): destination with the same identifier (name{IDE}) has
+LaTeX Info: Redefining \. on input line 157.
+LaTeX Info: Redefining \% on input line 157.
+ [68pdfTeX warning (ext4): destination with the same identifier (name{IDE}) has
  been already used, duplicate ignored
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.155 \chapter
+l.157 \chapter
               {Glosario}]
 Ap\'{e}ndice B.
 
-Overfull \hbox (8.37654pt too wide) in paragraph at lines 182--184
+Overfull \hbox (8.37654pt too wide) in paragraph at lines 184--186
 \T1/ptm/m/n/10.95 de nu-me-ra-ciï¿½n po-si-cio-nal de ba-se 16 --empleando por 
 lo tan-to 16 sï¿½mbolos--
  []
 
-Package acronym Info: Label `acro:BD' overridden on input line 189.
-[65
+Package acronym Info: Label `acro:BD' overridden on input line 191.
+[69
 
 ]
 Package acronym Info: Label `acro:JFC' newly defined as it shall be overridden
-although it is yet undefined on input line 215.
+although it is yet undefined on input line 217.
 
 
-Package acronym Warning: Acronym `JFC' is not defined on input line 215.
+Package acronym Warning: Acronym `JFC' is not defined on input line 217.
 
 
-Package acronym Warning: Acronym `JFC' is not defined on input line 215.
+Package acronym Warning: Acronym `JFC' is not defined on input line 217.
 
 Package acronym Info: Label `acro:IG' newly defined as it shall be overridden
-although it is yet undefined on input line 215.
+although it is yet undefined on input line 217.
 
-Package acronym Warning: Acronym `IG' is not defined on input line 215.
+Package acronym Warning: Acronym `IG' is not defined on input line 217.
 
 
-Package acronym Warning: Acronym `IG' is not defined on input line 215.
+Package acronym Warning: Acronym `IG' is not defined on input line 217.
 
 ) (/usr/local/texlive/2012/texmf-dist/tex/generic/bibtex/apalike.tex)
 No file Servidor-SMS.bbl.
 LaTeX Info: Redefining \. on input line 163.
 LaTeX Info: Redefining \% on input line 163.
-[66]
+[70]
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 167.
 Package atveryend Info: Empty hook `AfterLastShipout' on input line 167.
  (./Servidor-SMS.aux
@@ -1236,7 +1285,7 @@ LaTeX Info: Redefining \% on input line 23.
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 167.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 167.
 Package rerunfilecheck Info: File `Servidor-SMS.out' has not changed.
-(rerunfilecheck)             Checksum: 10EFA0FF7175AD3BC72EAF5586423082;5310.
+(rerunfilecheck)             Checksum: B480431B4515003E376954ECC7E96D1A;5320.
 
 
 LaTeX Warning: There were multiply-defined labels.
@@ -1244,24 +1293,25 @@ LaTeX Warning: There were multiply-defined labels.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 167.
  ) 
 Here is how much of TeX's memory you used:
- 8330 strings out of 493488
- 116426 string characters out of 3141326
- 214312 words of memory out of 3000000
- 11067 multiletter control sequences out of 15000+200000
- 100697 words of font info for 85 fonts, out of 3000000 for 9000
+ 8405 strings out of 493488
+ 117592 string characters out of 3141326
+ 214807 words of memory out of 3000000
+ 11120 multiletter control sequences out of 15000+200000
+ 101318 words of font info for 87 fonts, out of 3000000 for 9000
  965 hyphenation exceptions out of 8191
- 35i,13n,45p,1038b,690s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 35i,13n,45p,1233b,690s stack positions out of 5000i,500n,10000p,200000b,50000s
 {/usr/local/texlive/2012/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
-exlive/2012/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/local/texlive/
-2012/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2012/texmf
--dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2012/texmf-dist/fon
-ts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/u
-rw/times/utmr8a.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/urw/times/u
-tmri8a.pfb>
-Output written on Servidor-SMS.pdf (76 pages, 2690746 bytes).
+exlive/2012/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/local/texlive/2
+012/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/local/texlive/2012/tex
+mf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2012/texmf-dist/fo
+nts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1
+/urw/times/utmr8a.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/urw/times
+/utmr8a.pfb></usr/local/texlive/2012/texmf-dist/fonts/type1/urw/times/utmri8a.p
+fb>
+Output written on Servidor-SMS.pdf (80 pages, 2880593 bytes).
 PDF statistics:
- 1375 PDF objects out of 1440 (max. 8388607)
- 1222 compressed objects within 13 object streams
- 341 named destinations out of 1000 (max. 500000)
- 770 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1430 PDF objects out of 1440 (max. 8388607)
+ 1267 compressed objects within 13 object streams
+ 355 named destinations out of 1000 (max. 500000)
+ 785 words of extra memory for PDF output out of 10000 (max. 10000000)
 
