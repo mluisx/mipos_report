@@ -130,112 +130,94 @@ Cada tipo de layout se encuentra ubicado en una jerarqu\'ia de vistas (views) (f
 Son interfaces en la clase \texttt{View} para registrar distintos listeners para los siguientes eventos:
 
 \begin{itemize}
-\item \texttt{onClick}:
-\item \texttt{onLongClick}:
-\item \texttt{onFocusChange}:
-\item \texttt{onKey}:
-\item \texttt{onTouch}:
-\item \texttt{onCreateContextMenu}:
+\item \texttt{onClick}: Cuando el usuario toca el item o hace foco con las teclas de navegaci\'on de un dipositivo con teclado y presiona la tecla enter.
+\item \texttt{onLongClick}: Cuando el usuario toca el item y lo mantiene presionado por un tiempo determinado, o tambi\'en al mantener presionado la tecla enter. 
+\item \texttt{onFocusChange}: Cuando el usuario navega y toma el foco del item o lo pierde.
+\item \texttt{onKey}: Cuando el usuario est\'a haciendo foco en un item y presiona o suelta una tecla o bot\'on en el dispositivo.
+\item \texttt{onTouch}: Cuando el usuario realiza una acci\'on denominada touch event, como por ejemplo, un movimiento espec\'ifico al tocar la pantalla (movement gesture).
+\item \texttt{onCreateContextMenu}: Cuando un men\'u de contexto es creado.
 \end{itemize}
-MAURIX
-http://developer.android.com/guide/topics/ui/ui-events.html
 
-\subsection{El Style}
+\subsection{El style}
 \label{subsec:dev.style}
 
-Es una colecci\'on de propiedades que especifican el formato de una vista. Los estilos se definen en XML.
+Es una colecci\'on de propiedades que especifican el formato de una vista. Un style puede aplicarse a un \texttt{View} individual o a una \texttt{Activity} completa. Estos se definen en formato \texttt{xml}.
 
-\subsection{El Theme}
+\subsection{El theme}
 \label{subsec:dev.theme}
 
-Cuando un Style es aplicado a un Activity o Aplication se lo denomina Theme.
+Cuando un style es aplicado a un \texttt{Activity} o \texttt{Aplication} y no a un \texttt{View} se lo denomina theme.
 
-Todas las vistas del Activity o Application tendr\'an el Style aplicado.
+Todas las \texttt{Views} del \texttt{Activity} o \texttt{Application} tendr\'an el Style aplicado. Como ejemplo, al aplicar un estilo de fuente como un theme para una \texttt{Activity}, todos los textos que se encuentren dentro de esa \texttt{Activity} tendr\'an aplicado el mismo tipo de fuente. 
 
 \subsection{El AdapterView}
 \label{subsec:dev.adapterView}
 
-Es una subclase de ViewGroup.
+Es una subclase de \texttt{ViewGroup} cuyas \texttt{Views} hijas son definidas por un Adapter. Su funci\'on es la de poder mostrar datos almacenados.
 
-Sus vistas hijas son definidas por un Adapter.
+Algunos \texttt{AdapterView} son:
 
-Se utiliza para mostrar datos almacenados.
+\begin{itemize}
+\item Gallery: Una vista que muestra items en una lista que puede realizar scroll y que se encuentran centralizados horizontalmente.
+\item ListView: Una vista que muestra items en una lista vertical de tipo scroll.
+\item Spinner: Una vista que muestra un hijo a la vez y permite al usuario elegir uno de estos como cualquier lista.
+\end{itemize}
 
-Algunos AdapterView son:
-Gallery
-ListView
-Spinner
-
-El adapter es una clase utilizada por un AdapterView para obtener datos y  construir las vistas hijas.
+El \texttt{Adapter} es una clase utilizada por un \texttt{AdapterView} para obtener datos y construir las vistas hijas.
 
 \subsection{Los men\'ues}
 \label{subsec:dev.menus}
 
-Option menu, es el men\'u principal de un activity, se muestra  al presionar el boton men\'u.
+Los men\'ues son un tipo de \ac{UI} muy com\'un utilizado en muchos tipos de aplicaciones. Para proveer una experiencia de usuario familiar y consistente, se deben utilizar las \ac{API}s existentes de Men\'u para exponer las acciones de usuario y otras opciones dentro de las activities.
 
-Context Menu, es un men\'u flotante que se muestra al hacer  “long press” sobre una vista.
+A partir de la version 3.0 de Android no se requiere un bot\'on de men\'u dedicado como si lo requerian las versiones anteriores.  Con este cambio, las aplicaciones contienen un componente denominado action bar para presentar acciones comunes a los usuarios.
 
-Submenu, es un men\'u flotante de items que el usuario abre al  seleccionar un item de men\'u.
-
-\subsection{Los Dialogs}
+\subsection{Los dialogs}
 \label{subsec:dev.dialogs}
 
-El dialog toma el primer plano quitandole el foco al Activity  que le dio origen.
+El dialog es una peque\~na ventana que toma el primer plano quitandole el foco al activity que le dio origen. Se utiliza para permitir al usuario realizar una toma de decisi\'on o para ingresar informaci\'on adicional. Estas ventanas no utiliza toda la pantalla y es normalmente utilizado para ventos modales que requieren de la decisi\'on de un usuario para poder continuar operando.
 
-Para crear un dialog se extiende de la clase Dialog.
+El \ac{API} de Android provee dialogs de distintos tipos de acuerdo a la acci\'on que se requiera. Estos pueden ser:
 
-El API de Android provee los siguientes tipos de dialogs:
-
-AlertDialog
-ProgressDialog
-DatePickerDialog
-TimePickerDialog
-
-\subsection{Los Resources}
+\begin{itemize}
+\item AlertDialogs: son dialogs que muestran un t\'itulo, algunos botones y/o una lista de items a seleccionar.
+\item ProgressDialogs: dialogs que visualizan el progreso de una carga de datos o el de alg\'un proceso en particular que realice la aplicaci\'on en ese momento.
+\item DatePickerDialogs: dialogs con una \ac{UI} predefinida que permiten al usuario seleccionar una fecha determinada.
+\item TimePickerDialogs: dialogs para seleccionar un tiempo determinado.
+\end{itemize}
+ 
+\subsection{Los resources}
 \label{subsec:dev.resources}
 
-A cada resource se le asigna un ID.
+Son clases para acceder a los recursos de una aplicaci\'on. Estos recursos son los archivos adicionales y los contenidos est\'aticos que el c\'odigo fuente utiliza, como por ejemplo, los archivos de im\'agenes, las definiciones de layout, los strings utilizados para la \ac{UI}, las instrucciones de animaci\'on, etc\'etera.
 
-Los IDs est\'an definidos en la clase R del proyecto.
+A cada resource se le asigna un identificador \'unico las cuales est\'an definidos en la clase \texttt{R} del proyecto (esta clase es autogenerada al momento de la compilaci\'on de la aplicaci\'on). La clase \texttt{R} tiene una clase est\'atica para cada tipo de resource y estos pueden ser accedidos desde el c\'odigo mismo o desde archivos \texttt{xml}.
 
-La clase R es generada durante la compilaci\'on.
-
-R tiene una clase est\'atica para cada tipo de resource.
-
-Por cada resource hay un integer est\'atico.
-
-Los resources pueden ser accedidos desde el c\'odigo o desde XML.
-
-\subsection{El ASyncTask}
+\subsection{El \texttt{ASyncTask}}
 \label{subsec:dev.asynctask}
 
-El método doInBackground(…) se ejecuta en un thread  aparte.
+Las \texttt{ASyncTasks} permiten el uso correcto del thread de \ac{UI}. Estas clases permiten realizar operaciones en background y publicar los resultados luego en el thread de la \ac{UI} sin la necesidad de tener que manejar los threads y tampoco alg\'un tipo de handler. Estas clases suelen ser utilizados idealmente para operaciones peque\~nas (de algunos pocos segundos).
 
-Los métodos onPreExecute(…)  y onPostExecute(…) se  ejecutan en el thread de UI. 
+Entre los m\'etodos que contiene un \texttt{ASyncTask} podemos encontrar:
 
-\subsection{El Content Provider}
+\begin{itemize}
+\item \texttt{doInBackground}: se ejecuta en un thread aparte y realiza la operaci\'on en background.
+\item \texttt{onPreExecute}: se ejecuta en el thread de la \ac{UI} previo al m\'etodo \texttt{doInBackground}.
+\item \texttt{onPostExecute}: se ejecuta en el thread de la \ac{UI} luego de la ejecuci\'on del m\'etodo \texttt{doInBackground}.
+\end{itemize}
+
+\subsection{El content provider}
 \label{subsec:dev.contentProvider}
 
-An SQLite database is private to the application which creates it. If you want to share data with other applications you can use a ContentProvider.
+Una base de datos SQlite es de car\'acter privada a la aplicaci\'on que la crea. Si uno quisiera compartir datos con otras aplicaciones se puede utilizar un content provider el cual permite compartir los datos de una aplicaci\'on a otras. En muchos casos esta informaci\'on se encuentra almacenada en una base de datos SQlite.
 
-A ContentProvider allows applications to access data. In most cases this data is stored in an SQlite database.
-A ContentProvider can be used internally in an application to access data. If the data should be shared with another application a ContentProvider allows this.
-The access to a ContentProvider is done via an URI. The basis for the URI is defined in the declaration of the ContentProvider in the AndroidManifest.xml file via the android:authorities attribute.
-Many Android datasources, e.g. the contacts, are accessible via ContentProviders. Typically the implementing classes for a ContentProviders provide public constants for the URIs
+De la misma forma, un content provider puede ser utilizado internamente por la misma aplicaci\'on para acceder a los datos. Para poder tener el acceso a estos datos se debe realizar mediante una \ac{URI}.
 
-SQlite stores the whole database in a file. If you have access to this file, you can work directly with the data base. Accessing the SQlite database file only works in the emulator or on a rooted device.
+Muchos datasources de Android como los contactos de un tel\'efono se acceden mediante content providers.
 
-A standard Android device will not grant read-access to the database file.
+La base SQlite almacena toda la informaci\'on en un simple archivo. Si uno tiene acceso a este archivo se podr\'ia trabajar directamente con los datos de la base, pero para poder hacerlo se debe solamente utilizar un emulador Android o un dispositivo que se encuentre en el modo "root" el cual permite tener acceso a ciertas carpetas y archivos del sistema Android que un dispositivo est\'andar no lo permite.
 
-Content providers can be used from other processes and are required by some mechanisms on Android like the global search. There are also some classes available that help you deal with content providers that save you some of the hassle of manging memory.
-
-   * Other apps will be able to access your data.
-
-   * You can wrap and abstract a lot of the query logic in your content provider, and limit access.
-
-   * You will be able to lean on the system to allow for things like managed queries.
-
-\section{Los Servicios}
+\section{Los servicios}
 \label{sec:services}
 
 Un servicio es un componente de la aplicaci\'on que puede realizar operaciones long-running o de larga corrida en el background o en segundo plano y no provee de una \ac{UI}.
@@ -247,32 +229,32 @@ Hay que considerar que un servicio corre en el thread principal del proceso que 
 \section{Los secretos de performance}
 \label{sec:performance.secrets}
 
-http://developer.android.com/training/articles/perf-tips.html
+Existen una serie de consejos sobre el desarrollo de aplicaciones Android las cuales producen una mejora en la performance de las mismas:
 
 \begin{enumerate}
 
 \item Evitar crear objetos innecesarios: La creaci\'on de objetos siempre tiene un costo. Un garbage collector generacional con pools de asignaci\'on por thread para objectos temporarios puede hacer la asignaci\'on de objetos un poco m\'as eficiente, pero la asignaci\'on de memoria es siempre m\'as costosa que no asignar memoria para los objetos.
 
-\item Es preferible un est\'atico sobre un virtual: Si no es necesario acceder a las variables de un objeto, es recomendable hacer los m\'etodos est\'ticos. Las llamadas tendr\'an un aumento de velocidad entre 15\%-20\%. Es una buena pr\'actica tambi\'en, porque se podr\'ia dar la informaci\'on desde la firma del m\'etodo que al llamar al m\'etodo, este no pueda alterar el estado del objeto.
+\item Es preferible un est\'atico sobre un virtual: Si no es necesario acceder a las variables de un objeto, es recomendable hacer los m\'etodos est\'ticos. Las llamadas tendr\'an un aumento de velocidad entre 15\%-20\%.
 
 \item Usar static final para constantes: Es una buena pr\'actica declarar las constantes como static final cuando sea posible, ya que de esta manera se evita el uso de un m\'etodo de inicializaci\'on de clase. 
 
-\item Evitar getters/setters internos: Llamadas a m\'etodos virtuales son costosas, mucho m\'as que la b\'usqueda de variables instanciadas. Es razonable seguir pr\'acticas de programaci\'on orientada a objetos y tener getters y setters en una interfaz p\'ublica, pero dentro de una clase uno deber\'ia siempre acceder a las variables directamente.
+\item Evitar getters/setters internos: Llamadas a m\'etodos virtuales son costosas, mucho m\'as que la b\'usqueda de variables instanciadas. Es razonable seguir pr\'acticas de programaci\'on orientadas a objetos y tener getters y setters en una interfaz p\'ublica, pero dentro de una clase uno deber\'ia siempre acceder a las variables directamente.
 
-\item Usar la nueva sintaxis del ciclo For: La nueva sintaxis del ciclo For, conocida tambi\'en como el ciclo "for-each", puede ser utilizada para collections que implementen la interfaz Iterable y para arrays. Con las collections, un iterator es asignado para hacer llamadas a la interfaz de hasNext() y next(). Con un ArrayList, un ciclo con contador es cerca de 3 veces m\'as r\'apido (con o sin \ac{JIT}), pero para otras collections el nuevo ciclo For ser\'a exactamente equivalente al de un iterator explicito.
+\item Usar la nueva sintaxis del ciclo \texttt{for}: La nueva sintaxis del ciclo \texttt{for}, conocida tambi\'en como el ciclo \texttt{for-each}, puede ser utilizada para collections que implementen la interfaz \texttt{Iterable} y para arrays. Con las collections, un \texttt{iterator} es asignado para hacer llamadas a la interfaz de \texttt{hasNext} y \texttt{next}. Con un ArrayList, un ciclo con contador es cerca de 3 veces m\'as r\'apido (con o sin \ac{JIT}), pero para otras collections el nuevo ciclo \texttt{for} ser\'a exactamente equivalente al de un \texttt{iterator} expl\'icito.
 
-\item Evitar usar puntos flotantes (floating-points): Los puntos flotantes son 2 veces m\'as lentos que los integers o enteros en los dispositivos Android. En t\'erminos de velocidad, no hay diferencia entre el float y el double en los hardware modernos. En tama\~no, double es 2 veces mas grande. Con M\'aquinas de escritorio, asumiendo que el espacio no es un problema, ser\'ia preferible double antes que float. 
+\item Evitar usar puntos flotantes (floating-points): Los puntos flotantes son 2 veces m\'as lentos que los integers o enteros en los dispositivos Android. En t\'erminos de velocidad, no hay diferencia entre el float y el double en los hardware modernos. En tama\~no, double es 2 veces m\'as grande. Con m\'aquinas de escritorio, asumiendo que el espacio no es un problema, ser\'ia preferible double antes que float. 
 
-\item Saber usar las librerias: Adem\'as de conocer las razones de utilizar una librer\'ia que ya se encuentre disponible antes que armar una propia, hay que tener en cuenta que el sistema ofrece la libertad de poder reemplazar las llamadas a m\'etodos de librer\'ias con otras que contengan c\'odigo assembler, las cuales podrian ser mejores en comparaci\'on con el mejor c\'odigo que el \ac{JIT} pueda producir para su equivalente en Java.
+\item Saber usar las librerias: Adem\'as de conocer las razones de utilizar una librer\'ia que ya se encuentre disponible antes que armar una propia, hay que tener en cuenta que el sistema ofrece la libertad de poder reemplazar las llamadas a m\'etodos de librer\'ias con otras que contengan c\'odigo assembler, las cuales podr\'ian ser mejores en comparaci\'on con el mejor c\'odigo que el \ac{JIT} pueda producir para su equivalente en Java.
 
 \end{enumerate}
 
 \subsection{Mitos de performance}
 \label{subsec:dev.perf.myths}
 
-En dispositivos sin \ac{JIT}, es cierto que invocar m\'etodos a trav\'es de una variable con un tipo exacto que a trav\'es de una interfaz es sutilmente m\'as eficiente (por ejemplo, es mejor invocar m\'etodos en un HashMap Map que en un Map map, a\'un cuando en ambos casos el map fuera un HashMap). 
+En dispositivos sin \ac{JIT}, es cierto que invocar m\'etodos a trav\'es de una variable con un tipo exacto que a trav\'es de una interfaz es sutilmente m\'as eficiente (por ejemplo, es mejor invocar m\'etodos en un \texttt{HashMap} que en un \texttt{Map}, a\'un cuando en ambos casos el \texttt{Map} fuera un \texttt{HashMap}). 
 
-En dispositivos sin \ac{JIT}, realizar caching para los accesos a las variables de objetos logra una mejora del 20\% que repetidamente acceder a la misma variable. Con un \ac{JIT}, el acceso a variables cuesta lo mismo que a un acceso a variables de un objeto en forma local, por lo tanto, no es una optimizaci\'on requerida a menos que uno sienta que esto facilita la lectura del c\'odigo (ocurre lo mismo para los tipos final, static y static final).
+En dispositivos sin \ac{JIT}, realizar caching para los accesos a las variables de objetos logra una mejora del 20\% que repetidamente acceder a la misma variable. Con un \ac{JIT}, el acceso a variables cuesta lo mismo que a un acceso a variables de un objeto en forma local, por lo tanto, no es una optimizaci\'on requerida a menos que uno sienta que esto facilita la lectura del c\'odigo (ocurre lo mismo para los tipos \texttt{final}, \texttt{static} y \texttt{static final}).
 
 \subsection{Siempre medir}
 \label{subsec:dev.perf.measure.always}
@@ -284,29 +266,31 @@ Se recomienda utilizar Caliper para correr los microbenchmarks creados por uno m
 \section{La interacción con servicios remotos}
 \label{sec:remote.services}
 
-El parser de JSON que provee Android es poco performante.
-
-JSON con GSON (mejor performance que el parser provisto  por Android).
+El parser de \texttt{JSON} que provee Android es poco performante. Es por eso que para este \ac{TFE} se decidi\'o utilizar una librer\'ia denominada \texttt{GSON} el cual permite tener una mejor performance al parser provisto por Android. Su funci\'on consiste en la de poder convertir objetos Java en representaciones \texttt{JSON} y tambi\'en a su inversa. Esta librer\'ia parte de un proyecto open-source que tuvo en cuenta poder evitar el uso de las annotations de Java ya que no necesita el c\'odigo fuente del objecto a convertir\cite{gson}.
 
 \section{El \ac{DDMS}}
 \label{sec:ddms}
 
-Perspectiva de Eclipse.
+Android contiene una herramienta de depuraci\'on llamada \ac{DDMS} que provee servicios de port-forwarding, capturas de pantalla del dispositivo, informaci\'on de threads, memoria, procesos, entre otros. Se encuentra integrado en el entorno Eclipse (se accede mediante una de las perspectivas) y tambi\'en se encuentra en el directorio \texttt{tools} de la \ac{SDK}. Funciona tanto con un emulador como con un dispositivo conectado a la computadora con el entorno Eclipse instalado.
 
-Debugging.
+En Android, cada aplicaci\'on corre en su propio proceso, en el que cada uno corre en su propia \ac{MV}. Cada \ac{MV} expone un puerto \'unico en el que un depurador se pueda conectar.
 
-Permite ver memoria y file system.
+Cuando el \ac{DDMS} inicia, se conecta al \ac{ADB}. Al conectarse un dispositivo, un servicio de monitoreo de la \ac{MV} se crea entre el \ac{ADB} y el \ac{DDMS}, el cual notifica al \ac{DDMS} cuando una \ac{MV} en el dispositivo se inicia o finaliza. Cuando una \ac{MV} est\'a corriendo, el \ac{DDMS} obtiene el identificador de proceso de la \ac{MV}, a trav\'es del \ac{ADB}, y abre una conexi\'on al depurador de la \ac{MV} por medio del \ac{ADBD} en el dispositivo. El \ac{DDMS} ahora puede hablar a la \ac{MV} usando un protocolo customizado.
 
-Profiling.
-
-\section{El LogCat}
+\section{El \texttt{LogCat}}
 \label{sec:logcat}
 
-El m\'etodo Log.e() se utiliza para registrar errores.
-El m\'etodo Log.w() se utiliza para registrar precauciones o warnings.
-El m\'etodo Log.i() se utiliza para registrar mensajes de informaci\'on.
-El m\'etodo Log.d() se utiliza para registrar mensajes del tipo debug.
-El m\'etodo Log.v() se utiliza para registrar mensajes verbales.
-El m\'etodo Log.wtf() se utiliza para registrar errores muy graves que nunca deberian ocurrir (What a Terrible Failure).
+El sistema de depuraci\'on de Android provee un mecanismo para recolectar y visualizar salidas del sistema depuradas. Los logs de varias aplicaciones y porciones del sistema se recolectan en una serie de buffers circulares, los cuales pueden ser visualizados y filtrados por el \texttt{LogCat} desde una l\'inea de comandos o desde la \ac{UI} del Eclipse.
 
-La salida b\'asica del LogCat incluye informaci\'on de diferentes fuentes. Para su uso en actividades de debug, puede ser muy \'util filtrar la salida del LogCat de acuerdo a diferentes etiquetas o tags para la aplicaci\'on espec\'ifica que se quiera analizar. De esta manera, uno puede enfocar en los logs de la propia aplicaci\'on y evitar recibir informaci\'on de otras fuentes o partes que para el caso a analizar sean de poco inter\'es.
+Entre los m\'etodos que se encuentran para realizar una acci\'on de log, se encuentran:
+
+\begin{itemize}
+\item \texttt{Log.e}: se utiliza para registrar errores.
+\item \texttt{Log.w}: se utiliza para registrar precauciones o warnings.
+\item \texttt{Log.i}: se utiliza para registrar mensajes de informaci\'on.
+\item \texttt{Log.d}: se utiliza para registrar mensajes del tipo debug.
+\item \texttt{Log.v}: se utiliza para registrar mensajes verbales.
+\item \texttt{Log.wtf}: se utiliza para registrar errores muy graves que nunca deberian ocurrir (What a Terrible Failure).
+\end{itemize}
+
+La salida b\'asica del \texttt{LogCat} incluye informaci\'on de diferentes fuentes. Para su uso en actividades de depuraci\'on, puede ser muy \'util filtrar la salida del \texttt{LogCat} de acuerdo a diferentes etiquetas o tags para la aplicaci\'on espec\'ifica que se quiera analizar. De esta manera, uno puede enfocarse en los logs de la propia aplicaci\'on y evitar recibir informaci\'on de otras fuentes o partes que para el caso a analizar sean de poco inter\'es.
